@@ -1,0 +1,42 @@
+services:
+  app:
+    build: ./app
+    volumes:
+     - ./app:/app
+     - /app/node_modules
+    ports:
+     - "3000:3000"
+    container_name: node_app
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9091:9090"
+    container_name: prometheus
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3002:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SECURITY_COOKIE_SAMESITE=none
+      - GF_SECURITY_COOKIE_SECURE=false
+      - GF_SERVER_ROOT_URL=http://192.168.1.8:3002
+      - GF_SERVER_DOMAIN=192.168.1.8
+      - GF_SERVER_ENABLE_CORS=true
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "9100:9100"
+    container_name: node-exporter
+
+volumes:
+  grafana_data:

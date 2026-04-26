@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temporal Series Analyser</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=New+Rocker&family=Zen+Dots&display=swap");
+    * {
+      margin: 0px;
+      padding: 0px;
+      box-sizing: border-box;
+    }
+    body {
+      background: rgb(17, 17, 15);
+    }
+    header {
+      font-family: Zen Dots, cursive, serif;
+    }
+    #head {
+      background: linear-gradient(90deg,rgb(32, 3, 51) 0%, rgba(1, 1, 26, 1) 72%, rgba(0, 25, 99, 1) 83%, rgba(1, 0, 46, 1) 100%);
+      color:crimson;
+      padding: 10px;
+    }
+    a {
+      margin-left: 80px;
+      margin-right: 80px;
+      color: antiquewhite;
+      text-decoration:none ;
+      border-left: 1px solid white;
+      border-right: 1px solid whitesmoke;
+      padding: 0px 10px 0px 10px ;
+    }
+    a:hover {
+      text-decoration: underline;
+      background-color: rgba(20, 17, 17, 0.658);
+      text-shadow: 0.1px 0.1px 4px white ;
+      transition-duration: 0.7s;
+    }
+    nav {
+      display:inline-block;
+      border: 2px 2px solid rgb(36, 31, 31);
+    }
+    #navegation {
+      background-color: black;
+      width: 100%;
+      height: auto;
+      font-size: 1.5em ;
+      box-shadow: 2px 2px 3px rgb(17, 17, 15);
+      margin-bottom: 0.35px;
+    }
+    img {
+      position: absolute;
+      left: 30%;
+      bottom: 2%;
+    }
+    section {
+      position: absolute;
+      left: 0;
+    }
+    section>div {
+      height: 200px ;
+      width: 250px ;
+      padding-top: 50px;
+      background-color: rgba(29, 0, 82, 0.822);
+      border: 1px solid black;
+    }
+    .data {
+      position: relative;
+      margin: auto;
+      background-color: crimson;
+      height: 100px;
+      width: 100px;
+      border-radius: 100%;
+      
+    }
+      #graf{
+        position: absolute;
+        top: 36%;
+        left: 58%;
+        transform: translate(-50%, -50%);
+      }
+        #graf2{
+          position: absolute;
+          top: 36%;
+          left: 85%;
+          transform: translate(-50%, -50%);
+        }
+        #graf3{
+          position: absolute;
+          top: 50%;
+          left: 49%;
+          transform: translate(-50%, -50%);
+          border-radius: 20px;
+        }
+        #memusage{
+          position: absolute;
+          top: 35.8%;
+          left: 31.4%;
+          transform: translate(-50%, -50%);
+        }
+        #loadaverage{
+          position: absolute;
+          top: 79%;
+          left: 50.4%;
+          transform: translate(-50%, -50%);
+        }
+  </style>
+</head>
+<body>
+  <header>
+    <div id="head">
+      <h1>Temporal Series</h1>
+    </div>
+    <hr id="headhr" />
+    <div id="navegation">
+      <nav>
+        <a href="#">Dashboards</a>
+        <a href="#">alguma coisa</a>
+        <a href="#">Config</a>
+        <a href="#">Design</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section id="analytics">
+      <div id="an1">
+        <div class="data"> 
+          <iframe id="graf3" src="http://192.168.1.8:3002/d-solo/gxqwz8/new-dashboard3?orgId=1&from=1777071012209&to=1777092612209&timezone=browser&panelId=panel-1" width="190px" height="190px" frameborder="0"></iframe>
+           </div>
+      </div>
+      <div id="an2">
+        <div class="data"> </div>
+      </div>
+      <div id="an3">
+        <div class="data"> </div>
+      </div>
+    </section>
+    <h2>Gráfico</h2>
+    <iframe id="memusage" src="http://192.168.1.8:3002/d-solo/ghtqdb/memoryusage?orgId=1&from=now-5m&to=now&panelId=panel-1" width="350" height="250" frameborder="0"></iframe>
+  <iframe id="graf2" src="http://192.168.1.8:3002/d-solo/gl6qzd/new-dashboard2?orgId=1&from=now-5m&to=now&panelId=panel-1" width="350" height="250" frameborder="0"></iframe> 
+  <iframe id="graf" src="http://192.168.1.8:3002/d-solo/gmq9kt/new-dashboard?orgId=1&from=now-5m&to=now&panelId=1" width="350" height="250" frameborder="0"></iframe>
+  <iframe id="loadaverage" src="http://192.168.1.8:3002/d-solo/gtbgt9/load-average?orgId=1&from=now-5m&to=now&panelId=panel-1" width="350" height="250" frameborder="0"></iframe>
+  
+  </main>
+  <footer></footer>
+</body>
+</html>
