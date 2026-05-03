@@ -1,4 +1,4 @@
-<!doctype html>
+<!--<!doctype html>
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
@@ -7,13 +7,18 @@
     
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=New+Rocker&family=Zen+Dots&display=swap");
+      @import url('https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=New+Rocker&family=Roboto:ital,wght@0,100..900;1,100..900&family=Zen+Dots&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=New+Rocker&family=Roboto:ital,wght@0,100..900;1,100..900&family=Zen+Dots&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=New+Rocker&family=Roboto:ital,wght@0,100..900;1,100..900&family=Science+Gothic:wght@100..900&family=Zen+Dots&display=swap');
+
+
       * {
         margin: 0px;
         padding: 0px;
         box-sizing: border-box;
       }
       body {
-        background: linear-gradient(90deg,rgb(31, 1, 51) 0%, rgb(61, 25, 223) 72%, rgb(36, 126, 245) 83%, rgba(1, 0, 46, 1) 100%);
+        background: linear-gradient(to bottom,rgb(8, 6, 22) 0%, rgb(24, 5, 105) 72%, rgb(2, 13, 119) 83%, rgba(1, 0, 46, 1) 100%);
         height: 100vh;
 
       }
@@ -42,11 +47,17 @@
         border-left: 1px solid white;
         border-right: 1px solid whitesmoke;
         padding: 0px 10px 0px 10px ;
+        margin-left: 20px;
+        margin-right: 20px;
+
       }
-      a{
-        text-decoration: none;
-        color: antiquewhite;
-      }
+       main > a {
+        border: none;
+        margin: 0;
+        padding: 0;
+        display: inline;
+        text-align: center;
+        }
       a:hover{
         text-decoration: underline;
         background-color: rgba(20, 17, 17, 0.658);
@@ -58,6 +69,7 @@
         display:flex;
         flex-wrap: wrap;
         border: 2px 2px solid whitesmoke;
+        font-family: "science gothic", cursive, serif;
       }
       #navegation{
         background-color: black;
@@ -72,8 +84,16 @@
         padding: 10px;
         text-align: center;
         color: antiquewhite;
-        text-shadow: 2px 2px 3px rgba(137, 43, 226, 0.342);
+        background:linear-gradient(to right,#F10C00,#CF0A00,#FA0C00,#AD0900,rgb(148, 7, 7));
+        text-shadow: 1px 1px 3px rgba(235, 35, 0, 0.521);
         font-family: zen dots, cursive, serif;
+        font-size: 40px;
+        -webkit-background-clip: text;
+        background-clip: text;
+  
+  /* Torna a cor original do texto transparente */
+        -webkit-text-fill-color: transparent;
+         color: transparent;
       }
       #subtitulo{
         padding: 10px;
@@ -89,9 +109,35 @@
         align-items: center;
         justify-content: center;
         padding: 30px;
-      }
+        margin-top: 20px;
+
+    /* glassmorphism */
+        background: rgba(255, 255, 255, 0.10);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+
+        border-radius: 20px;
+
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+
+        color: white;
+        transition: all 0.3s ease;
+}
+
+
+      #info:hover{
+        transform: translateY(-8px) scale(1.02);
+
+        background: rgba(255,255,255,0.16);
+
+        box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+}
       .info{
-        margin: auto 20px auto 20px;
+        display: flexbox;
+        flex-wrap: wrap;
+        margin: auto 20px auto 30px;
         display: inline-block;
         font-family: 'Zen Dots', cursive, serif;
         font-size: 18px;
@@ -99,17 +145,34 @@
         
       }
       #login{
-        display: block;
         margin: auto;
         padding: 10px;
         font-size: 18px;
-        font-family: 'Zen Dots', cursive, serif;
-        color: aliceblue;
-        background-color: transparent;
-        border: 2px solid aliceblue;
+        font-family: 'roboto', cursive, serif;
+        color:aliceblue;
+        background: linear-gradient(45deg, #1f0133, #3d19df);
+        border: 2px solid rgba(240, 248, 255, 0.418);
         border-radius: 5px;
-        box-shadow: 2px 2px 3px rgba(245, 245, 245, 0.445);
+        box-shadow: 2px 2px 3px rgba(245, 245, 245, 0.274);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 20px;
 
+      }
+      #login:hover{
+        background-color: rgba(20, 17, 17, 0.658);
+        text-shadow: 0.1px 0.1px 4px white ;
+        transition-duration: 0.7s;
+        cursor: pointer;
+        box-shadow: 0 0 20px rgba(61, 25, 223, 0.6);
+      }
+      .img{
+        margin-top: 30px;
+        width: 150px;
+        height: 150px;
+        margin-left:40px;
+        transition: transform 0.3s ease;
       }
 
     </style>
@@ -127,7 +190,7 @@
     <div id="navegation">
       
       <nav>
-        <a href="#">Dashboards</a>
+        <a href="/dashboard">Dashboards</a>
         <a href="#">alguma coisa</a>
         <a href="#">Config</a>
         <a href="#">Design</a>
@@ -143,15 +206,18 @@
       <section id="info">
         <div class="info">
           <p>Análise em tempo real</p>
+          <img class="img" src="images/analise.png" alt="img failed to load">
         </div>
         <div class="info">
           <p>Gráficos interativos</p>
+          <img class="img" src="images/anomalias.png" alt="img failed to load">
         </div>
         <div class="info">
           <p>Alertas personalizados</p>
+          <img class="img" src="images/interativo.png" alt="img failed to load">
         </div>
       </section>
-      <button id="login"><a href="/login">Login</a></button>
+      <a href="/register"><button id="login">Get Started</button></a>
 
 
 
@@ -161,4 +227,63 @@
 
     <footer></footer>
   </body>
+</html> -->
+
+<!-- ========================= -->
+<!-- views/main.handlebars -->
+<!-- ========================= -->
+
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temporal Series</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<header>
+<div class="logo">Temporal Series</div>
+
+<nav>
+<a href="/login">Login</a>
+<a href="/register">Register</a>
+<a href="/dashboard">Dashboard</a>
+</nav>
+</header>
+
+<section class="container hero">
+
+<h1>Monitoramento <span>Inteligente</span><br>de Séries Temporais</h1>
+
+<p>
+Detecte anomalias em tempo real, visualize métricas críticas e receba insights automáticos para sua infraestrutura.
+</p>
+
+<a href="/register" class="btn">Começar Agora</a>
+
+<div class="grid-3">
+
+<div class="card">
+<h3>Tempo Real</h3>
+<p>Métricas instantâneas com atualização contínua.</p>
+</div>
+
+<div class="card">
+<h3>Alertas Inteligentes</h3>
+<p>Seja avisado antes do problema virar incidente.</p>
+</div>
+
+<div class="card">
+<h3>Dashboards Premium</h3>
+<p>Visualização moderna estilo Grafana Cloud.</p>
+</div>
+
+</div>
+
+</section>
+
+</body>
 </html>

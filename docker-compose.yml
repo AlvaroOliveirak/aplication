@@ -1,12 +1,32 @@
+version: '3.8'
+
 services:
   app:
-    build: ./app
+    build: .
     volumes:
-     - ./app:/app
-     - /app/node_modules
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
-     - "3000:3000"
+      - "3000:3000"
     container_name: node_app
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: alvarooliver18
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   prometheus:
     image: prom/prometheus
@@ -28,8 +48,8 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_SECURITY_COOKIE_SAMESITE=none
       - GF_SECURITY_COOKIE_SECURE=false
-      - GF_SERVER_ROOT_URL=http://192.168.1.8:3002
-      - GF_SERVER_DOMAIN=192.168.1.8
+      - GF_SERVER_ROOT_URL=http://localhost:3002
+      - GF_SERVER_DOMAIN=localhost
       - GF_SERVER_ENABLE_CORS=true
 
   node-exporter:
@@ -40,3 +60,25 @@ services:
 
 volumes:
   grafana_data:
+
+   backend:
+    build: ./backend
+    container_name: tsa_backend
+    ports:
+      - "3010:3000"
+    networks:
+      - monitor
+
+  frontend:
+    build: ./frontend
+    container_name: tsa_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - monitor
+
+networks:
+  monitor:
+    external: true

@@ -3,6 +3,10 @@ import path from "path";
 import handlebars from "express-handlebars";
 import { fileURLToPath } from 'url';
 import client from 'prom-client';
+import bcrypt from 'bcryptjs';
+import db from "./models/db.js";
+import Post from './models/post.js';
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -15,7 +19,7 @@ app.engine('handlebars', handlebars.engine({
   }
 }));
 
-app.set('view engine', '.handlebars');
+app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use((req, res, next) => {
@@ -30,21 +34,57 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(express.static(path.join(__dirname, "public")));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.get("/", (req, res) => {
   res.render('main', { layout: 'main' });
 });
 
 client.collectDefaultMetrics();
 
-app.get('/login', (req, res) => {
+app.get('/register', (req, res) => {
+  res.render('register', { layout: 'register' });
+});
+
+app.post('/register', async (req, res) => {
+   console.log(req.body)
+  Post.create({
+        email: req.body.email,
+        password: req.body.password
+}).then(() => {
+    res.redirect('/login')
+}).catch((err) => {
+    res.send('Houve um erro: ' + err)
+})
+});
+
+app.get('/login', (req,res)=>{
   res.render('login', { layout: 'login' });
 });
 
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  Post.findOne({ where: { email: email } }).then(async (post) => {
+        if (!post) {
+            return res.send("Usuário não encontrado")
+        }
+        const match = await bcrypt.compare(password, post.password)
+        
+        if (match) {
+            res.send("Login realizado com sucesso")
+        } else {
+            res.send("Senha incorreta")
+        }
+    })
+})
+
 app.get('/dashboard', (req, res) => {
-  const grafanaurl = 'http://192.168.1.8:3002/d-solo/gmq9kt/new-dashboard?orgId=1&timezone=browser&panelId=1';
   res.render('dashboard', { 
-    layout: 'dashboard',
-    grafanaurl: grafanaurl
+    layout: 'dashboard'
   });
 });
 
@@ -57,6 +97,22 @@ app.get('/metrics', async (req, res) => {
   res.send('<iframe src="http://192.168.1.8:3002/d-solo/gndc46/new-dashboard?orgId=1&timezone=browser&editIndex=0&panelId=panel-1" width="800" height="400"></iframe>');
 });*/
 
-app.listen(3000, '0.0.0.0', () => {
-  console.log("Servidor rodando na porta 3000");
-});
+async function iniciar() {
+  try {
+    await db.sequelize.authenticate();
+    console.log("Banco conectado");
+
+    await db.sequelize.sync();
+    console.log("Tabela users criada");
+
+    app.listen(3000, '0.0.0.0', () => {
+      console.log("Servidor rodando");
+    });
+
+  } catch (err) {
+  console.error(err);
+  process.exit(1);
+}
+}
+
+iniciar();

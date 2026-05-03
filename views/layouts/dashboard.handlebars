@@ -1,148 +1,137 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Temporal Series Analyser</title>
-  <style>
-    @import url("https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=New+Rocker&family=Zen+Dots&display=swap");
-    * {
-      margin: 0px;
-      padding: 0px;
-      box-sizing: border-box;
-    }
-    body {
-      background: rgb(17, 17, 15);
-    }
-    header {
-      font-family: Zen Dots, cursive, serif;
-    }
-    #head {
-      background: linear-gradient(90deg,rgb(32, 3, 51) 0%, rgba(1, 1, 26, 1) 72%, rgba(0, 25, 99, 1) 83%, rgba(1, 0, 46, 1) 100%);
-      color:crimson;
-      padding: 10px;
-    }
-    a {
-      margin-left: 80px;
-      margin-right: 80px;
-      color: antiquewhite;
-      text-decoration:none ;
-      border-left: 1px solid white;
-      border-right: 1px solid whitesmoke;
-      padding: 0px 10px 0px 10px ;
-    }
-    a:hover {
-      text-decoration: underline;
-      background-color: rgba(20, 17, 17, 0.658);
-      text-shadow: 0.1px 0.1px 4px white ;
-      transition-duration: 0.7s;
-    }
-    nav {
-      display:inline-block;
-      border: 2px 2px solid rgb(36, 31, 31);
-    }
-    #navegation {
-      background-color: black;
-      width: 100%;
-      height: auto;
-      font-size: 1.5em ;
-      box-shadow: 2px 2px 3px rgb(17, 17, 15);
-      margin-bottom: 0.35px;
-    }
-    img {
-      position: absolute;
-      left: 30%;
-      bottom: 2%;
-    }
-    section {
-      position: absolute;
-      left: 0;
-    }
-    section>div {
-      height: 200px ;
-      width: 250px ;
-      padding-top: 50px;
-      background-color: rgba(29, 0, 82, 0.822);
-      border: 1px solid black;
-    }
-    .data {
-      position: relative;
-      margin: auto;
-      background-color: crimson;
-      height: 100px;
-      width: 100px;
-      border-radius: 100%;
-      
-    }
-      #graf{
-        position: absolute;
-        top: 36%;
-        left: 58%;
-        transform: translate(-50%, -50%);
-      }
-        #graf2{
-          position: absolute;
-          top: 36%;
-          left: 85%;
-          transform: translate(-50%, -50%);
-        }
-        #graf3{
-          position: absolute;
-          top: 50%;
-          left: 49%;
-          transform: translate(-50%, -50%);
-          border-radius: 20px;
-        }
-        #memusage{
-          position: absolute;
-          top: 35.8%;
-          left: 31.4%;
-          transform: translate(-50%, -50%);
-        }
-        #loadaverage{
-          position: absolute;
-          top: 79%;
-          left: 50.4%;
-          transform: translate(-50%, -50%);
-        }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Temporal Series Analyser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Zen+Dots&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--soft:#1a2440;--line:#2f3c66;--text:#eef3ff;--muted:#9fb0d8;--accent:#3b82f6;--ok:#10b981}
+*{margin:0;padding:0;box-sizing:border-box} body{font-family:Inter,sans-serif;background:linear-gradient(135deg,#0b1020,#0f172a);color:var(--text)}
+header{position:sticky;top:0;background:rgba(11,16,32,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px 28px}.brand{font-family:'Zen Dots';font-size:1.3rem}
+nav{display:flex;gap:12px;align-items:center;padding:0 28px 16px;flex-wrap:wrap}
+nav a, .dropbtn{color:var(--text);text-decoration:none;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;cursor:pointer}
+nav a:hover,.dropbtn:hover{background:var(--soft)}
+.dropdown{position:relative}.menu{display:none;position:absolute;top:48px;left:0;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.dropdown:hover .menu{display:block}.menu label{display:block;font-size:.9rem;color:var(--muted);margin:10px 0 4px}.menu input,.menu select{width:100%;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--text)}
+main{padding:28px;display:grid;gap:22px}.hero,.panel{background:rgba(18,26,45,.95);border:1px solid var(--line);border-radius:22px;padding:22px}
+.hero{display:grid;grid-template-columns:2fr 1fr;gap:20px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--soft);padding:18px;border-radius:18px}.muted{color:var(--muted);font-size:.9rem}.value{font-size:1.5rem;font-weight:700;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}.chart{height:260px;background:linear-gradient(180deg,#17213b,#111827);border-radius:18px;border:1px dashed #3b4b79;padding:16px;display:flex;flex-direction:column;justify-content:space-between}
+.chart .placeholder{height:150px;border-radius:14px;background:repeating-linear-gradient(90deg,transparent,transparent 20px,rgba(255,255,255,.03) 20px,rgba(255,255,255,.03) 21px),linear-gradient(180deg,rgba(59,130,246,.35),transparent)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{padding:10px 14px;border:none;border-radius:12px;background:var(--accent);color:white;cursor:pointer}.btn.alt{background:var(--soft);border:1px solid var(--line)}
+footer{padding:0 28px 28px}.agg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+small.code{font-family:monospace;color:#93c5fd}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
 <body>
-  <header>
-    <div id="head">
-      <h1>Temporal Series</h1>
-    </div>
-    <hr id="headhr" />
-    <div id="navegation">
-      <nav>
-        <a href="#">Dashboards</a>
-        <a href="#">alguma coisa</a>
-        <a href="#">Config</a>
-        <a href="#">Design</a>
-      </nav>
-    </div>
-  </header>
-  <main>
-    <section id="analytics">
-      <div id="an1">
-        <div class="data"> 
-          <iframe id="graf3" src="http://192.168.1.8:3002/d-solo/gxqwz8/new-dashboard3?orgId=1&from=1777071012209&to=1777092612209&timezone=browser&panelId=panel-1" width="190px" height="190px" frameborder="0"></iframe>
-           </div>
-      </div>
-      <div id="an2">
-        <div class="data"> </div>
-      </div>
-      <div id="an3">
-        <div class="data"> </div>
-      </div>
-    </section>
-    <h2>Gráfico</h2>
-    <iframe id="memusage" src="http://192.168.1.8:3002/d-solo/ghtqdb/memoryusage?orgId=1&from=now-5m&to=now&panelId=panel-1" width="350" height="250" frameborder="0"></iframe>
-  <iframe id="graf2" src="http://192.168.1.8:3002/d-solo/gl6qzd/new-dashboard2?orgId=1&from=now-5m&to=now&panelId=panel-1" width="350" height="250" frameborder="0"></iframe> 
-  <iframe id="graf" src="http://192.168.1.8:3002/d-solo/gmq9kt/new-dashboard?orgId=1&from=now-5m&to=now&panelId=1" width="350" height="250" frameborder="0"></iframe>
-  <iframe id="loadaverage" src="http://192.168.1.8:3002/d-solo/gtbgt9/load-average?orgId=1&from=now-5m&to=now&panelId=panel-1" width="350" height="250" frameborder="0"></iframe>
-  
-  </main>
-  <footer></footer>
-</body>
-</html>
+<header>
+<div class='top'><div class='brand'>Temporal Series Analyser</div><div class='muted'>Conectado ao Grafana • Prometheus</div></div>
+<nav>
+<a href='#'>Dashboards</a>
+<a href='#'>Fontes de Dados</a>
+<a href='#'>Alertas</a>
+<div class='dropdown'>
+<button class='dropbtn'>Configurações ▾</button>
+<div class='menu'>
+<label>URL do Grafana</label><input value='http://localhost:3002'>
+<label>Token API</label><input type='password' value='••••••••'>
+<label>Datasource padrão</label><select><option>Prometheus</option><option>InfluxDB</option></select>
+<label>Intervalo refresh</label><select><option>5s</option><option selected>10s</option><option>30s</option></select>
+<label>Agregação inferior</label><select><option selected>Média</option><option>Máximo</option><option>Mínimo</option><option>P95</option></select>
+<label>Modo tema</label><select><option selected>Dark</option><option>Light</option></select>
+</div></div>
+</nav>
+</header>
+<main>
+<section class='hero'>
+<div>
+<h2>Painel Operacional</h2>
+<p class='muted' style='margin:8px 0 18px'>Crie gráficos dinâmicos, sincronize dashboards do Grafana e acompanhe métricas temporais em tempo real.</p>
+<div class='actions'>
+<button class='btn'>+ Novo Gráfico</button>
+<button class='btn alt'>Importar Dashboard Grafana</button>
+<button class='btn alt'>Salvar Layout</button>
+</div>
+<p class='muted' style='margin-top:14px'>Integração sugerida via API: <small class='code'>GET /api/search</small>, <small class='code'>POST /api/dashboards/db</small></p>
+</div>
+<div class='stats'>
+<div class='card'><div class='muted'>CPU</div><div class='value'>38%</div></div>
+<div class='card'><div class='muted'>Memória</div><div class='value'>62%</div></div>
+<div class='card'><div class='muted'>Requests/s</div><div class='value'>412</div></div>
+<div class='card'><div class='muted'>Status</div><div class='value' style='color:var(--ok)'>UP</div></div>
+</div>
+</section>
+<section class='grid'>
+<div class='panel chart'><div><h3>CPU ao longo do tempo</h3><p class='muted'>Time Series • Prometheus</p></div><div class='placeholder'></div><div class='actions'><button class='btn alt'>Editar Query</button><button class='btn alt'>Expandir</button></div></div>
+<div class='panel chart'><div><h3>Uso de Memória</h3><p class='muted'>RAM / Swap</p></div><div class='placeholder'></div><div class='actions'><button class='btn alt'>Editar Query</button><button class='btn alt'>Expandir</button></div></div>
+<div class='panel chart'><div><h3>Latência</h3><p class='muted'>P95 / P99</p></div><div class='placeholder'></div><div class='actions'><button class='btn alt'>Editar Query</button><button class='btn alt'>Expandir</button></div></div>
+<div class='panel chart'><div><h3>Erros por minuto</h3><p class='muted'>HTTP 4xx / 5xx</p></div><div class='placeholder'></div><div class='actions'><button class='btn alt'>Editar Query</button><button class='btn alt'>Expandir</button></div></div>
+</section>
+<section class='panel'>
+<h3>Construtor de Novo Dashboard</h3>
+<p class='muted' style='margin:8px 0 14px'>Selecione widgets, arraste painéis e publique diretamente no Grafana.</p>
+<div class='actions'><button class='btn'>Adicionar Time Series</button><button class='btn'>Adicionar Stat</button><button class='btn'>Adicionar Heatmap</button><button class='btn alt'>Publicar no Grafana</button></div>
+</section>
+</main>
+<footer>
+<section class='panel'>
+<h3>Agregações Inteligentes</h3>
+<p class='muted' style='margin:8px 0 16px'>Valores adaptativos conforme dashboards ativos. Personalize no menu Configurações.</p>
+<div class='agg'>
+<div class='card'><div class='muted'>Média CPU (24h)</div><div class='value'>41%</div></div>
+<div class='card'><div class='muted'>Média Latência</div><div class='value'>128ms</div></div>
+<div class='card'><div class='muted'>Pico Requests/s</div><div class='value'>921</div></div>
+<div class='card'><div class='muted'>Disponibilidade</div><div class='value'>99.97%</div></div>
+</div>
+</section>
+</footer>
+<script>
+// ===== SISTEMA COMPLETO GRAFANA + SITE =====
+// FRONTEND AGORA CONSOME BACKEND NODE LOCALHOST:3000 PARA EVITAR CORS
+GRAFANA.base='http://localhost:3000';
+const GRAFANA={base:'http://localhost:3002',token:'',refresh:10000};
+function setGrafanaFromConfig(){const f=[...document.querySelectorAll('.menu input,.menu select')];GRAFANA.base=f[0].value;GRAFANA.token=f[1].value;GRAFANA.refresh=parseInt(f[3].value)*1000||10000;}
+async function api(path){setGrafanaFromConfig();const r=await fetch(GRAFANA.base+path);return await r.json();}
+async function loadDashboards(){try{const data=await api('/api/search?query=&type=dash-db');renderDashboards(data);}catch(e){console.warn(e);}}
+async function loadDashboard(uid){try{return await api('/api/dashboards/uid/'+uid);}catch(e){return null;}}
+async function renderDashboards(list){const grid=document.querySelector('.grid');grid.innerHTML='';for(const d of list){const full=await loadDashboard(d.uid);const title=(full&&full.dashboard&&full.dashboard.title)||d.title;const panels=(full&&full.dashboard&&full.dashboard.panels)||[];if(!panels.length){grid.innerHTML+=cardIframe(d.uid,title,2);continue;}panels.forEach(p=>grid.innerHTML+=cardIframe(d.uid,title,p.id));}}
+function cardIframe(uid,title,panelId){return `<div class='panel chart'><div><h3>${title}</h3><p class='muted'>Painel ${panelId}</p></div><iframe src='${GRAFANA.base}/d-solo/${uid}/x?panelId=${panelId}&theme=dark&refresh=5s' width='100%' height='170' frameborder='0'></iframe><div class='actions'><button class='btn alt' onclick="window.open('${GRAFANA.base}/d/${uid}','_blank')">Abrir</button></div></div>`}
+function auto(){loadDashboards();setTimeout(auto,GRAFANA.refresh);} 
+document.addEventListener('DOMContentLoaded',()=>setTimeout(auto,1500));
+
+const cfgBtn=document.querySelector('.dropbtn');
+const menu=document.querySelector('.menu');
+let open=false;
+cfgBtn.addEventListener('click',e=>{e.stopPropagation();open=!open;menu.style.display=open?'block':'none';});
+menu.addEventListener('click',e=>e.stopPropagation());
+document.addEventListener('click',()=>{open=false;menu.style.display='none';});
+
+// persist settings
+const fields=[...document.querySelectorAll('.menu input,.menu select')];
+fields.forEach((el,i)=>{const k='tsa_cfg_'+i; const v=localStorage.getItem(k); if(v!==null) el.value=v; el.addEventListener('input',()=>localStorage.setItem(k,el.value));});
+
+// mock live metrics refresh / grafana-ready hooks
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+async function refreshKPIs(){try{const r=await fetch('http://localhost:3000/api/kpis');const k=await r.json();const vals=document.querySelectorAll('.value');if(vals.length>3){vals[0].textContent=k.cpu+'%';vals[1].textContent=k.mem+'%';vals[2].textContent=k.req;vals[3].textContent=k.status;}}catch(e){console.warn(e)}}
+setInterval(refreshKPIs,5000);refreshKPIs();
+
+// buttons
+[...document.querySelectorAll('.btn')].forEach(b=>b.addEventListener('click',()=>console.log('Ação:',b.textContent)));
+
+// Grafana integration example
+async function grafanaFetchDashboards(){
+ const url=fields[0].value.replace(/\/$/,'');
+ const token=fields[1].value;
+ try{
+  const r=await fetch(url+'/api/search',{headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}});
+  const data=await r.json();
+  console.log('Dashboards Grafana:',data);
+ }catch(e){console.warn('Conecte CORS/proxy para acesso direto ao Grafana',e)}
+}
+window.grafanaFetchDashboards=grafanaFetchDashboards;
+setInterval(grafanaFetchDashboards,10000);
+</script></body></html>
