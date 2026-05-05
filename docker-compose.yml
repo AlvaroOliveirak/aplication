@@ -1,8 +1,10 @@
 version: '3.8'
 
 services:
+
   app:
     build: .
+    container_name: node_app
     volumes:
       - .:/app
       - /app/node_modules
@@ -11,7 +13,6 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
-    container_name: node_app
 
   postgres:
     image: postgres
@@ -23,62 +24,41 @@ services:
     ports:
       - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL","pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   prometheus:
     image: prom/prometheus
+    container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9091:9090"
-    container_name: prometheus
 
   grafana:
     image: grafana/grafana
+    container_name: grafana
     ports:
       - "3002:3000"
     volumes:
       - grafana_data:/var/lib/grafana
     environment:
-      - GF_SECURITY_ALLOW_EMBEDDING=true
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_SECURITY_COOKIE_SAMESITE=none
-      - GF_SECURITY_COOKIE_SECURE=false
-      - GF_SERVER_ROOT_URL=http://localhost:3002
-      - GF_SERVER_DOMAIN=localhost
-      - GF_SERVER_ENABLE_CORS=true
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SECURITY_COOKIE_SAMESITE: none
+      GF_SECURITY_COOKIE_SECURE: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3002
+      GF_SERVER_DOMAIN: localhost
+      GF_SERVER_ENABLE_CORS: "true"
 
   node-exporter:
     image: prom/node-exporter
+    container_name: node-exporter
     ports:
       - "9100:9100"
-    container_name: node-exporter
-
+      
 volumes:
   grafana_data:
-
-   backend:
-    build: ./backend
-    container_name: tsa_backend
-    ports:
-      - "3010:3000"
-    networks:
-      - monitor
-
-  frontend:
-    build: ./frontend
-    container_name: tsa_frontend
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
-    networks:
-      - monitor
-
-networks:
-  monitor:
-    external: true

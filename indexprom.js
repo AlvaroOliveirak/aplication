@@ -6,6 +6,7 @@ import client from 'prom-client';
 import bcrypt from 'bcryptjs';
 import db from "./models/db.js";
 import Post from './models/post.js';
+import { json } from "sequelize";
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -93,6 +94,41 @@ app.get('/metrics', async (req, res) => {
   res.end(await client.register.metrics());
 });
 
+app.post('/api/query', async (req, res) => {
+  try {
+    const { query } = req.body;
+
+    const end = Math.floor(Date.now() / 1000);
+    const start = end - 300;
+
+    const url = `http://prometheus:9090/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=5`;
+
+    const response = await fetch(url);
+    const json = await response.json();
+
+    if (!json.data || !json.data.result) {
+      return res.json([]);
+    }
+
+    res.json(json.data.result);
+
+  } catch (err) {
+    console.error("ERRO API QUERY:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+let dashboards = [];
+
+app.get("/api/dashboard", (req, res) => {
+  res.json(dashboards);
+});
+
+app.post("/api/dashboard", (req, res) => {
+  dashboards.push(req.body);
+  res.json({ ok: true });
+});
+
 /*app.get('/teste', (req, res) => {
   res.send('<iframe src="http://192.168.1.8:3002/d-solo/gndc46/new-dashboard?orgId=1&timezone=browser&editIndex=0&panelId=panel-1" width="800" height="400"></iframe>');
 });*/
@@ -114,5 +150,6 @@ async function iniciar() {
   process.exit(1);
 }
 }
+
 
 iniciar();

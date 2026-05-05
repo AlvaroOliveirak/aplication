@@ -1,137 +1,335 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Temporal Series Analyser</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Zen+Dots&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | Temporal Series</title>
+<link rel="stylesheet" href="/css/style.css">
+
 <style>
-:root{--bg:#0b1020;--panel:#121a2d;--soft:#1a2440;--line:#2f3c66;--text:#eef3ff;--muted:#9fb0d8;--accent:#3b82f6;--ok:#10b981}
-*{margin:0;padding:0;box-sizing:border-box} body{font-family:Inter,sans-serif;background:linear-gradient(135deg,#0b1020,#0f172a);color:var(--text)}
-header{position:sticky;top:0;background:rgba(11,16,32,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
-.top{display:flex;justify-content:space-between;align-items:center;padding:18px 28px}.brand{font-family:'Zen Dots';font-size:1.3rem}
-nav{display:flex;gap:12px;align-items:center;padding:0 28px 16px;flex-wrap:wrap}
-nav a, .dropbtn{color:var(--text);text-decoration:none;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;cursor:pointer}
-nav a:hover,.dropbtn:hover{background:var(--soft)}
-.dropdown{position:relative}.menu{display:none;position:absolute;top:48px;left:0;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
-.dropdown:hover .menu{display:block}.menu label{display:block;font-size:.9rem;color:var(--muted);margin:10px 0 4px}.menu input,.menu select{width:100%;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--text)}
-main{padding:28px;display:grid;gap:22px}.hero,.panel{background:rgba(18,26,45,.95);border:1px solid var(--line);border-radius:22px;padding:22px}
-.hero{display:grid;grid-template-columns:2fr 1fr;gap:20px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--soft);padding:18px;border-radius:18px}.muted{color:var(--muted);font-size:.9rem}.value{font-size:1.5rem;font-weight:700;margin-top:6px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}.chart{height:260px;background:linear-gradient(180deg,#17213b,#111827);border-radius:18px;border:1px dashed #3b4b79;padding:16px;display:flex;flex-direction:column;justify-content:space-between}
-.chart .placeholder{height:150px;border-radius:14px;background:repeating-linear-gradient(90deg,transparent,transparent 20px,rgba(255,255,255,.03) 20px,rgba(255,255,255,.03) 21px),linear-gradient(180deg,rgba(59,130,246,.35),transparent)}
-.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{padding:10px 14px;border:none;border-radius:12px;background:var(--accent);color:white;cursor:pointer}.btn.alt{background:var(--soft);border:1px solid var(--line)}
-footer{padding:0 28px 28px}.agg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-small.code{font-family:monospace;color:#93c5fd}
-@media(max-width:900px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+body{
+  background:#0b1120;
+  color:white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* HEADER */
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 30px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.logo{
+  font-family:"Zen Dots";
+  font-size:20px;
+}
+
+nav a{
+  color:white;
+  margin-left:20px;
+  text-decoration:none;
+}
+
+/* LAYOUT */
+.dashboard{
+  display:grid;
+  grid-template-columns: 250px 1fr;
+  height: calc(100vh - 70px);
+}
+
+/* SIDEBAR */
+.sidebar{
+  border-right:1px solid rgba(255,255,255,.1);
+  padding:20px;
+}
+
+.sidebar button{
+  width:100%;
+  margin-bottom:10px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:rgba(255,255,255,.1);
+  color:white;
+  cursor:pointer;
+}
+
+.sidebar button:hover{
+  background:rgba(255,255,255,.2);
+}
+
+/* MAIN */
+.main{
+  padding:20px;
+  overflow:auto;
+}
+
+/* GRID DASHBOARDS */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+  gap:20px;
+}
+
+/* CARD */
+.card{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:16px;
+  padding:15px;
+  backdrop-filter: blur(12px);
+}
+
+/* BUILDER */
+.builder{
+  margin-bottom:20px;
+}
+
+.builder input{
+  width:70%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  margin-right:10px;
+}
+
+.builder button{
+  padding:12px 20px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(90deg,#6a00ff,#9d00ff);
+  color:white;
+  cursor:pointer;
+}
+
+/* ALERT CONFIG */
+.alert-box input{
+  width:100%;
+  margin-bottom:10px;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+}
+
+/* LOGS */
+.logs{
+  max-height:200px;
+  overflow:auto;
+}
+
+.log{
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:8px;
+  background:rgba(255,0,0,.2);
+  position:relative;
+}
+
+.log:hover::after{
+  content: attr(data-help);
+  position:absolute;
+  top:100%;
+  left:0;
+  background:black;
+  padding:10px;
+  border-radius:8px;
+  font-size:12px;
+  width:250px;
+}
+
 </style>
 </head>
+
 <body>
+
 <header>
-<div class='top'><div class='brand'>Temporal Series Analyser</div><div class='muted'>Conectado ao Grafana • Prometheus</div></div>
-<nav>
-<a href='#'>Dashboards</a>
-<a href='#'>Fontes de Dados</a>
-<a href='#'>Alertas</a>
-<div class='dropdown'>
-<button class='dropbtn'>Configurações ▾</button>
-<div class='menu'>
-<label>URL do Grafana</label><input value='http://localhost:3002'>
-<label>Token API</label><input type='password' value='••••••••'>
-<label>Datasource padrão</label><select><option>Prometheus</option><option>InfluxDB</option></select>
-<label>Intervalo refresh</label><select><option>5s</option><option selected>10s</option><option>30s</option></select>
-<label>Agregação inferior</label><select><option selected>Média</option><option>Máximo</option><option>Mínimo</option><option>P95</option></select>
-<label>Modo tema</label><select><option selected>Dark</option><option>Light</option></select>
-</div></div>
-</nav>
+  <div class="logo">Temporal Series</div>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/config">Config</a>
+  </nav>
 </header>
-<main>
-<section class='hero'>
-<div>
-<h2>Painel Operacional</h2>
-<p class='muted' style='margin:8px 0 18px'>Crie gráficos dinâmicos, sincronize dashboards do Grafana e acompanhe métricas temporais em tempo real.</p>
-<div class='actions'>
-<button class='btn'>+ Novo Gráfico</button>
-<button class='btn alt'>Importar Dashboard Grafana</button>
-<button class='btn alt'>Salvar Layout</button>
+
+<div class="dashboard">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <button onclick="showTab('dashboards')">Dashboards</button>
+    <button onclick="showTab('alerts')">Alertas</button>
+    <button onclick="showTab('logs')">Logs</button>
+    <button onclick="showTab('settings')">Configurações</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARDS -->
+    <section id="dashboards">
+
+      <div class="builder">
+        <input id="queryInput" placeholder="Ex: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))">
+        <button onclick="createChart()">Criar gráfico</button>
+      </div>
+
+      <div class="grid" id="chartsContainer">
+        <!-- gráficos serão inseridos aqui -->
+      </div>
+
+    </section>
+
+    <!-- ALERTS -->
+    <section id="alerts" style="display:none">
+      <div class="card alert-box">
+        <h3>Criar alerta</h3>
+
+        <input id="metric" placeholder="Métrica (ex: cpu_usage)">
+        <input id="threshold" placeholder="Threshold (%) ex: 80">
+        
+        <button onclick="createAlert()">Salvar alerta</button>
+      </div>
+    </section>
+
+    <!-- LOGS -->
+    <section id="logs" style="display:none">
+      <div class="card">
+        <h3>Logs de Alertas</h3>
+
+        <div class="logs" id="logContainer">
+          <!-- logs -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings" style="display:none">
+      <div class="card">
+        <h3>Configurações</h3>
+        <p>Configurações de visualização, refresh rate, tema, etc.</p>
+      </div>
+    </section>
+
+  </main>
+
 </div>
-<p class='muted' style='margin-top:14px'>Integração sugerida via API: <small class='code'>GET /api/search</small>, <small class='code'>POST /api/dashboards/db</small></p>
-</div>
-<div class='stats'>
-<div class='card'><div class='muted'>CPU</div><div class='value'>38%</div></div>
-<div class='card'><div class='muted'>Memória</div><div class='value'>62%</div></div>
-<div class='card'><div class='muted'>Requests/s</div><div class='value'>412</div></div>
-<div class='card'><div class='muted'>Status</div><div class='value' style='color:var(--ok)'>UP</div></div>
-</div>
-</section>
-<section class='grid'>
-<div class='panel chart'><div><h3>CPU ao longo do tempo</h3><p class='muted'>Time Series • Prometheus</p></div><div class='placeholder'></div><div class='actions'><button class='btn alt'>Editar Query</button><button class='btn alt'>Expandir</button></div></div>
-<div class='panel chart'><div><h3>Uso de Memória</h3><p class='muted'>RAM / Swap</p></div><div class='placeholder'></div><div class='actions'><button class='btn alt'>Editar Query</button><button class='btn alt'>Expandir</button></div></div>
-<div class='panel chart'><div><h3>Latência</h3><p class='muted'>P95 / P99</p></div><div class='placeholder'></div><div class='actions'><button class='btn alt'>Editar Query</button><button class='btn alt'>Expandir</button></div></div>
-<div class='panel chart'><div><h3>Erros por minuto</h3><p class='muted'>HTTP 4xx / 5xx</p></div><div class='placeholder'></div><div class='actions'><button class='btn alt'>Editar Query</button><button class='btn alt'>Expandir</button></div></div>
-</section>
-<section class='panel'>
-<h3>Construtor de Novo Dashboard</h3>
-<p class='muted' style='margin:8px 0 14px'>Selecione widgets, arraste painéis e publique diretamente no Grafana.</p>
-<div class='actions'><button class='btn'>Adicionar Time Series</button><button class='btn'>Adicionar Stat</button><button class='btn'>Adicionar Heatmap</button><button class='btn alt'>Publicar no Grafana</button></div>
-</section>
-</main>
-<footer>
-<section class='panel'>
-<h3>Agregações Inteligentes</h3>
-<p class='muted' style='margin:8px 0 16px'>Valores adaptativos conforme dashboards ativos. Personalize no menu Configurações.</p>
-<div class='agg'>
-<div class='card'><div class='muted'>Média CPU (24h)</div><div class='value'>41%</div></div>
-<div class='card'><div class='muted'>Média Latência</div><div class='value'>128ms</div></div>
-<div class='card'><div class='muted'>Pico Requests/s</div><div class='value'>921</div></div>
-<div class='card'><div class='muted'>Disponibilidade</div><div class='value'>99.97%</div></div>
-</div>
-</section>
-</footer>
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 <script>
-// ===== SISTEMA COMPLETO GRAFANA + SITE =====
-// FRONTEND AGORA CONSOME BACKEND NODE LOCALHOST:3000 PARA EVITAR CORS
-GRAFANA.base='http://localhost:3000';
-const GRAFANA={base:'http://localhost:3002',token:'',refresh:10000};
-function setGrafanaFromConfig(){const f=[...document.querySelectorAll('.menu input,.menu select')];GRAFANA.base=f[0].value;GRAFANA.token=f[1].value;GRAFANA.refresh=parseInt(f[3].value)*1000||10000;}
-async function api(path){setGrafanaFromConfig();const r=await fetch(GRAFANA.base+path);return await r.json();}
-async function loadDashboards(){try{const data=await api('/api/search?query=&type=dash-db');renderDashboards(data);}catch(e){console.warn(e);}}
-async function loadDashboard(uid){try{return await api('/api/dashboards/uid/'+uid);}catch(e){return null;}}
-async function renderDashboards(list){const grid=document.querySelector('.grid');grid.innerHTML='';for(const d of list){const full=await loadDashboard(d.uid);const title=(full&&full.dashboard&&full.dashboard.title)||d.title;const panels=(full&&full.dashboard&&full.dashboard.panels)||[];if(!panels.length){grid.innerHTML+=cardIframe(d.uid,title,2);continue;}panels.forEach(p=>grid.innerHTML+=cardIframe(d.uid,title,p.id));}}
-function cardIframe(uid,title,panelId){return `<div class='panel chart'><div><h3>${title}</h3><p class='muted'>Painel ${panelId}</p></div><iframe src='${GRAFANA.base}/d-solo/${uid}/x?panelId=${panelId}&theme=dark&refresh=5s' width='100%' height='170' frameborder='0'></iframe><div class='actions'><button class='btn alt' onclick="window.open('${GRAFANA.base}/d/${uid}','_blank')">Abrir</button></div></div>`}
-function auto(){loadDashboards();setTimeout(auto,GRAFANA.refresh);} 
-document.addEventListener('DOMContentLoaded',()=>setTimeout(auto,1500));
-
-const cfgBtn=document.querySelector('.dropbtn');
-const menu=document.querySelector('.menu');
-let open=false;
-cfgBtn.addEventListener('click',e=>{e.stopPropagation();open=!open;menu.style.display=open?'block':'none';});
-menu.addEventListener('click',e=>e.stopPropagation());
-document.addEventListener('click',()=>{open=false;menu.style.display='none';});
-
-// persist settings
-const fields=[...document.querySelectorAll('.menu input,.menu select')];
-fields.forEach((el,i)=>{const k='tsa_cfg_'+i; const v=localStorage.getItem(k); if(v!==null) el.value=v; el.addEventListener('input',()=>localStorage.setItem(k,el.value));});
-
-// mock live metrics refresh / grafana-ready hooks
-function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
-async function refreshKPIs(){try{const r=await fetch('http://localhost:3000/api/kpis');const k=await r.json();const vals=document.querySelectorAll('.value');if(vals.length>3){vals[0].textContent=k.cpu+'%';vals[1].textContent=k.mem+'%';vals[2].textContent=k.req;vals[3].textContent=k.status;}}catch(e){console.warn(e)}}
-setInterval(refreshKPIs,5000);refreshKPIs();
-
-// buttons
-[...document.querySelectorAll('.btn')].forEach(b=>b.addEventListener('click',()=>console.log('Ação:',b.textContent)));
-
-// Grafana integration example
-async function grafanaFetchDashboards(){
- const url=fields[0].value.replace(/\/$/,'');
- const token=fields[1].value;
- try{
-  const r=await fetch(url+'/api/search',{headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}});
-  const data=await r.json();
-  console.log('Dashboards Grafana:',data);
- }catch(e){console.warn('Conecte CORS/proxy para acesso direto ao Grafana',e)}
+function showTab(tab){
+  document.querySelectorAll("main section").forEach(s => s.style.display="none");
+  document.getElementById(tab).style.display="block";
 }
-window.grafanaFetchDashboards=grafanaFetchDashboards;
-setInterval(grafanaFetchDashboards,10000);
-</script></body></html>
+
+async function createChart(){
+  try{
+    const query = document.getElementById("queryInput").value;
+
+    const res = await fetch("/api/query", {
+      method:"POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ query })
+    });
+
+    if(!res.ok){
+      console.error("Erro na API");
+      return;
+    }
+
+    const data = await res.json();
+
+    console.log("DATA:", data);
+
+    if(!data.length){
+      alert("Sem dados");
+      return;
+    }
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const chartId = "chart_" + Date.now();
+
+    card.innerHTML = `
+      <h4>${query}</h4>
+      <div id="${chartId}" style="height:300px;"></div>
+    `;
+
+    document.getElementById("chartsContainer").appendChild(card);
+
+    renderChart(chartId, data);
+
+    // salvar dashboard
+    await fetch("/api/dashboard", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ name: query, query })
+    });
+
+  } catch(err){
+    console.error("ERRO createChart:", err);
+  }
+}
+
+function renderChart(id, prometheusData){
+  const el = document.getElementById(id);
+
+  if(!el){
+    console.error("Elemento não encontrado");
+    return;
+  }
+
+  const chart = echarts.init(el);
+
+  const series = prometheusData
+    .filter(item => item.values && item.values.length)
+    .map((item, index) => ({
+      name: item.metric?.__name__ || "metric_" + index,
+      type: "line",
+      smooth: true,
+      showSymbol: false,
+      data: item.values.map(v => [
+        new Date(v[0] * 1000),
+        parseFloat(v[1])
+      ])
+    }));
+
+  if(!series.length){
+    console.warn("Sem séries válidas");
+    return;
+  }
+
+  chart.setOption({
+    tooltip: { trigger: "axis" },
+    legend: { textStyle: { color: "#fff" } },
+    xAxis: { type: "time", axisLabel: { color: "#aaa" } },
+    yAxis: { type: "value", axisLabel: { color: "#aaa" } },
+    series
+  });
+}
+
+async function loadDashboards(){
+  try{
+    const res = await fetch("/api/dashboard");
+    const dashboards = await res.json();
+
+    dashboards.forEach(d => {
+      document.getElementById("queryInput").value = d.query;
+      createChart();
+    });
+
+  } catch(err){
+    console.error(err);
+  }
+}
+
+loadDashboards();
+
+
+
+</script>
+
+</body>
+</html>

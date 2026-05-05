@@ -1,64 +1,56 @@
-import express from 'express'
-import cors from 'cors'
-import fetch from 'node-fetch'
+import express from 'express';
+import pkg from 'pg';
+import cors from 'cors';
 
-const app = express()
+const { Pool } = pkg;
 
-app.use(cors())
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-const GRAFANA_URL = 'http://localhost:3002'
-const TOKEN = 'SEU_TOKEN_AQUI'
+const db = new Pool({
+  user: 'postgres',
+  host: 'postgres',
+  database: 'tsa',
+  password: 'postgres',
+  port: 5432
+});
 
-app.get('/api/search', async(req,res)=>{
- try{
-   const r = await fetch(`${GRAFANA_URL}/api/search?type=dash-db`,{
-     headers:{
-       Authorization:`Bearer ${TOKEN}`
-     }
-   })
+/* ================= DASHBOARDS ================= */
 
-   const data = await r.json()
-   res.json(data)
+// salvar dashboard
+app.post('/api/dashboard', async (req, res) => {
+  const { name, layout } = req.body;
 
- }catch(err){
-   res.status(500).json({erro:err.message})
- }
-})
+  const result = await db.query(
+    'INSERT INTO dashboards (name, layout) VALUES ($1, $2) RETURNING *',
+    [name, layout]
+  );
 
-app.get('/api/dashboards/uid/:uid', async(req,res)=>{
- try{
-   const r = await fetch(`${GRAFANA_URL}/api/dashboards/uid/${req.params.uid}`,{
-     headers:{
-       Authorization:`Bearer ${TOKEN}`
-     }
-   })
+  res.json(result.rows[0]);
+});
 
-   const data = await r.json()
-   res.json(data)
+// listar dashboards
+app.get('/api/dashboard', async (req, res) => {
+  const result = await db.query('SELECT * FROM dashboards ORDER BY id DESC');
+  res.json(result.rows);
+});
 
- }catch(err){
-   res.status(500).json({erro:err.message})
- }
-})
-app.get('/api/kpis', async(req,res)=>{
- try{
+// carregar dashboard
+app.get('/api/dashboard/:id', async (req, res) => {
+  const result = await db.query('SELECT * FROM dashboards WHERE id=$1', [req.params.id]);
+  res.json(result.rows[0]);
+});
 
-   const cpu = Math.floor(Math.random()*60)+20
-   const mem = Math.floor(Math.random()*50)+30
-   const req = Math.floor(Math.random()*900)+100
+/* ================= PROMETHEUS ================= */
 
-   res.json({
-     cpu,
-     mem,
-     req,
-     status:'UP'
-   })
+app.post('/api/query', async (req, res) => {
+  const { query } = req.body;
 
- }catch(err){
-   res.status(500).json({erro:err.message})
- }
-})
+  const r = await fetch(`http://prometheus:9090/api/v1/query?query=${encodeURIComponent(query)}`);
+  const data = await r.json();
 
-app.listen(3000,()=>{
- console.log('Backend rodando em http://localhost:3000')
-})
+  res.json(data);
+});
+
+app.listen(3000, () => console.log('SaaS API rodando'));
