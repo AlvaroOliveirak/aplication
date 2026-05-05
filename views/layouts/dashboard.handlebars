@@ -70,17 +70,24 @@ nav a{
 /* GRID DASHBOARDS */
 .grid{
   display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
-  gap:20px;
+  grid-template-columns: repeat(auto-fill, minmax(350px,1fr));
+  gap:25px;
 }
 
 /* CARD */
 .card{
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:16px;
-  padding:15px;
-  backdrop-filter: blur(12px);
+  background: linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 20px;
+  padding: 20px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
+  transition: 0.3s;
+}
+
+.card:hover{
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0,0,0,.5);
 }
 
 /* BUILDER */
@@ -223,27 +230,158 @@ function showTab(tab){
   document.getElementById(tab).style.display="block";
 }
 
-async function createChart(){
-  try{
-    const query = document.getElementById("queryInput").value;
+function formatMetricName(name){
+  return name
+    .replace(/node_/g, "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, l => l.toUpperCase());
+}
 
+/* BOTÃO CRIAR */
+async function createChart(){
+  const query = document.getElementById("queryInput").value;
+
+  if(!query) return;
+
+  await renderSavedChart({ query });
+
+  // salva apenas quando criado manualmente
+  await fetch("/api/dashboard", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ query })
+  });
+}
+
+async function deleteDashboard(id, btn){
+  await fetch(`/api/dashboard/${id}`, {
+    method:"DELETE"
+  });
+
+  const card = btn.closest(".card");
+  if(card) card.remove();
+}
+
+function extractMetricName(query, data){
+  // 1. tenta pegar direto do Prometheus
+  if(data[0]?.metric?.__name__){
+    return data[0].metric.__name__;
+  }
+
+  // 2. tenta extrair da query (regex)
+  const match = query.match(/[a-zA-Z_:][a-zA-Z0-9_:]*/g);
+
+  if(match){
+    // remove palavras comuns de funções
+    const blacklist = ["rate","avg","sum","by","irate"];
+    const filtered = match.filter(m => !blacklist.includes(m));
+
+    if(filtered.length){
+      return filtered[0];
+    }
+  }
+
+  // 3. fallback final
+  return query;
+}
+
+function beautifyMetric(name){
+  return name
+    .replace(/node_/g, "")
+    .replace(/_seconds_total/g, "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function resolveMetricName(query, data){
+  const q = query.toLowerCase();
+
+  // CPU %
+  if(q.includes("node_cpu_seconds_total") && q.includes("rate") && q.includes("idle")){
+    return "Uso de CPU (%)";
+  }
+
+  // Memória %
+  if(q.includes("node_memory_memavailable_bytes") && q.includes("node_memory_memtotal_bytes")){
+    return "Uso de Memória (%)";
+  }
+
+  // Memória disponível
+  if(q.includes("node_memory_memavailable_bytes")){
+    return "Memória Disponível";
+  }
+
+  // Memória total
+  if(q.includes("node_memory_memtotal_bytes")){
+    return "Memória Total";
+  }
+
+  // Disco uso %
+  if(q.includes("node_filesystem_size_bytes") && q.includes("node_filesystem_avail_bytes")){
+    return "Uso de Disco (%)";
+  }
+
+  // Disco livre
+  if(q.includes("node_filesystem_avail_bytes")){
+    return "Disco Livre";
+  }
+
+  // Disco total
+  if(q.includes("node_filesystem_size_bytes")){
+    return "Tamanho do Disco";
+  }
+
+  // Network RX
+  if(q.includes("node_network_receive_bytes_total")){
+    return "Entrada de Rede (RX)";
+  }
+
+  // Network TX
+  if(q.includes("node_network_transmit_bytes_total")){
+    return "Saída de Rede (TX)";
+  }
+
+  // Load average
+  if(q.includes("node_load1")){
+    return "Load Average (1m)";
+  }
+
+  if(q.includes("node_load5")){
+    return "Load Average (5m)";
+  }
+
+  if(q.includes("node_load15")){
+    return "Load Average (15m)";
+  }
+
+  // fallback usando Prometheus
+  if(data[0]?.metric?.__name__){
+    return beautifyMetric(data[0].metric.__name__);
+  }
+
+  // fallback final
+  return beautifyMetric(query);
+}
+
+function smartMetricName(name){
+  return metricMap[name] || beautifyMetric(name);
+}
+
+/* RENDERIZA SEM SALVAR */
+async function renderSavedChart(dashboard){
+  try{
     const res = await fetch("/api/query", {
       method:"POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify({ query })
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ query: dashboard.query })
     });
 
-    if(!res.ok){
-      console.error("Erro na API");
-      return;
-    }
+    const { id, query } = dashboard;
 
     const data = await res.json();
 
-    console.log("DATA:", data);
-
     if(!data.length){
-      alert("Sem dados");
+      console.warn("Sem dados");
       return;
     }
 
@@ -251,61 +389,71 @@ async function createChart(){
     card.className = "card";
 
     const chartId = "chart_" + Date.now();
+    
+const metricName = resolveMetricName(dashboard.query, data);
+
 
     card.innerHTML = `
-      <h4>${query}</h4>
-      <div id="${chartId}" style="height:300px;"></div>
-    `;
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h4>${metricName}</h4>
+    <button onclick="deleteDashboard(${id}, this)" style="
+      background:red;
+      border:none;
+      border-radius:6px;
+      color:white;
+      padding:5px 10px;
+      cursor:pointer;
+    ">X</button>
+  </div>
+  <div id="${chartId}" style="height:300px;"></div>
+`;
 
     document.getElementById("chartsContainer").appendChild(card);
 
     renderChart(chartId, data);
 
-    // salvar dashboard
-    await fetch("/api/dashboard", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ name: query, query })
-    });
-
   } catch(err){
-    console.error("ERRO createChart:", err);
+    console.error("Erro renderSavedChart:", err);
   }
 }
 
 function renderChart(id, prometheusData){
   const el = document.getElementById(id);
 
-  if(!el){
-    console.error("Elemento não encontrado");
-    return;
-  }
+  if(!el) return;
 
   const chart = echarts.init(el);
 
   const series = prometheusData
-    .filter(item => item.values && item.values.length)
+    .filter(item => item.values?.length)
     .map((item, index) => ({
       name: item.metric?.__name__ || "metric_" + index,
       type: "line",
       smooth: true,
       showSymbol: false,
+      lineStyle:{ width:3 },
+      areaStyle:{ opacity:.1 },
       data: item.values.map(v => [
         new Date(v[0] * 1000),
         parseFloat(v[1])
       ])
     }));
 
-  if(!series.length){
-    console.warn("Sem séries válidas");
-    return;
-  }
-
   chart.setOption({
-    tooltip: { trigger: "axis" },
-    legend: { textStyle: { color: "#fff" } },
-    xAxis: { type: "time", axisLabel: { color: "#aaa" } },
-    yAxis: { type: "value", axisLabel: { color: "#aaa" } },
+    tooltip:{
+      trigger:"axis",
+      backgroundColor:"#111",
+      borderColor:"#333",
+      textStyle:{ color:"#fff" }
+    },
+    xAxis:{
+      type:"time",
+      axisLabel:{ color:"#aaa" }
+    },
+    yAxis:{
+      type:"value",
+      axisLabel:{ color:"#aaa" }
+    },
     series
   });
 }
@@ -315,10 +463,12 @@ async function loadDashboards(){
     const res = await fetch("/api/dashboard");
     const dashboards = await res.json();
 
-    dashboards.forEach(d => {
-      document.getElementById("queryInput").value = d.query;
-      createChart();
-    });
+    const container = document.getElementById("chartsContainer");
+    container.innerHTML = ""; // limpa antes
+
+    for(const d of dashboards){
+      await renderSavedChart(d);
+    }
 
   } catch(err){
     console.error(err);
@@ -326,9 +476,6 @@ async function loadDashboards(){
 }
 
 loadDashboards();
-
-
-
 </script>
 
 </body>

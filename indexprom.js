@@ -119,13 +119,32 @@ app.post('/api/query', async (req, res) => {
 });
 
 let dashboards = [];
+let nextId = 1;
 
 app.get("/api/dashboard", (req, res) => {
   res.json(dashboards);
 });
 
 app.post("/api/dashboard", (req, res) => {
-  dashboards.push(req.body);
+  const { query } = req.body;
+
+  const exists = dashboards.find(d => d.query === query);
+
+  if(!exists){
+    dashboards.push({
+      id: nextId++,
+      query
+    });
+  }
+
+  res.json({ ok: true });
+});
+
+app.delete("/api/dashboard/:id", (req, res) => {
+  const id = Number(req.params.id);
+
+  dashboards = dashboards.filter(d => d.id !== id);
+
   res.json({ ok: true });
 });
 
