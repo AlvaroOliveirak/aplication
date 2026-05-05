@@ -110,6 +110,18 @@ app.post('/api/query', async (req, res) => {
       return res.json([]);
     }
 
+    for(const alert of alerts){
+  if(query === alert.query){
+    const last = json.data.result?.[0]?.values?.slice(-1)[0]?.[1];
+
+    if(last && Number(last) > alert.threshold){
+      alert.status = "CRITICAL";
+      console.log("🚨 ALERTA:", query, ">", alert.threshold);
+    } else {
+      alert.status = "OK";
+    }
+  }
+}
     res.json(json.data.result);
 
   } catch (err) {
@@ -144,6 +156,22 @@ app.delete("/api/dashboard/:id", (req, res) => {
   const id = Number(req.params.id);
 
   dashboards = dashboards.filter(d => d.id !== id);
+
+  res.json({ ok: true });
+});
+
+let alerts = [];
+let alertId = 1;
+
+app.post("/api/alert", (req, res) => {
+  const { query, threshold } = req.body;
+
+  alerts.push({
+    id: alertId++,
+    query,
+    threshold: Number(threshold),
+    status: "OK"
+  });
 
   res.json({ ok: true });
 });

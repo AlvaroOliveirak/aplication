@@ -396,16 +396,33 @@ const metricName = resolveMetricName(dashboard.query, data);
     card.innerHTML = `
   <div style="display:flex; justify-content:space-between; align-items:center;">
     <h4>${metricName}</h4>
-    <button onclick="deleteDashboard(${id}, this)" style="
-      background:red;
-      border:none;
-      border-radius:6px;
-      color:white;
-      padding:5px 10px;
-      cursor:pointer;
-    ">X</button>
+
+    <div style="display:flex; gap:5px;">
+      <button onclick="toggleAlertBox('${query}', this)">⚠️</button>
+
+      <button onclick="deleteDashboard(${id}, this)" style="
+        background:red;
+        border:none;
+        border-radius:6px;
+        color:white;
+        padding:5px 10px;
+        cursor:pointer;
+      ">X</button>
+    </div>
   </div>
+
   <div id="${chartId}" style="height:300px;"></div>
+
+  <div class="alert-inline" style="display:none; margin-top:10px;">
+    <input placeholder="Threshold (ex: 80)" class="thresholdInput" style="
+      width:100%;
+      padding:8px;
+      border-radius:6px;
+      border:none;
+      margin-bottom:5px;
+    ">
+    <button onclick="createInlineAlert('${query}', this)">Salvar alerta</button>
+  </div>
 `;
 
     document.getElementById("chartsContainer").appendChild(card);
@@ -415,6 +432,34 @@ const metricName = resolveMetricName(dashboard.query, data);
   } catch(err){
     console.error("Erro renderSavedChart:", err);
   }
+}
+
+function toggleAlertBox(query, btn){
+  const card = btn.closest(".card");
+  const box = card.querySelector(".alert-inline");
+
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+async function createInlineAlert(query, btn){
+  const card = btn.closest(".card");
+  const input = card.querySelector(".thresholdInput");
+
+  const threshold = input.value;
+
+  if(!threshold){
+    alert("Defina um threshold");
+    return;
+  }
+
+  await fetch("/api/alert", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ query, threshold })
+  });
+
+  input.value = "";
+  alert("Alerta criado!");
 }
 
 function renderChart(id, prometheusData){
