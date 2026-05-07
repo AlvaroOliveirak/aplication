@@ -104,12 +104,22 @@ nav a{
 }
 
 .builder button{
-  padding:12px 20px;
+  padding:10px 18px;
   border:none;
-  border-radius:10px;
-  background:linear-gradient(90deg,#6a00ff,#9d00ff);
+  border-radius:12px;
+  background: rgba(255, 255, 255, 0.2);
+  /* Efeito de desfoque (principal) */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color:white;
   cursor:pointer;
+  font-size:14px;
+  transition:.25s;
+}
+
+.builder button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 20px rgba(106,0,255,.3);
 }
 
 /* ALERT CONFIG */
@@ -147,6 +157,58 @@ nav a{
   width:250px;
 }
 
+/* MENU MÉTRICAS */
+#metricMenu{
+  opacity:0;
+  transform:translateY(-10px);
+  transition:.35s ease;
+  backdrop-filter: blur(20px);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+
+#metricMenu.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* GRID MÉTRICAS */
+#metricOptions{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:10px;
+}
+
+/* BOTÕES */
+.metric-btn{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.85);
+  cursor:pointer;
+
+  backdrop-filter: blur(12px);
+
+  transition:
+    transform .2s,
+    background .2s,
+    border .2s,
+    box-shadow .2s;
+}
+
+.metric-btn:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,.08);
+}
+
+.metric-btn.active{
+  background:linear-gradient(90deg,#2b0166,#6200ff9c);
+  border:1px solid rgba(255,255,255,.15);
+  color:white;
+  box-shadow:0 0 20px rgba(157,0,255,.35);
+}
+
 </style>
 </head>
 
@@ -166,7 +228,7 @@ nav a{
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <button onclick="showTab('dashboards')">Dashboards</button>
-    <button onclick="showTab('alerts')">Alertas</button>
+    
     <button onclick="showTab('logs')">Logs</button>
     <button onclick="showTab('settings')">Configurações</button>
   </aside>
@@ -177,28 +239,33 @@ nav a{
     <!-- DASHBOARDS -->
     <section id="dashboards">
 
-      <div class="builder">
-        <input id="queryInput" placeholder="Ex: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))">
-        <button onclick="createChart()">Criar gráfico</button>
-      </div>
+<div class="builder">
+  <button onclick="toggleMetricMenu()">Selecionar dashboards</button>
 
-      <div class="grid" id="chartsContainer">
-        <!-- gráficos serão inseridos aqui -->
-      </div>
+  <div id="metricMenu" style="
+display:none;
+margin-top:15px;
+padding:15px;
+border-radius:16px;
+">
+    
+    <div id="metricOptions" style="margin-bottom:15px;"></div>
+
+    <button onclick="createSelectedCharts()" style="
+      background:linear-gradient(90deg,#411b01,#f00202);
+    ">
+      Criar dashboards
+    </button>
+
+  </div>
+  
+</div>
+<div class="grid" id="chartsContainer"></div>
 
     </section>
 
     <!-- ALERTS -->
-    <section id="alerts" style="display:none">
-      <div class="card alert-box">
-        <h3>Criar alerta</h3>
-
-        <input id="metric" placeholder="Métrica (ex: cpu_usage)">
-        <input id="threshold" placeholder="Threshold (%) ex: 80">
-        
-        <button onclick="createAlert()">Salvar alerta</button>
-      </div>
-    </section>
+    
 
     <!-- LOGS -->
     <section id="logs" style="display:none">
@@ -225,6 +292,163 @@ nav a{
 </div>
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 <script>
+
+  const metricList = [
+  {
+    name: "RAM",
+    query: "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))"
+  },
+  {
+    name: "CPU",
+    query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[1m])) * 100)"
+  },
+  {
+    name: "Disco (%)",
+    query: "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))"
+  },
+  {
+    name: "Rede RX",
+    query: "rate(node_network_receive_bytes_total[1m])"
+  },
+  {
+    name: "Rede TX",
+    query: "rate(node_network_transmit_bytes_total[1m])"
+  },
+  {
+    name: "Load 1m",
+    query: "node_load1"
+  },
+  {
+    name: "Load 5m",
+    query: "node_load5"
+  }
+];
+let selectedMetrics = new Set();
+const activeDashboards = new Set();
+
+function toggleMetricMenu(){
+  const menu = document.getElementById("metricMenu");
+
+  if(menu.style.display === "none"){
+
+    menu.style.display = "block";
+
+    requestAnimationFrame(() => {
+      menu.classList.add("show");
+    });
+
+  } else {
+
+    menu.classList.remove("show");
+
+    setTimeout(() => {
+      menu.style.display = "none";
+    }, 300);
+  }
+
+  renderMetricOptions();
+}
+
+function renderMetricOptions(){
+  const container = document.getElementById("metricOptions");
+
+  container.innerHTML = "";
+
+  metricList.forEach(metric => {
+
+    const btn = document.createElement("button");
+
+    btn.className = "metric-btn";
+
+    // dashboard ativo = mantém cor
+    if(activeDashboards.has(metric.query)){
+      btn.classList.add("active");
+    }
+
+    btn.innerText = metric.name;
+
+    btn.onclick = async () => {
+
+  // dashboard já ativo -> remove dashboard
+  if(activeDashboards.has(metric.query)){
+
+    await removeDashboardByQuery(metric.query);
+
+    activeDashboards.delete(metric.query);
+
+    btn.classList.remove("active");
+
+    btn.style.opacity = ".6";
+
+    return;
+  }
+
+  // remove seleção temporária
+  if(selectedMetrics.has(metric.query)){
+
+    selectedMetrics.delete(metric.query);
+
+    btn.classList.remove("active");
+
+    btn.style.opacity = ".6";
+
+  } else {
+
+    // adiciona seleção temporária
+    selectedMetrics.add(metric.query);
+
+    btn.classList.add("active");
+
+    btn.style.opacity = "1";
+  }
+};
+
+   if(selectedMetrics.has(metric.query) || activeDashboards.has(metric.query)){
+
+  btn.classList.add("active");
+
+  btn.style.opacity = "1";
+
+} else {
+
+  btn.classList.remove("active");
+
+  btn.style.opacity = ".6";
+}
+
+    container.appendChild(btn);
+  });
+}
+
+async function createSelectedCharts(){
+
+  if(selectedMetrics.size === 0){
+    return;
+  }
+
+  for(const query of selectedMetrics){
+
+    // evita duplicação
+    if(activeDashboards.has(query)){
+      continue;
+    }
+
+    await renderSavedChart({ query });
+
+    await fetch("/api/dashboard", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ query })
+    });
+
+    activeDashboards.add(query);
+  }
+
+  selectedMetrics.clear();
+
+  renderMetricOptions();
+}
+
 function showTab(tab){
   document.querySelectorAll("main section").forEach(s => s.style.display="none");
   document.getElementById(tab).style.display="block";
@@ -238,28 +462,29 @@ function formatMetricName(name){
 }
 
 /* BOTÃO CRIAR */
-async function createChart(){
-  const query = document.getElementById("queryInput").value;
 
-  if(!query) return;
-
-  await renderSavedChart({ query });
-
-  // salva apenas quando criado manualmente
-  await fetch("/api/dashboard", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ query })
-  });
-}
 
 async function deleteDashboard(id, btn){
+
+  const card = btn.closest(".card");
+
+  const query = card.dataset.query;
+
+  // remove backend
   await fetch(`/api/dashboard/${id}`, {
     method:"DELETE"
   });
 
-  const card = btn.closest(".card");
-  if(card) card.remove();
+  // remove visual
+  if(card){
+    card.remove();
+  }
+
+  // remove estado ativo
+  activeDashboards.delete(query);
+
+  // atualiza botões do menu
+  renderMetricOptions();
 }
 
 function extractMetricName(query, data){
@@ -386,7 +611,10 @@ async function renderSavedChart(dashboard){
     }
 
     const card = document.createElement("div");
-    card.className = "card";
+
+card.className = "card";
+
+card.dataset.query = dashboard.query;
 
     const chartId = "chart_" + Date.now();
     
@@ -421,12 +649,19 @@ const metricName = resolveMetricName(dashboard.query, data);
       border:none;
       margin-bottom:5px;
     ">
-    <button onclick="createInlineAlert('${query}', this)">Salvar alerta</button>
+    <button onclick="createInlineAlert('${query}', this)" style="
+      background:green;
+      border:none;
+      border-radius:6px;
+      color:white;
+      padding:5px 10px;
+      cursor:pointer;
+    ">Salvar alerta</button>
   </div>
 `;
 
     document.getElementById("chartsContainer").appendChild(card);
-
+    activeDashboards.add(dashboard.query);
     renderChart(chartId, data);
 
   } catch(err){
