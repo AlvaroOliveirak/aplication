@@ -373,7 +373,7 @@ border-radius:16px;
   },
   {
     name: "CPU",
-    query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[1m])) * 100)"
+    query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)"
   },
   {
     name: "Disco (%)",
@@ -381,11 +381,11 @@ border-radius:16px;
   },
   {
     name: "Rede RX",
-    query: "rate(node_network_receive_bytes_total[1m])"
+    query: "rate(node_network_receive_bytes_total[5m])"
   },
   {
     name: "Rede TX",
-    query: "rate(node_network_transmit_bytes_total[1m])"
+    query: "rate(node_network_transmit_bytes_total[5m])"
   },
   {
     name: "Load 1m",

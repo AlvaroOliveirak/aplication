@@ -109,13 +109,18 @@ app.post('/api/query', async (req, res) => {
     // step inteligente
     let step = 5;
 
-    if(range >= 3600){
-      step = 15;
-    }
-
-    if(range >= 21600){
-      step = 30;
-    }
+   if(range >= 86400){
+  step = 120;
+}
+else if(range >= 43200){
+  step = 60;
+}
+else if(range >= 21600){
+  step = 30;
+}
+else if(range >= 3600){
+  step = 15;
+}
 
     const url =
       `http://prometheus:9090/api/v1/query_range` +
