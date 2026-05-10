@@ -3,6 +3,7 @@
   "name": "node-metrics-app",
   "version": "1.0.0",
   "main": "indexprom.js",
+  "dev": "nodemon indexprom.js",
   "dependencies": {
     "axios": "^1.16.0",
     "bcrypt": "^6.0.0",
@@ -21,5 +22,8 @@
     "sequelize": "^6.37.8",
     "socket.io": "^4.8.3",
     "systeminformation": "^5.31.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

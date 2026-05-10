@@ -209,6 +209,79 @@ nav a{
   box-shadow:0 0 20px rgba(157,0,255,.35);
 }
 
+/* RANGE BUTTONS */
+
+.range-buttons{
+  display:flex;
+  gap:10px;
+  margin:14px 0 10px 0;
+  flex-wrap:wrap;
+}
+
+.range-btn{
+  border:none;
+  padding:8px 14px;
+  border-radius:12px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.03)
+    );
+
+  color:rgba(255,255,255,.85);
+
+  cursor:pointer;
+
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.3px;
+
+  backdrop-filter:blur(12px);
+
+  border:1px solid rgba(255,255,255,.08);
+
+  transition:
+    transform .2s,
+    background .2s,
+    box-shadow .2s,
+    border .2s;
+}
+
+.range-btn:hover{
+  transform:translateY(-2px);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(120,0,255,.35),
+      rgba(80,0,180,.25)
+    );
+
+  box-shadow:
+    0 10px 25px rgba(98,0,255,.25);
+
+  color:white;
+}
+
+.range-btn.active{
+
+  background:
+    linear-gradient(
+      90deg,
+      #3b0a91,
+      #7b2cff
+    );
+
+  color:white;
+
+  border:1px solid rgba(255,255,255,.2);
+
+  box-shadow:
+    0 0 20px rgba(123,44,255,.45);
+}
+
 </style>
 </head>
 
@@ -617,6 +690,8 @@ card.className = "card";
 card.dataset.query = dashboard.query;
 
     const chartId = "chart_" + Date.now();
+
+card.dataset.chartId = chartId;
     
 const metricName = resolveMetricName(dashboard.query, data);
 
@@ -639,7 +714,36 @@ const metricName = resolveMetricName(dashboard.query, data);
     </div>
   </div>
 
-  <div id="${chartId}" style="height:300px;"></div>
+  <div class="range-buttons">
+
+  <button class="range-btn active"
+    onclick="changeRange(this, 300)">
+    5m
+  </button>
+
+  <button class="range-btn"
+    onclick="changeRange(this, 3600)">
+    1h
+  </button>
+
+  <button class="range-btn"
+    onclick="changeRange(this, 10800)">
+    3h
+  </button>
+
+  <button class="range-btn"
+    onclick="changeRange(this, 43200)">
+    12h
+  </button>
+
+  <button class="range-btn"
+    onclick="changeRange(this, 86400)">
+    24h
+  </button>
+
+</div>
+
+<div id="${chartId}" style="height:300px;"></div>
 
   <div class="alert-inline" style="display:none; margin-top:10px;">
     <input placeholder="Threshold (ex: 80)" class="thresholdInput" style="
@@ -662,7 +766,7 @@ const metricName = resolveMetricName(dashboard.query, data);
 
     document.getElementById("chartsContainer").appendChild(card);
     activeDashboards.add(dashboard.query);
-    renderChart(chartId, data);
+    renderChart(chartId, data, 300);
 
   } catch(err){
     console.error("Erro renderSavedChart:", err);
@@ -697,44 +801,144 @@ async function createInlineAlert(query, btn){
   alert("Alerta criado!");
 }
 
-function renderChart(id, prometheusData){
+async function changeRange(btn, range){
+
+  const card = btn.closest(".card");
+
+  const query = card.dataset.query;
+
+  const chartId = card.dataset.chartId;
+
+  // remove ativo dos outros
+  card.querySelectorAll(".range-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  // ativa atual
+  btn.classList.add("active");
+
+  try {
+
+    const res = await fetch("/api/query", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        query,
+        range
+      })
+    });
+
+    const data = await res.json();
+
+    renderChart(chartId, data, range);
+
+  } catch(err){
+
+    console.error(err);
+
+  }
+}
+
+function renderChart(id, prometheusData, range = 300){
+
   const el = document.getElementById(id);
 
   if(!el) return;
 
+  // remove instância anterior
+  let oldChart = echarts.getInstanceByDom(el);
+
+  if(oldChart){
+    oldChart.dispose();
+  }
+
   const chart = echarts.init(el);
+
+  const now = Date.now();
+
+  const startTime = now - (range * 1000);
 
   const series = prometheusData
     .filter(item => item.values?.length)
     .map((item, index) => ({
+
       name: item.metric?.__name__ || "metric_" + index,
+
       type: "line",
+
       smooth: true,
+
       showSymbol: false,
-      lineStyle:{ width:3 },
-      areaStyle:{ opacity:.1 },
+
+      lineStyle:{
+        width:3
+      },
+
+      areaStyle:{
+        opacity:.1
+      },
+
       data: item.values.map(v => [
-        new Date(v[0] * 1000),
+        Number(v[0]) * 1000,
         parseFloat(v[1])
       ])
+
     }));
 
   chart.setOption({
+
+    animation:true,
+
     tooltip:{
       trigger:"axis",
       backgroundColor:"#111",
       borderColor:"#333",
       textStyle:{ color:"#fff" }
     },
-    xAxis:{
-      type:"time",
-      axisLabel:{ color:"#aaa" }
+
+    grid:{
+      left:50,
+      right:20,
+      top:30,
+      bottom:40
     },
+
+    xAxis:{
+
+      type:"time",
+
+      min:startTime,
+
+      max:now,
+
+      axisLabel:{
+        color:"#aaa",
+        formatter:(value) => {
+
+          const d = new Date(value);
+
+          return d.toLocaleTimeString("pt-BR", {
+            hour:"2-digit",
+            minute:"2-digit"
+          });
+        }
+      }
+    },
+
     yAxis:{
       type:"value",
-      axisLabel:{ color:"#aaa" }
+      axisLabel:{
+        color:"#aaa"
+      }
     },
+
     series
+
+  });
+
+  window.addEventListener("resize", () => {
+    chart.resize();
   });
 }
 

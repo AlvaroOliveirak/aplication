@@ -96,37 +96,78 @@ app.get('/metrics', async (req, res) => {
 
 app.post('/api/query', async (req, res) => {
   try {
-    const { query } = req.body;
+
+    const {
+      query,
+      range = 300 // default = 5 minutos
+    } = req.body;
 
     const end = Math.floor(Date.now() / 1000);
-    const start = end - 300;
 
-    const url = `http://prometheus:9090/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=5`;
+    const start = end - Number(range);
+
+    // step inteligente
+    let step = 5;
+
+    if(range >= 3600){
+      step = 15;
+    }
+
+    if(range >= 21600){
+      step = 30;
+    }
+
+    const url =
+      `http://prometheus:9090/api/v1/query_range` +
+      `?query=${encodeURIComponent(query)}` +
+      `&start=${start}` +
+      `&end=${end}` +
+      `&step=${step}`;
 
     const response = await fetch(url);
+
     const json = await response.json();
 
     if (!json.data || !json.data.result) {
       return res.json([]);
     }
 
+    // ALERTAS
     for(const alert of alerts){
-  if(query === alert.query){
-    const last = json.data.result?.[0]?.values?.slice(-1)[0]?.[1];
 
-    if(last && Number(last) > alert.threshold){
-      alert.status = "CRITICAL";
-      console.log("🚨 ALERTA:", query, ">", alert.threshold);
-    } else {
-      alert.status = "OK";
+      if(query === alert.query){
+
+        const last =
+          json.data.result?.[0]?.values?.slice(-1)[0]?.[1];
+
+        if(last && Number(last) > alert.threshold){
+
+          alert.status = "CRITICAL";
+
+          console.log(
+            "🚨 ALERTA:",
+            query,
+            ">",
+            alert.threshold
+          );
+
+        } else {
+
+          alert.status = "OK";
+
+        }
+      }
     }
-  }
-}
+
     res.json(json.data.result);
 
   } catch (err) {
+
     console.error("ERRO API QUERY:", err);
-    res.status(500).json({ error: err.message });
+
+    res.status(500).json({
+      error: err.message
+    });
   }
 });
 

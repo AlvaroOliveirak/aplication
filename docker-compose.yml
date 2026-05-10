@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   app:
     build: .
     container_name: node_app
@@ -31,11 +30,15 @@ services:
 
   prometheus:
     image: prom/prometheus
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
 
   grafana:
     image: grafana/grafana
@@ -59,6 +62,7 @@ services:
     container_name: node-exporter
     ports:
       - "9100:9100"
-      
+
 volumes:
+  prometheus_data:
   grafana_data:
