@@ -1,966 +1,966 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard | Temporal Series</title>
-<link rel="stylesheet" href="/css/style.css">
-
-<style>
-body{
-  background:#0b1120;
-  color:white;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* HEADER */
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px 30px;
-  border-bottom:1px solid rgba(255,255,255,.1);
-}
-
-.logo{
-  font-family:"Zen Dots";
-  font-size:20px;
-}
-
-nav a{
-  color:white;
-  margin-left:20px;
-  text-decoration:none;
-}
-
-/* LAYOUT */
-.dashboard{
-  display:grid;
-  grid-template-columns: 250px 1fr;
-  height: calc(100vh - 70px);
-}
-
-/* SIDEBAR */
-.sidebar{
-  border-right:1px solid rgba(255,255,255,.1);
-  padding:20px;
-}
-
-.sidebar button{
-  width:100%;
-  margin-bottom:10px;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:rgba(255,255,255,.1);
-  color:white;
-  cursor:pointer;
-}
-
-.sidebar button:hover{
-  background:rgba(255,255,255,.2);
-}
-
-/* MAIN */
-.main{
-  padding:20px;
-  overflow:auto;
-}
-
-/* GRID DASHBOARDS */
-.grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px,1fr));
-  gap:25px;
-}
-
-/* CARD */
-.card{
-  background: linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 20px;
-  padding: 20px;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.3);
-  transition: 0.3s;
-}
-
-.card:hover{
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: 0 20px 40px rgba(0,0,0,.5);
-}
-
-/* BUILDER */
-.builder{
-  margin-bottom:20px;
-}
-
-.builder input{
-  width:70%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  margin-right:10px;
-}
-
-.builder button{
-  padding:10px 18px;
-  border:none;
-  border-radius:12px;
-  background: rgba(255, 255, 255, 0.2);
-  /* Efeito de desfoque (principal) */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color:white;
-  cursor:pointer;
-  font-size:14px;
-  transition:.25s;
-}
-
-.builder button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 10px 20px rgba(106,0,255,.3);
-}
-
-/* ALERT CONFIG */
-.alert-box input{
-  width:100%;
-  margin-bottom:10px;
-  padding:10px;
-  border-radius:8px;
-  border:none;
-}
-
-/* LOGS */
-.logs{
-  max-height:200px;
-  overflow:auto;
-}
-
-.log{
-  padding:10px;
-  margin-bottom:8px;
-  border-radius:8px;
-  background:rgba(255,0,0,.2);
-  position:relative;
-}
-
-.log:hover::after{
-  content: attr(data-help);
-  position:absolute;
-  top:100%;
-  left:0;
-  background:black;
-  padding:10px;
-  border-radius:8px;
-  font-size:12px;
-  width:250px;
-}
-
-/* MENU MÉTRICAS */
-#metricMenu{
-  opacity:0;
-  transform:translateY(-10px);
-  transition:.35s ease;
-  backdrop-filter: blur(20px);
-  border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 10px 30px rgba(0,0,0,.25);
-}
-
-#metricMenu.show{
-  opacity:1;
-  transform:translateY(0);
-}
-
-/* GRID MÉTRICAS */
-#metricOptions{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  gap:10px;
-}
-
-/* BOTÕES */
-.metric-btn{
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.05);
-  color:rgba(255,255,255,.85);
-  cursor:pointer;
-
-  backdrop-filter: blur(12px);
-
-  transition:
-    transform .2s,
-    background .2s,
-    border .2s,
-    box-shadow .2s;
-}
-
-.metric-btn:hover{
-  transform:translateY(-2px);
-  background:rgba(255,255,255,.08);
-}
-
-.metric-btn.active{
-  background:linear-gradient(90deg,#2b0166,#6200ff9c);
-  border:1px solid rgba(255,255,255,.15);
-  color:white;
-  box-shadow:0 0 20px rgba(157,0,255,.35);
-}
-
-/* RANGE BUTTONS */
-
-.range-buttons{
-  display:flex;
-  gap:10px;
-  margin:14px 0 10px 0;
-  flex-wrap:wrap;
-}
-
-.range-btn{
-  border:none;
-  padding:8px 14px;
-  border-radius:12px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.08),
-      rgba(255,255,255,.03)
-    );
-
-  color:rgba(255,255,255,.85);
-
-  cursor:pointer;
-
-  font-size:13px;
-  font-weight:600;
-  letter-spacing:.3px;
-
-  backdrop-filter:blur(12px);
-
-  border:1px solid rgba(255,255,255,.08);
-
-  transition:
-    transform .2s,
-    background .2s,
-    box-shadow .2s,
-    border .2s;
-}
-
-.range-btn:hover{
-  transform:translateY(-2px);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(120,0,255,.35),
-      rgba(80,0,180,.25)
-    );
-
-  box-shadow:
-    0 10px 25px rgba(98,0,255,.25);
-
-  color:white;
-}
-
-.range-btn.active{
-
-  background:
-    linear-gradient(
-      90deg,
-      #3b0a91,
-      #7b2cff
-    );
-
-  color:white;
-
-  border:1px solid rgba(255,255,255,.2);
-
-  box-shadow:
-    0 0 20px rgba(123,44,255,.45);
-}
-
-</style>
-</head>
-
-<body>
-
-<header>
-  <div class="logo">Temporal Series</div>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/dashboard">Dashboard</a>
-    <a href="/config">Config</a>
-  </nav>
-</header>
-
-<div class="dashboard">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <button onclick="showTab('dashboards')">Dashboards</button>
-    
-    <button onclick="showTab('logs')">Logs</button>
-    <button onclick="showTab('settings')">Configurações</button>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-
-    <!-- DASHBOARDS -->
-    <section id="dashboards">
-
-<div class="builder">
-  <button onclick="toggleMetricMenu()">Selecionar dashboards</button>
-
-  <div id="metricMenu" style="
-display:none;
-margin-top:15px;
-padding:15px;
-border-radius:16px;
-">
-    
-    <div id="metricOptions" style="margin-bottom:15px;"></div>
-
-    <button onclick="createSelectedCharts()" style="
-      background:linear-gradient(90deg,#411b01,#f00202);
-    ">
-      Criar dashboards
-    </button>
-
-  </div>
-  
-</div>
-<div class="grid" id="chartsContainer"></div>
-
-    </section>
-
-    <!-- ALERTS -->
-    
-
-    <!-- LOGS -->
-    <section id="logs" style="display:none">
-      <div class="card">
-        <h3>Logs de Alertas</h3>
-
-        <div class="logs" id="logContainer">
-          <!-- logs -->
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SETTINGS -->
-    <section id="settings" style="display:none">
-      <div class="card">
-        <h3>Configurações</h3>
-        <p>Configurações de visualização, refresh rate, tema, etc.</p>
-      </div>
-    </section>
-
-  </main>
-
-</div>
-<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
-<script>
-
-  const metricList = [
-  {
-    name: "RAM",
-    query: "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))"
-  },
-  {
-    name: "CPU",
-    query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)"
-  },
-  {
-    name: "Disco (%)",
-    query: "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))"
-  },
-  {
-    name: "Rede RX",
-    query: "rate(node_network_receive_bytes_total[5m])"
-  },
-  {
-    name: "Rede TX",
-    query: "rate(node_network_transmit_bytes_total[5m])"
-  },
-  {
-    name: "Load 1m",
-    query: "node_load1"
-  },
-  {
-    name: "Load 5m",
-    query: "node_load5"
-  }
-];
-let selectedMetrics = new Set();
-const activeDashboards = new Set();
-
-function toggleMetricMenu(){
-  const menu = document.getElementById("metricMenu");
-
-  if(menu.style.display === "none"){
-
-    menu.style.display = "block";
-
-    requestAnimationFrame(() => {
-      menu.classList.add("show");
-    });
-
-  } else {
-
-    menu.classList.remove("show");
-
-    setTimeout(() => {
-      menu.style.display = "none";
-    }, 300);
-  }
-
-  renderMetricOptions();
-}
-
-function renderMetricOptions(){
-  const container = document.getElementById("metricOptions");
-
-  container.innerHTML = "";
-
-  metricList.forEach(metric => {
-
-    const btn = document.createElement("button");
-
-    btn.className = "metric-btn";
-
-    // dashboard ativo = mantém cor
-    if(activeDashboards.has(metric.query)){
-      btn.classList.add("active");
-    }
-
-    btn.innerText = metric.name;
-
-    btn.onclick = async () => {
-
-  // dashboard já ativo -> remove dashboard
-  if(activeDashboards.has(metric.query)){
-
-    await removeDashboardByQuery(metric.query);
-
-    activeDashboards.delete(metric.query);
-
-    btn.classList.remove("active");
-
-    btn.style.opacity = ".6";
-
-    return;
-  }
-
-  // remove seleção temporária
-  if(selectedMetrics.has(metric.query)){
-
-    selectedMetrics.delete(metric.query);
-
-    btn.classList.remove("active");
-
-    btn.style.opacity = ".6";
-
-  } else {
-
-    // adiciona seleção temporária
-    selectedMetrics.add(metric.query);
-
-    btn.classList.add("active");
-
-    btn.style.opacity = "1";
-  }
-};
-
-   if(selectedMetrics.has(metric.query) || activeDashboards.has(metric.query)){
-
-  btn.classList.add("active");
-
-  btn.style.opacity = "1";
-
-} else {
-
-  btn.classList.remove("active");
-
-  btn.style.opacity = ".6";
-}
-
-    container.appendChild(btn);
-  });
-}
-
-async function createSelectedCharts(){
-
-  if(selectedMetrics.size === 0){
-    return;
-  }
-
-  for(const query of selectedMetrics){
-
-    // evita duplicação
-    if(activeDashboards.has(query)){
-      continue;
-    }
-
-    await renderSavedChart({ query });
-
-    await fetch("/api/dashboard", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ query })
-    });
-
-    activeDashboards.add(query);
-  }
-
-  selectedMetrics.clear();
-
-  renderMetricOptions();
-}
-
-function showTab(tab){
-  document.querySelectorAll("main section").forEach(s => s.style.display="none");
-  document.getElementById(tab).style.display="block";
-}
-
-function formatMetricName(name){
-  return name
-    .replace(/node_/g, "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, l => l.toUpperCase());
-}
-
-/* BOTÃO CRIAR */
-
-
-async function deleteDashboard(id, btn){
-
-  const card = btn.closest(".card");
-
-  const query = card.dataset.query;
-
-  // remove backend
-  await fetch(`/api/dashboard/${id}`, {
-    method:"DELETE"
-  });
-
-  // remove visual
-  if(card){
-    card.remove();
-  }
-
-  // remove estado ativo
-  activeDashboards.delete(query);
-
-  // atualiza botões do menu
-  renderMetricOptions();
-}
-
-function extractMetricName(query, data){
-  // 1. tenta pegar direto do Prometheus
-  if(data[0]?.metric?.__name__){
-    return data[0].metric.__name__;
-  }
-
-  // 2. tenta extrair da query (regex)
-  const match = query.match(/[a-zA-Z_:][a-zA-Z0-9_:]*/g);
-
-  if(match){
-    // remove palavras comuns de funções
-    const blacklist = ["rate","avg","sum","by","irate"];
-    const filtered = match.filter(m => !blacklist.includes(m));
-
-    if(filtered.length){
-      return filtered[0];
-    }
-  }
-
-  // 3. fallback final
-  return query;
-}
-
-function beautifyMetric(name){
-  return name
-    .replace(/node_/g, "")
-    .replace(/_seconds_total/g, "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, l => l.toUpperCase());
-}
-
-function resolveMetricName(query, data){
-  const q = query.toLowerCase();
-
-  // CPU %
-  if(q.includes("node_cpu_seconds_total") && q.includes("rate") && q.includes("idle")){
-    return "Uso de CPU (%)";
-  }
-
-  // Memória %
-  if(q.includes("node_memory_memavailable_bytes") && q.includes("node_memory_memtotal_bytes")){
-    return "Uso de Memória (%)";
-  }
-
-  // Memória disponível
-  if(q.includes("node_memory_memavailable_bytes")){
-    return "Memória Disponível";
-  }
-
-  // Memória total
-  if(q.includes("node_memory_memtotal_bytes")){
-    return "Memória Total";
-  }
-
-  // Disco uso %
-  if(q.includes("node_filesystem_size_bytes") && q.includes("node_filesystem_avail_bytes")){
-    return "Uso de Disco (%)";
-  }
-
-  // Disco livre
-  if(q.includes("node_filesystem_avail_bytes")){
-    return "Disco Livre";
-  }
-
-  // Disco total
-  if(q.includes("node_filesystem_size_bytes")){
-    return "Tamanho do Disco";
-  }
-
-  // Network RX
-  if(q.includes("node_network_receive_bytes_total")){
-    return "Entrada de Rede (RX)";
-  }
-
-  // Network TX
-  if(q.includes("node_network_transmit_bytes_total")){
-    return "Saída de Rede (TX)";
-  }
-
-  // Load average
-  if(q.includes("node_load1")){
-    return "Load Average (1m)";
-  }
-
-  if(q.includes("node_load5")){
-    return "Load Average (5m)";
-  }
-
-  if(q.includes("node_load15")){
-    return "Load Average (15m)";
-  }
-
-  // fallback usando Prometheus
-  if(data[0]?.metric?.__name__){
-    return beautifyMetric(data[0].metric.__name__);
-  }
-
-  // fallback final
-  return beautifyMetric(query);
-}
-
-function smartMetricName(name){
-  return metricMap[name] || beautifyMetric(name);
-}
-
-/* RENDERIZA SEM SALVAR */
-async function renderSavedChart(dashboard){
-  try{
-    const res = await fetch("/api/query", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ query: dashboard.query })
-    });
-
-    const { id, query } = dashboard;
-
-    const data = await res.json();
-
-    if(!data.length){
-      console.warn("Sem dados");
-      return;
-    }
-
-    const card = document.createElement("div");
-
-card.className = "card";
-
-card.dataset.query = dashboard.query;
-
-    const chartId = "chart_" + Date.now();
-
-card.dataset.chartId = chartId;
-    
-const metricName = resolveMetricName(dashboard.query, data);
-
-
-    card.innerHTML = `
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h4>${metricName}</h4>
-
-    <div style="display:flex; gap:5px;">
-      <button onclick="toggleAlertBox('${query}', this)">⚠️</button>
-
-      <button onclick="deleteDashboard(${id}, this)" style="
-        background:red;
-        border:none;
-        border-radius:6px;
-        color:white;
-        padding:5px 10px;
-        cursor:pointer;
-      ">X</button>
-    </div>
-  </div>
-
-  <div class="range-buttons">
-
-  <button class="range-btn active"
-    onclick="changeRange(this, 300)">
-    5m
-  </button>
-
-  <button class="range-btn"
-    onclick="changeRange(this, 3600)">
-    1h
-  </button>
-
-  <button class="range-btn"
-    onclick="changeRange(this, 10800)">
-    3h
-  </button>
-
-  <button class="range-btn"
-    onclick="changeRange(this, 43200)">
-    12h
-  </button>
-
-  <button class="range-btn"
-    onclick="changeRange(this, 86400)">
-    24h
-  </button>
-
-</div>
-
-<div id="${chartId}" style="height:300px;"></div>
-
-  <div class="alert-inline" style="display:none; margin-top:10px;">
-    <input placeholder="Threshold (ex: 80)" class="thresholdInput" style="
-      width:100%;
-      padding:8px;
-      border-radius:6px;
-      border:none;
-      margin-bottom:5px;
-    ">
-    <button onclick="createInlineAlert('${query}', this)" style="
-      background:green;
-      border:none;
-      border-radius:6px;
-      color:white;
-      padding:5px 10px;
-      cursor:pointer;
-    ">Salvar alerta</button>
-  </div>
-`;
-
-    document.getElementById("chartsContainer").appendChild(card);
-    activeDashboards.add(dashboard.query);
-    renderChart(chartId, data, 300);
-
-  } catch(err){
-    console.error("Erro renderSavedChart:", err);
-  }
-}
-
-function toggleAlertBox(query, btn){
-  const card = btn.closest(".card");
-  const box = card.querySelector(".alert-inline");
-
-  box.style.display = box.style.display === "none" ? "block" : "none";
-}
-
-async function createInlineAlert(query, btn){
-  const card = btn.closest(".card");
-  const input = card.querySelector(".thresholdInput");
-
-  const threshold = input.value;
-
-  if(!threshold){
-    alert("Defina um threshold");
-    return;
-  }
-
-  await fetch("/api/alert", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ query, threshold })
-  });
-
-  input.value = "";
-  alert("Alerta criado!");
-}
-
-async function changeRange(btn, range){
-
-  const card = btn.closest(".card");
-
-  const query = card.dataset.query;
-
-  const chartId = card.dataset.chartId;
-
-  // remove ativo dos outros
-  card.querySelectorAll(".range-btn")
-    .forEach(b => b.classList.remove("active"));
-
-  // ativa atual
-  btn.classList.add("active");
-
-  try {
-
-    const res = await fetch("/api/query", {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({
-        query,
-        range
-      })
-    });
-
-    const data = await res.json();
-
-    renderChart(chartId, data, range);
-
-  } catch(err){
-
-    console.error(err);
-
-  }
-}
-
-function renderChart(id, prometheusData, range = 300){
-
-  const el = document.getElementById(id);
-
-  if(!el) return;
-
-  // remove instância anterior
-  let oldChart = echarts.getInstanceByDom(el);
-
-  if(oldChart){
-    oldChart.dispose();
-  }
-
-  const chart = echarts.init(el);
-
-  const now = Date.now();
-
-  const startTime = now - (range * 1000);
-
-  const series = prometheusData
-    .filter(item => item.values?.length)
-    .map((item, index) => ({
-
-      name: item.metric?.__name__ || "metric_" + index,
-
-      type: "line",
-
-      smooth: true,
-
-      showSymbol: false,
-
-      lineStyle:{
-        width:3
-      },
-
-      areaStyle:{
-        opacity:.1
-      },
-
-      data: item.values.map(v => [
-        Number(v[0]) * 1000,
-        parseFloat(v[1])
-      ])
-
-    }));
-
-  chart.setOption({
-
-    animation:true,
-
-    tooltip:{
-      trigger:"axis",
-      backgroundColor:"#111",
-      borderColor:"#333",
-      textStyle:{ color:"#fff" }
-    },
-
-    grid:{
-      left:50,
-      right:20,
-      top:30,
-      bottom:40
-    },
-
-    xAxis:{
-
-      type:"time",
-
-      min:startTime,
-
-      max:now,
-
-      axisLabel:{
-        color:"#aaa",
-        formatter:(value) => {
-
-          const d = new Date(value);
-
-          return d.toLocaleTimeString("pt-BR", {
-            hour:"2-digit",
-            minute:"2-digit"
-          });
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Temporal Series</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+      body {
+        background: #0b1120;
+        color: white;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      /* HEADER */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, .1);
+      }
+
+      .logo {
+        font-family: "Zen Dots";
+        font-size: 20px;
+      }
+
+      nav a {
+        color: white;
+        margin-left: 20px;
+        text-decoration: none;
+      }
+
+      /* LAYOUT */
+      .dashboard {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        height: calc(100vh - 70px);
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        border-right: 1px solid rgba(255, 255, 255, .1);
+        padding: 20px;
+      }
+
+      .sidebar button {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, .1);
+        color: white;
+        cursor: pointer;
+      }
+
+      .sidebar button:hover {
+        background: rgba(255, 255, 255, .2);
+      }
+
+      /* MAIN */
+      .main {
+        padding: 20px;
+        overflow: auto;
+      }
+
+      /* GRID DASHBOARDS */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 25px;
+      }
+
+      /* CARD */
+      .card {
+        background: linear-gradient(145deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .02));
+        border: 1px solid rgba(255, 255, 255, .08);
+        border-radius: 20px;
+        padding: 20px;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+        transition: 0.3s;
+      }
+
+      .card:hover {
+        transform: translateY(-5px) scale(1.01);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, .5);
+      }
+
+      /* BUILDER */
+      .builder {
+        margin-bottom: 20px;
+      }
+
+      .builder input {
+        width: 70%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        margin-right: 10px;
+      }
+
+      .builder button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: .25s;
+      }
+
+      .builder button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(106, 0, 255, .3);
+      }
+
+      /* ALERT CONFIG */
+      .alert-box input {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+      }
+
+      /* LOGS */
+      .logs {
+        max-height: 200px;
+        overflow: auto;
+      }
+
+      .log {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        background: rgba(255, 0, 0, .2);
+        position: relative;
+      }
+
+      .log:hover::after {
+        content: attr(data-help);
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: black;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        width: 250px;
+      }
+
+      /* MENU MÉTRICAS */
+      #metricMenu {
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: .35s ease;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, .08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+      }
+
+      #metricMenu.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* GRID MÉTRICAS */
+      #metricOptions {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+      }
+
+      /* BOTÕES */
+      .metric-btn {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, .08);
+        background: rgba(255, 255, 255, .05);
+        color: rgba(255, 255, 255, .85);
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        transition: transform .2s, background .2s, border .2s, box-shadow .2s;
+      }
+
+      .metric-btn:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, .08);
+      }
+
+      .metric-btn.active {
+        background: linear-gradient(90deg, #2b0166, #6200ff9c);
+        border: 1px solid rgba(255, 255, 255, .15);
+        color: white;
+        box-shadow: 0 0 20px rgba(157, 0, 255, .35);
+      }
+
+      /* RANGE BUTTONS */
+      .range-buttons {
+        display: flex;
+        gap: 10px;
+        margin: 14px 0 10px 0;
+        flex-wrap: wrap;
+      }
+
+      .range-btn {
+        border: none;
+        padding: 8px 14px;
+        border-radius: 12px;
+        background: linear-gradient(145deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03));
+        color: rgba(255, 255, 255, .85);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: .3px;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, .08);
+        transition: transform .2s, background .2s, box-shadow .2s, border .2s;
+      }
+
+      .range-btn:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(145deg, rgba(120, 0, 255, .35), rgba(80, 0, 180, .25));
+        box-shadow: 0 10px 25px rgba(98, 0, 255, .25);
+        color: white;
+      }
+
+      .range-btn.active {
+        background: linear-gradient(90deg, #3b0a91, #7b2cff);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, .2);
+        box-shadow: 0 0 20px rgba(123, 44, 255, .45);
+      }
+
+      .threshold-item {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, .05);
+        font-size: 13px;
+      }
+
+      .alert-live {
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        animation: pulse 1.5s infinite;
+      }
+
+      .alert-ok {
+        background: rgba(0, 255, 100, .15);
+        border: 1px solid rgba(0, 255, 100, .3);
+      }
+
+      .alert-warning {
+        background: rgba(255, 180, 0, .15);
+        border: 1px solid rgba(255, 180, 0, .4);
+      }
+
+      .alert-critical {
+        background: rgba(255, 0, 0, .18);
+        border: 1px solid rgba(255, 0, 0, .5);
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(1.02);
+        }
+
+        100% {
+          transform: scale(1);
         }
       }
-    },
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">Temporal Series</div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/config">Config</a>
+      </nav>
+    </header>
 
-    yAxis:{
-      type:"value",
-      axisLabel:{
-        color:"#aaa"
+    <div class="dashboard">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <button onclick="showTab('dashboards')">Dashboards</button>
+        <button onclick="showTab('logs')">Logs</button>
+        <button onclick="showTab('settings')">Configurações</button>
+
+        <!-- THRESHOLDS ATIVOS -->
+        <div class="card" style="margin-top:20px; padding:15px;">
+          <h3 style="margin-bottom:10px;">Thresholds Ativos</h3>
+          <div id="thresholdList"></div>
+        </div>
+
+        <!-- ALERTAS -->
+        <div class="card" style="margin-top:20px; padding:15px;">
+          <h3 style="margin-bottom:10px;">Alertas</h3>
+          <div id="alertFeed"></div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <!-- DASHBOARDS -->
+        <section id="dashboards">
+          <div class="builder">
+            <button onclick="toggleMetricMenu()">Selecionar dashboards</button>
+            <div id="metricMenu" style="display:none; margin-top:15px; padding:15px; border-radius:16px;">
+              <div id="metricOptions" style="margin-bottom:15px;"></div>
+              <button onclick="createSelectedCharts()" style="background:linear-gradient(90deg,#411b01,#f00202);">Criar dashboards</button>
+            </div>
+          </div>
+
+          <div class="grid" id="chartsContainer"></div>
+        </section>
+
+        <!-- LOGS -->
+        <section id="logs" style="display:none;">
+          <div class="card">
+            <h3>Logs de Alertas</h3>
+            <div class="logs" id="logContainer">
+              <!-- logs -->
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section id="settings" style="display:none;">
+          <div class="card">
+            <h3>Configurações</h3>
+            <p>Configurações de visualização, refresh rate, tema, etc.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script>
+      const metricList = [
+        {
+          name: "RAM",
+          query: "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))"
+        },
+        {
+          name: "CPU",
+          query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)"
+        },
+        {
+          name: "Disco (%)",
+          query: "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))"
+        },
+        {
+          name: "Rede RX",
+          query: "rate(node_network_receive_bytes_total[5m])"
+        },
+        {
+          name: "Rede TX",
+          query: "rate(node_network_transmit_bytes_total[5m])"
+        },
+        {
+          name: "Load 1m",
+          query: "node_load1"
+        },
+        {
+          name: "Load 5m",
+          query: "node_load5"
+        }
+      ];
+
+      let selectedMetrics = new Set();
+      const activeDashboards = new Set();
+
+      async function removeDashboardByQuery(query) {
+        const cards = document.querySelectorAll(".card[data-query]");
+
+        for (const card of cards) {
+          if (card.dataset.query === query) {
+            card.remove();
+          }
+        }
+
+        activeDashboards.delete(query);
       }
-    },
 
-    series
+      function toggleMetricMenu() {
+        const menu = document.getElementById("metricMenu");
 
-  });
+        if (menu.style.display === "none") {
+          menu.style.display = "block";
+          requestAnimationFrame(() => {
+            menu.classList.add("show");
+          });
+        } else {
+          menu.classList.remove("show");
+          setTimeout(() => {
+            menu.style.display = "none";
+          }, 300);
+        }
 
-  window.addEventListener("resize", () => {
-    chart.resize();
-  });
-}
+        renderMetricOptions();
+      }
 
-async function loadDashboards(){
-  try{
-    const res = await fetch("/api/dashboard");
-    const dashboards = await res.json();
+      function renderMetricOptions() {
+        const container = document.getElementById("metricOptions");
+        container.innerHTML = "";
 
-    const container = document.getElementById("chartsContainer");
-    container.innerHTML = ""; // limpa antes
+        metricList.forEach(metric => {
+          const btn = document.createElement("button");
+          btn.className = "metric-btn";
 
-    for(const d of dashboards){
-      await renderSavedChart(d);
-    }
+          if (activeDashboards.has(metric.query)) {
+            btn.classList.add("active");
+          }
 
-  } catch(err){
-    console.error(err);
-  }
-}
+          btn.innerText = metric.name;
+          btn.onclick = async () => {
+            if (activeDashboards.has(metric.query)) {
+              await removeDashboardByQuery(metric.query);
+              activeDashboards.delete(metric.query);
+              btn.classList.remove("active");
+              btn.style.opacity = ".6";
+              return;
+            }
 
-loadDashboards();
-</script>
+            if (selectedMetrics.has(metric.query)) {
+              selectedMetrics.delete(metric.query);
+              btn.classList.remove("active");
+              btn.style.opacity = ".6";
+            } else {
+              selectedMetrics.add(metric.query);
+              btn.classList.add("active");
+              btn.style.opacity = "1";
+            }
+          };
 
-</body>
+          if (selectedMetrics.has(metric.query) || activeDashboards.has(metric.query)) {
+            btn.classList.add("active");
+            btn.style.opacity = "1";
+          } else {
+            btn.classList.remove("active");
+            btn.style.opacity = ".6";
+          }
+
+          container.appendChild(btn);
+        });
+      }
+
+      async function createSelectedCharts() {
+        if (selectedMetrics.size === 0) {
+          return;
+        }
+
+        for (const query of selectedMetrics) {
+          if (activeDashboards.has(query)) {
+            continue;
+          }
+
+          const response = await fetch("/api/dashboard", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query })
+          });
+
+          const dashboard = await response.json();
+          await renderSavedChart({ id: dashboard.id, query });
+          activeDashboards.add(query);
+        }
+
+        selectedMetrics.clear();
+        renderMetricOptions();
+      }
+
+      function showTab(tab) {
+        document.querySelectorAll("main section").forEach(s => s.style.display = "none");
+        document.getElementById(tab).style.display = "block";
+      }
+
+      function formatMetricName(name) {
+        return name
+          .replace(/node_/g, "")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, l => l.toUpperCase());
+      }
+
+      async function deleteDashboard(id, btn) {
+        const card = btn.closest(".card");
+        const query = card.dataset.query;
+
+        await fetch(`/api/dashboard/${id}`, {
+          method: "DELETE"
+        });
+
+        if (card) {
+          card.remove();
+        }
+
+        activeDashboards.delete(query);
+        renderMetricOptions();
+      }
+
+      function extractMetricName(query, data) {
+        if (data[0]?.metric?.__name__) {
+          return data[0].metric.__name__;
+        }
+
+        const match = query.match(/[a-zA-Z_:][a-zA-Z0-9_:]*/g);
+        if (match) {
+          const blacklist = ["rate", "avg", "sum", "by", "irate"];
+          const filtered = match.filter(m => !blacklist.includes(m));
+
+          if (filtered.length) {
+            return filtered[0];
+          }
+        }
+
+        return query;
+      }
+
+      function beautifyMetric(name) {
+        return name
+          .replace(/node_/g, "")
+          .replace(/_seconds_total/g, "")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, l => l.toUpperCase());
+      }
+
+      function resolveMetricName(query, data) {
+        const q = query.toLowerCase();
+
+        if (q.includes("node_cpu_seconds_total") && q.includes("rate") && q.includes("idle")) {
+          return "Uso de CPU (%)";
+        }
+
+        if (q.includes("node_memory_memavailable_bytes") && q.includes("node_memory_memtotal_bytes")) {
+          return "Uso de Memória (%)";
+        }
+
+        if (q.includes("node_memory_memavailable_bytes")) {
+          return "Memória Disponível";
+        }
+
+        if (q.includes("node_memory_memtotal_bytes")) {
+          return "Memória Total";
+        }
+
+        if (q.includes("node_filesystem_size_bytes") && q.includes("node_filesystem_avail_bytes")) {
+          return "Uso de Disco (%)";
+        }
+
+        if (q.includes("node_filesystem_avail_bytes")) {
+          return "Disco Livre";
+        }
+
+        if (q.includes("node_filesystem_size_bytes")) {
+          return "Tamanho do Disco";
+        }
+
+        if (q.includes("node_network_receive_bytes_total")) {
+          return "Entrada de Rede (RX)";
+        }
+
+        if (q.includes("node_network_transmit_bytes_total")) {
+          return "Saída de Rede (TX)";
+        }
+
+        if (q.includes("node_load1")) {
+          return "Load Average (1m)";
+        }
+
+        if (q.includes("node_load5")) {
+          return "Load Average (5m)";
+        }
+
+        if (q.includes("node_load15")) {
+          return "Load Average (15m)";
+        }
+
+        if (data[0]?.metric?.__name__) {
+          return beautifyMetric(data[0].metric.__name__);
+        }
+
+        return beautifyMetric(query);
+      }
+
+      async function renderSavedChart(dashboard) {
+        try {
+          const res = await fetch("/api/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query: dashboard.query })
+          });
+
+          const { id, query } = dashboard;
+          const data = await res.json();
+
+          if (!Array.isArray(data)) {
+            console.warn("Formato inválido:", data);
+            return;
+          }
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.dataset.query = dashboard.query;
+
+          const chartId = "chart_" + Date.now();
+          card.dataset.chartId = chartId;
+
+          const metricName = resolveMetricName(dashboard.query, data);
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4>${metricName}</h4>
+              <div style="display:flex; gap:5px;">
+                <button onclick="toggleAlertBox('${query}', this)">⚠️</button>
+                <button onclick="deleteDashboard(${id}, this)" style="background:red; border:none; border-radius:6px; color:white; padding:5px 10px; cursor:pointer;">X</button>
+              </div>
+            </div>
+            <div class="range-buttons">
+              <button class="range-btn active" onclick="changeRange(this, 300)">5m</button>
+              <button class="range-btn" onclick="changeRange(this, 3600)">1h</button>
+              <button class="range-btn" onclick="changeRange(this, 10800)">3h</button>
+              <button class="range-btn" onclick="changeRange(this, 43200)">12h</button>
+              <button class="range-btn" onclick="changeRange(this, 86400)">24h</button>
+            </div>
+            <div id="${chartId}" style="height:300px;"></div>
+            <div class="alert-inline" style="display:none; margin-top:10px;">
+              <input placeholder="Threshold (ex: 80)" class="thresholdInput" style="width:100%; padding:8px; border-radius:6px; border:none; margin-bottom:5px;">
+              <button onclick="createInlineAlert('${query}', this)" style="background:green; border:none; border-radius:6px; color:white; padding:5px 10px; cursor:pointer;">Salvar alerta</button>
+            </div>
+          `;
+
+          document.getElementById("chartsContainer").appendChild(card);
+          activeDashboards.add(dashboard.query);
+
+          const thresholdData = await getThresholdByQuery(dashboard.query);
+          renderChart(chartId, data, 300, thresholdData);
+        } catch (err) {
+          console.error("Erro renderSavedChart:", err);
+        }
+      }
+
+      function toggleAlertBox(query, btn) {
+        const card = btn.closest(".card");
+        const box = card.querySelector(".alert-inline");
+        box.style.display = box.style.display === "none" ? "block" : "none";
+      }
+
+      async function createInlineAlert(query, btn) {
+        const card = btn.closest(".card");
+        const input = card.querySelector(".thresholdInput");
+        const threshold = Number(input.value);
+
+        if (!threshold) {
+          alert("Defina um threshold");
+          return;
+        }
+
+        const metricName = card.querySelector("h4").innerText;
+        await fetch("/api/alert", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ query, threshold, metricName })
+        });
+
+        input.value = "";
+        await loadThresholds();
+        alert("Threshold salvo!");
+      }
+
+      async function changeRange(btn, range) {
+        const card = btn.closest(".card");
+        const query = card.dataset.query;
+        const chartId = card.dataset.chartId;
+
+        card.querySelectorAll(".range-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        try {
+          const res = await fetch("/api/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query, range })
+          });
+
+          const data = await res.json();
+          const thresholdData = await getThresholdByQuery(query);
+          renderChart(chartId, data, range, thresholdData);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function renderChart(id, prometheusData, range = 300, thresholdData = null) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        let oldChart = echarts.getInstanceByDom(el);
+        if (oldChart) {
+          oldChart.dispose();
+        }
+
+        const chart = echarts.init(el);
+        const now = Date.now();
+        const startTime = now - range * 1000;
+
+        const series = prometheusData
+          .filter(item => item.values?.length)
+          .map((item, index) => ({
+            name: item.metric?.__name__ || "metric_" + index,
+            type: "line",
+            smooth: true,
+            showSymbol: false,
+            lineStyle: {
+              width: 3
+            },
+            areaStyle: {
+              opacity: .1
+            },
+            data: item.values.map(v => [Number(v[0]) * 1000, parseFloat(v[1])]),
+            markLine: thresholdData && thresholdData.threshold != null ? {
+              silent: true,
+              symbol: ["none", "none"],
+              animation: true,
+              label: {
+                show: true,
+                position: "end",
+                formatter: () => `THRESHOLD: ${thresholdData.threshold}${thresholdData.unit || ""}`,
+                color: "#fff",
+                fontSize: 13,
+                fontWeight: "bold",
+                backgroundColor: thresholdData.status === "CRITICAL" ? "rgba(255,0,0,.85)" : thresholdData.status === "WARNING" ? "rgba(255,180,0,.85)" : "rgba(0,255,140,.75)",
+                padding: [6, 10],
+                borderRadius: 8
+              },
+              lineStyle: {
+                color: thresholdData.status === "CRITICAL" ? "#ff0000" : thresholdData.status === "WARNING" ? "#ffb300" : "#00ff99",
+                width: 4,
+                type: "dashed",
+                shadowBlur: 20,
+                shadowColor: thresholdData.status === "CRITICAL" ? "#ff0000" : thresholdData.status === "WARNING" ? "#ffb300" : "#00ff99"
+              },
+              data: [{ yAxis: Number(thresholdData.threshold) }]
+            } : undefined
+          }));
+
+        chart.setOption({
+          backgroundColor: "transparent",
+          animation: true,
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: "#111",
+            borderColor: "#333",
+            textStyle: {
+              color: "#fff"
+            }
+          },
+          grid: {
+            left: 50,
+            right: 20,
+            top: 30,
+            bottom: 40
+          },
+          xAxis: {
+            type: "time",
+            min: startTime,
+            max: now,
+            axisLine: {
+              lineStyle: {
+                color: "#666"
+              }
+            },
+            axisLabel: {
+              color: "#aaa",
+              formatter: value => {
+                const d = new Date(value);
+                return d.toLocaleTimeString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit"
+                });
+              }
+            }
+          },
+          yAxis: {
+            type: "value",
+            axisPointer: {
+              show: true
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#666"
+              }
+            },
+            splitLine: {
+              lineStyle: {
+                color: "rgba(255,255,255,.05)"
+              }
+            },
+            axisLabel: {
+              color: "#aaa"
+            }
+          },
+          series
+        });
+
+        window.addEventListener("resize", () => {
+          chart.resize();
+        });
+      }
+
+      async function loadDashboards() {
+        try {
+          const res = await fetch("/api/dashboard");
+          const dashboards = await res.json();
+          const container = document.getElementById("chartsContainer");
+          container.innerHTML = "";
+
+          for (const d of dashboards) {
+            await renderSavedChart(d);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      loadDashboards();
+
+      async function loadThresholds() {
+        const res = await fetch("/api/alerts");
+
+        if (!res.ok) {
+          console.error("Erro alerts:", res.status);
+          return [];
+        }
+
+        const alerts = await res.json();
+        const thresholdList = document.getElementById("thresholdList");
+        thresholdList.innerHTML = "";
+
+        alerts.forEach(alert => {
+          const div = document.createElement("div");
+          div.className = "threshold-item";
+          div.innerHTML = `
+            <strong>${alert.metricName}</strong><br>
+            Limite: ${alert.threshold}${alert.unit || ""}
+          `;
+          thresholdList.appendChild(div);
+        });
+      }
+
+      async function loadAlertFeed() {
+        const res = await fetch("/api/alerts");
+
+        if (!res.ok) {
+          console.error("Erro alerts:", res.status);
+          return [];
+        }
+
+        const alerts = await res.json();
+        const feed = document.getElementById("alertFeed");
+        feed.innerHTML = "";
+
+        alerts
+          .filter(a => a.status !== "OK")
+          .forEach(alert => {
+            const div = document.createElement("div");
+            let css = "alert-warning";
+
+            if (alert.status === "CRITICAL") {
+              css = "alert-critical";
+            }
+
+            div.className = `alert-live ${css}`;
+            div.innerHTML = `
+              <strong>${alert.metricName}</strong><br>
+              Valor atual: ${alert.lastValue} ${alert.unit || ""}<br>
+              Threshold: ${alert.threshold} ${alert.unit || ""}
+            `;
+            feed.appendChild(div);
+          });
+      }
+
+      setInterval(() => {
+        loadThresholds();
+        loadAlertFeed();
+      }, 3000);
+
+      loadThresholds();
+      loadAlertFeed();
+
+      async function getThresholdByQuery(query) {
+        try {
+          const res = await fetch("/api/alerts");
+
+          if (!res.ok) {
+            return null;
+          }
+
+          const alerts = await res.json();
+          return alerts.find(a => a.query === query);
+        } catch (err) {
+          console.error(err);
+          return null;
+        }
+      }
+
+      async function refreshCharts() {
+        const cards = document.querySelectorAll(".card[data-query]");
+
+        for (const card of cards) {
+          const query = card.dataset.query;
+          const chartId = card.dataset.chartId;
+          const activeBtn = card.querySelector(".range-btn.active");
+          let range = 300;
+
+          if (activeBtn) {
+            const txt = activeBtn.innerText;
+            if (txt === "1h") range = 3600;
+            if (txt === "3h") range = 10800;
+            if (txt === "12h") range = 43200;
+            if (txt === "24h") range = 86400;
+          }
+
+          try {
+            const res = await fetch("/api/query", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ query, range })
+            });
+            const data = await res.json();
+            const thresholdData = await getThresholdByQuery(query);
+            renderChart(chartId, data, range, thresholdData);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      }
+
+      setInterval(() => {
+        refreshCharts();
+      }, 5000);
+    </script>
+  </body>
 </html>
