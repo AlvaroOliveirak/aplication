@@ -147,23 +147,35 @@ app.post('/api/query', async (req, res) => {
     // ALERTAS
     for (const alert of alerts) {
       if (query === alert.query) {
-        const last =
-          json.data.result?.[0]?.values?.slice(-1)[0]?.[1];
+       const series = json.data.result || [];
 
-        if (last) {
-          const value = Number(last);
+let maxValue = 0;
 
-          alert.lastValue = value.toFixed(2);
+for (const s of series) {
+  const last = s.values?.slice(-1)[0]?.[1];
 
-          const percent = (value / alert.threshold) * 100;
+  if (last) {
+    const value = Number(last);
 
-          if (value >= alert.threshold) {
-            alert.status = "CRITICAL";
-          } else if (percent >= 80) {
-            alert.status = "WARNING";
-          } else {
-            alert.status = "OK";
-          }
+    if (value > maxValue) {
+      maxValue = value;
+    }
+  }
+}
+
+        if (maxValue > 0) {
+  alert.lastValue = maxValue.toFixed(2);
+
+  const percent = (maxValue / alert.threshold) * 100;
+
+  if (maxValue >= alert.threshold) {
+    alert.status = "CRITICAL";
+  } else if (percent >= 80) {
+    alert.status = "WARNING";
+  } else {
+    alert.status = "OK";
+  }
+}
 
           console.log(
             "🚨 ALERTA:",
@@ -173,7 +185,7 @@ app.post('/api/query', async (req, res) => {
           );
         }
       }
-    }
+    
 
     res.json(json.data.result);
   } catch (error) {

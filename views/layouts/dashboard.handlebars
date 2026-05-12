@@ -357,7 +357,7 @@
         },
         {
           name: "CPU",
-          query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)"
+          query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[1m])) * 100)"
         },
         {
           name: "Disco (%)",
@@ -620,7 +620,11 @@
           card.className = "card";
           card.dataset.query = dashboard.query;
 
-          const chartId = "chart_" + Date.now();
+          const chartId =
+  "chart_" +
+  Date.now() +
+  "_" +
+  Math.random().toString(36).slice(2);
           card.dataset.chartId = chartId;
 
           const metricName = resolveMetricName(dashboard.query, data);
@@ -667,10 +671,10 @@
         const input = card.querySelector(".thresholdInput");
         const threshold = Number(input.value);
 
-        if (!threshold) {
-          alert("Defina um threshold");
-          return;
-        }
+if (isNaN(threshold)) {
+  alert("Defina um threshold");
+  return;
+}
 
         const metricName = card.querySelector("h4").innerText;
         await fetch("/api/alert", {
@@ -683,7 +687,7 @@
 
         input.value = "";
         await loadThresholds();
-        alert("Threshold salvo!");
+        
       }
 
       async function changeRange(btn, range) {
@@ -823,9 +827,14 @@
           series
         });
 
-        window.addEventListener("resize", () => {
-          chart.resize();
-        });
+        if (!window.__chartResizeBound) {
+
+  window.addEventListener("resize", () => {
+    echarts.getInstanceByDom(el)?.resize();
+  });
+
+  window.__chartResizeBound = true;
+}
       }
 
       async function loadDashboards() {
