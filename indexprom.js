@@ -146,7 +146,7 @@ app.post('/api/query', async (req, res) => {
 
     // ALERTAS
     for (const alert of alerts) {
-      if (query === alert.query) {
+      if (alert.metricId === req.body.metricId) {
        const series = json.data.result || [];
 
 let maxValue = 0;
@@ -198,7 +198,7 @@ app.get("/api/dashboard", (req, res) => {
 });
 
 app.post("/api/dashboard", (req, res) => {
-  const { query } = req.body;
+ const { query, metricId } = req.body;
 
   const exists = dashboards.find(d => d.query === query);
 
@@ -207,10 +207,10 @@ app.post("/api/dashboard", (req, res) => {
   }
 
   const dashboard = {
-    id: nextId++,
-    query
-  };
-
+  id: nextId++,
+  query,
+  metricId
+};
   dashboards.push(dashboard);
 
   res.json(dashboard);

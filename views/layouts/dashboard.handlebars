@@ -352,30 +352,37 @@
     <script>
       const metricList = [
         {
+          id: "ram",
           name: "RAM",
           query: "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))"
         },
         {
+          id: "cpu",
           name: "CPU",
           query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[1m])) * 100)"
         },
         {
+          id: "disco",
           name: "Disco (%)",
           query: "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))"
         },
         {
+          id: "rede_rx", 
           name: "Rede RX",
           query: "rate(node_network_receive_bytes_total[5m])"
         },
         {
+          id: "rede_tx",
           name: "Rede TX",
           query: "rate(node_network_transmit_bytes_total[5m])"
         },
         {
+          id: "load_1m",
           name: "Load 1m",
           query: "node_load1"
         },
         {
+          id: "load_5m",
           name: "Load 5m",
           query: "node_load5"
         }
@@ -460,31 +467,39 @@
       }
 
       async function createSelectedCharts() {
-        if (selectedMetrics.size === 0) {
-          return;
-        }
+  if (selectedMetrics.size === 0) {
+    return;
+  }
 
-        for (const query of selectedMetrics) {
-          if (activeDashboards.has(query)) {
-            continue;
-          }
+  for (const query of selectedMetrics) {
 
-          const response = await fetch("/api/dashboard", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ query })
-          });
+    if (activeDashboards.has(query)) {
+      continue;
+    }
 
-          const dashboard = await response.json();
-          await renderSavedChart({ id: dashboard.id, query });
-          activeDashboards.add(query);
-        }
+    const metric = metricList.find(m => m.query === query);
 
-        selectedMetrics.clear();
-        renderMetricOptions();
-      }
+    const response = await fetch("/api/dashboard", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query,
+        metricId: metric.id
+      })
+    });
+
+    const dashboard = await response.json();
+
+    await renderSavedChart(dashboard);
+
+    activeDashboards.add(query);
+  }
+
+  selectedMetrics.clear();
+  renderMetricOptions();
+}
 
       function showTab(tab) {
         document.querySelectorAll("main section").forEach(s => s.style.display = "none");
@@ -619,6 +634,7 @@
           const card = document.createElement("div");
           card.className = "card";
           card.dataset.query = dashboard.query;
+          card.dataset.metricId = dashboard.metricId;
 
           const chartId =
   "chart_" +
@@ -667,28 +683,39 @@
       }
 
       async function createInlineAlert(query, btn) {
-        const card = btn.closest(".card");
-        const input = card.querySelector(".thresholdInput");
-        const threshold = Number(input.value);
 
-if (isNaN(threshold)) {
-  alert("Defina um threshold");
-  return;
+  const card = btn.closest(".card");
+
+  const input = card.querySelector(".thresholdInput");
+
+  const threshold = Number(input.value);
+
+  if (isNaN(threshold)) {
+    alert("Defina um threshold");
+    return;
+  }
+
+  const metricName = card.querySelector("h4").innerText;
+
+  const metricId = card.dataset.metricId;
+
+  await fetch("/api/alert", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      metricId,
+      query,
+      threshold,
+      metricName
+    })
+  });
+
+  input.value = "";
+
+  await loadThresholds();
 }
-
-        const metricName = card.querySelector("h4").innerText;
-        await fetch("/api/alert", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ query, threshold, metricName })
-        });
-
-        input.value = "";
-        await loadThresholds();
-        
-      }
 
       async function changeRange(btn, range) {
         const card = btn.closest(".card");
@@ -850,7 +877,11 @@ if (isNaN(threshold)) {
         } catch (err) {
           console.error(err);
         }
+        container.innerHTML = "";
+activeDashboards.clear();
       }
+      
+
 
       loadDashboards();
 
@@ -926,7 +957,11 @@ if (isNaN(threshold)) {
           }
 
           const alerts = await res.json();
-          return alerts.find(a => a.query === query);
+          const metricId = [...document.querySelectorAll(".card")]
+  .find(c => c.dataset.query === query)
+  ?.dataset.metricId;
+
+return alerts.find(a => a.metricId === metricId);
         } catch (err) {
           console.error(err);
           return null;
