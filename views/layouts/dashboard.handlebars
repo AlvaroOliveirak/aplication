@@ -649,7 +649,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <h4>${metricName}</h4>
               <div style="display:flex; gap:5px;">
-                <button onclick="toggleAlertBox('${query}', this)">⚠️</button>
+                <button onclick="toggleAlertBox(this)">⚠️</button>
                 <button onclick="deleteDashboard(${id}, this)" style="background:red; border:none; border-radius:6px; color:white; padding:5px 10px; cursor:pointer;">X</button>
               </div>
             </div>
@@ -681,7 +681,7 @@
         }
       }
 
-      function toggleAlertBox(query, btn) {
+      function toggleAlertBox(btn) {
         const card = btn.closest(".card");
         const box = card.querySelector(".alert-inline");
         box.style.display = box.style.display === "none" ? "block" : "none";
