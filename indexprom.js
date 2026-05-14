@@ -252,20 +252,22 @@ app.get("/api/alerts", (req, res) => {
 app.post("/api/alert", (req, res) => {
 
   const alert = {
-    id: Date.now(),
+  id: Date.now(),
 
-    metricId: req.body.metricId,
+  metricId: req.body.metricId,
 
-    metricName: req.body.metricName,
+  metricName: req.body.metricName,
 
-    query: req.body.query,
+  query: req.body.query,
 
-    threshold: Number(req.body.threshold),
+  threshold: Number(req.body.threshold),
 
-    status: "OK",
+  status: "OK",
 
-    lastValue: 0
-  };
+  lastValue: 0,
+
+  unit: req.body.unit || "%"
+};
 
   alerts.push(alert);
 
