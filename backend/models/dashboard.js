@@ -3,5 +3,6 @@ import { DataTypes } from "sequelize";
 
 export const Dashboard = sequelize.define("dashboard", {
   name: DataTypes.STRING,
-  query: DataTypes.TEXT
+  query: DataTypes.TEXT,
+  metricId: DataTypes.STRING
 });

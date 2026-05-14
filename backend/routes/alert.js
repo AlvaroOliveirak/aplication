@@ -13,4 +13,9 @@ router.get("/", async (req, res) => {
   res.json(alerts);
 });
 
+router.delete("/:id", async (req, res) => {
+  await Alert.destroy({ where: { id: req.params.id } });
+  res.json({ success: true });
+});
+
 export default router;

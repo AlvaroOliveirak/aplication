@@ -667,7 +667,12 @@
 </div>
             <div class="alert-inline" style="display:none; margin-top:10px;">
               <input placeholder="Threshold (ex: 80)" class="thresholdInput" style="width:100%; padding:8px; border-radius:6px; border:none; margin-bottom:5px;">
-              <button onclick="createInlineAlert('${query}', this)" style="background:green; border:none; border-radius:6px; color:white; padding:5px 10px; cursor:pointer;">Salvar alerta</button>
+              <select class="colorSelect" style="width:100%; padding:8px; border-radius:6px; border:none; margin-bottom:5px;">
+                <option value="#00ff99">Verde (OK)</option>
+                <option value="#ffb300">Amarelo (Aviso)</option>
+                <option value="#ff0000">Vermelho (Crítico)</option>
+              </select>
+              <button onclick='createInlineAlert(${JSON.stringify(query)}, this)' style="background:green; border:none; border-radius:6px; color:white; padding:5px 10px; cursor:pointer;">Salvar alerta</button>
             </div>
           `;
 
@@ -692,8 +697,10 @@
   const card = btn.closest(".card");
 
   const input = card.querySelector(".thresholdInput");
+  const colorSelect = card.querySelector(".colorSelect");
 
   const threshold = Number(input.value);
+  const color = colorSelect.value;
 
   if (isNaN(threshold)) {
     alert("Defina um threshold");
@@ -713,7 +720,11 @@
       metricId,
       query,
       threshold,
-      metricName
+      metricName,
+      color,
+      status: "OK",
+      lastValue: 0,
+      unit: "%"
     })
   });
 
@@ -966,22 +977,66 @@
   }
 }
 
-      async function loadDashboards() {
-        try {
-          const res = await fetch("/api/dashboard");
-          const dashboards = await res.json();
-          const container = document.getElementById("chartsContainer");
-          container.innerHTML = "";
 
-          for (const d of dashboards) {
-            await renderSavedChart(d);
-          }
-        } catch (err) {
-          console.error(err);
-        }
-        container.innerHTML = "";
-activeDashboards.clear();
-      }
+async function refreshAlertsEngine() {
+
+  const cards =
+    document.querySelectorAll(".card[data-query]");
+
+  for (const card of cards) {
+
+    const query =
+      card.dataset.query;
+
+    try {
+
+      await fetch("/api/query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query,
+          range: 300
+        })
+      });
+
+    } catch (err) {
+      console.error(err);
+    }
+
+  }
+
+}
+
+     async function loadDashboards() {
+
+  try {
+
+    const res = await fetch("/api/dashboard");
+
+    const dashboards = await res.json();
+
+    const container =
+      document.getElementById("chartsContainer");
+
+    container.innerHTML = "";
+
+    activeDashboards.clear();
+
+    for (const d of dashboards) {
+
+      await renderSavedChart(d);
+
+    }
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
+
+}
       
 
 
@@ -990,65 +1045,202 @@ activeDashboards.clear();
 
       let alertCache = [];
       
-      async function loadThresholds() {
-        const res = await fetch("/api/alerts");
+      async function deleteAlert(id) {
 
-        if (!res.ok) {
-          console.error("Erro alerts:", res.status);
-          return [];
-        }
+  try {
 
-        const alerts = await res.json();
-        const thresholdList = document.getElementById("thresholdList");
-        thresholdList.innerHTML = "";
+    await fetch(`/api/alert/${id}`, {
+      method: "DELETE"
+    });
 
-        alerts.forEach(alert => {
-          const div = document.createElement("div");
-          div.className = "threshold-item";
-          div.innerHTML = `
+    await loadThresholds();
+    await loadAlertFeed();
+    await refreshCharts();
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function loadThresholds() {
+
+  const res = await fetch("/api/alerts");
+
+  if (!res.ok) {
+    console.error("Erro alerts:", res.status);
+    return [];
+  }
+
+  const alerts = await res.json();
+
+  const thresholdList = document.getElementById("thresholdList");
+
+  thresholdList.innerHTML = "";
+
+  if (!alerts.length) {
+
+    thresholdList.innerHTML = `
+      <div style="
+        opacity:.6;
+        font-size:13px;
+      ">
+        Nenhum threshold ativo
+      </div>
+    `;
+
+    return;
+  }
+
+ alerts.forEach(alert => {
+
+  const div = document.createElement("div");
+
+  div.className = "threshold-item";
+
+  let color = alert.color || "#00ff99";
+
+  if (alert.status === "WARNING") {
+    color = "#ffb300";
+  }
+
+  if (alert.status === "CRITICAL") {
+    color = "#ff3b3b";
+  }
+
+  div.innerHTML = `
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    ">
+
+      <div>
+        <strong style="color:${color}">
+          ${alert.metricName}
+        </strong><br>
+
+        <span style="opacity:.8;">
+          Limite:
+          ${alert.threshold}${alert.unit || ""}
+        </span><br>
+
+        <span style="
+          font-size:12px;
+          opacity:.6;
+        ">
+          Status:
+          ${alert.status}
+        </span>
+      </div>
+
+      <button class="delete-threshold-btn">
+        ✕
+      </button>
+
+    </div>
+  `;
+
+  const btn =
+    div.querySelector(".delete-threshold-btn");
+
+  btn.addEventListener("click", async () => {
+    await deleteAlert(alert.id);
+  });
+
+  thresholdList.appendChild(div);
+
+});
+
+}
+
+     async function loadAlertFeed() {
+
+  const res = await fetch("/api/alerts");
+
+  if (!res.ok) {
+    console.error("Erro alerts:", res.status);
+    return [];
+  }
+
+  const alerts = await res.json();
+
+  const feed = document.getElementById("alertFeed");
+
+  feed.innerHTML = "";
+
+  alerts
+    .filter(a => a.status !== "OK")
+    .forEach(alert => {
+
+      const div = document.createElement("div");
+
+      let css = "alert-warning";
+
+      if (alert.status === "CRITICAL") {
+        css = "alert-critical";
+      }
+
+      div.className = `alert-live ${css}`;
+
+      div.innerHTML = `
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:10px;
+        ">
+
+          <div>
             <strong>${alert.metricName}</strong><br>
-            Limite: ${alert.threshold}${alert.unit || ""}
-          `;
-          thresholdList.appendChild(div);
-        });
-      }
 
-      async function loadAlertFeed() {
-        const res = await fetch("/api/alerts");
+            Valor atual:
+            ${alert.lastValue}
+            ${alert.unit || ""}<br>
 
-        if (!res.ok) {
-          console.error("Erro alerts:", res.status);
-          return [];
-        }
+            Threshold:
+            ${alert.threshold}
+            ${alert.unit || ""}
+          </div>
 
-        const alerts = await res.json();
-        const feed = document.getElementById("alertFeed");
-        feed.innerHTML = "";
+          <button class="delete-alert-btn"
+            style="
+              background:rgba(255,0,0,.2);
+              border:1px solid rgba(255,0,0,.4);
+              color:white;
+              border-radius:8px;
+              padding:6px 10px;
+              cursor:pointer;
+            "
+          >
+            ✕
+          </button>
 
-        alerts
-          .filter(a => a.status !== "OK")
-          .forEach(alert => {
-            const div = document.createElement("div");
-            let css = "alert-warning";
+        </div>
+      `;
 
-            if (alert.status === "CRITICAL") {
-              css = "alert-critical";
-            }
+      const btn =
+  div.querySelector(".delete-alert-btn");
 
-            div.className = `alert-live ${css}`;
-            div.innerHTML = `
-              <strong>${alert.metricName}</strong><br>
-              Valor atual: ${alert.lastValue} ${alert.unit || ""}<br>
-              Threshold: ${alert.threshold} ${alert.unit || ""}
-            `;
-            feed.appendChild(div);
-          });
-      }
+btn.addEventListener("click", async () => {
+  await deleteAlert(alert.id);
+});
 
-      setInterval(() => {
-        loadThresholds();
-        loadAlertFeed();
-      }, 3000);
+      feed.appendChild(div);
+
+    });
+
+}
+
+     setInterval(async () => {
+
+  await refreshAlertsEngine();
+
+  await loadThresholds();
+
+  await loadAlertFeed();
+
+}, 3000);
 
       loadThresholds();
       loadAlertFeed();
@@ -1065,8 +1257,8 @@ activeDashboards.clear();
           const metricId = [...document.querySelectorAll(".card")]
   .find(c => c.dataset.query === query)
   ?.dataset.metricId;
-
 return alerts.find(a => a.metricId === metricId);
+
         } catch (err) {
           console.error(err);
           return null;

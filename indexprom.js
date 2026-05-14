@@ -145,46 +145,67 @@ app.post('/api/query', async (req, res) => {
     }
 
     // ALERTAS
-    for (const alert of alerts) {
-      if (alert.metricId === req.body.metricId) {
-       const series = json.data.result || [];
+for (const alert of alerts) {
 
-let maxValue = 0;
+  // usa metricId OU query
+  if (
+    alert.query !== query
+  ) {
+    continue;
+  }
 
-for (const s of series) {
-  const last = s.values?.slice(-1)[0]?.[1];
+  const series =
+    json.data.result || [];
 
-  if (last) {
-    const value = Number(last);
+  let currentValue = 0;
 
-    if (value > maxValue) {
-      maxValue = value;
+  for (const s of series) {
+
+    const last =
+      s.values?.[s.values.length - 1];
+
+    if (!last) {
+      continue;
     }
+
+    const value =
+      Number(last[1]);
+
+    if (value > currentValue) {
+      currentValue = value;
+    }
+
   }
-}
 
-        if (maxValue > 0) {
-  alert.lastValue = maxValue.toFixed(2);
+  alert.lastValue =
+    currentValue.toFixed(2);
 
-  const percent = (maxValue / alert.threshold) * 100;
+  const percent =
+    (currentValue / alert.threshold) * 100;
 
-  if (maxValue >= alert.threshold) {
+  if (currentValue >= alert.threshold) {
+
     alert.status = "CRITICAL";
-  } else if (percent >= 80) {
-    alert.status = "WARNING";
-  } else {
-    alert.status = "OK";
-  }
-}
 
-          console.log(
-            "🚨 ALERTA:",
-            query,
-            ">",
-            alert.threshold
-          );
-        }
-      }
+    console.log(
+      `🚨 ALERTA CRÍTICO: ${alert.metricName} = ${currentValue}`
+    );
+
+  } else if (percent >= 80) {
+
+    alert.status = "WARNING";
+
+    console.log(
+      `⚠️ ALERTA WARNING: ${alert.metricName} = ${currentValue}`
+    );
+
+  } else {
+
+    alert.status = "OK";
+
+  }
+
+}
     
 
     res.json(json.data.result);
@@ -229,16 +250,39 @@ app.get("/api/alerts", (req, res) => {
 });
 
 app.post("/api/alert", (req, res) => {
+
   const alert = {
     id: Date.now(),
-    ...req.body,
+
+    metricId: req.body.metricId,
+
+    metricName: req.body.metricName,
+
+    query: req.body.query,
+
+    threshold: Number(req.body.threshold),
+
     status: "OK",
+
     lastValue: 0
   };
 
   alerts.push(alert);
 
   res.json(alert);
+
+});
+
+app.delete("/api/alert/:id", (req, res) => {
+
+  const id = Number(req.params.id);
+
+  alerts = alerts.filter(a => a.id !== id);
+
+  res.json({
+    ok: true
+  });
+
 });
 
 /*app.get('/teste', (req, res) => {

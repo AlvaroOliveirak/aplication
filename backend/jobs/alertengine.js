@@ -18,13 +18,23 @@ export function startAlertEngine() {
           result[0].values.slice(-1)[0][1]
         );
 
-        if (lastValue > alert.threshold) {
-          console.log(`🚨 ALERT TRIGGERED: ${alert.metric}`);
+        let status = "OK";
+        if (lastValue >= alert.threshold) {
+          status = "WARNING";
+        }
+        if (lastValue >= alert.threshold * 1.2) { // Example: critical if 20% above threshold
+          status = "CRITICAL";
+        }
 
-          // aqui você pode:
-          // salvar log no banco
-          // enviar email
-          // websocket pro frontend
+        await Alert.update({
+          status,
+          lastValue
+        }, {
+          where: { id: alert.id }
+        });
+
+        if (status !== "OK") {
+          console.log(`🚨 ALERT TRIGGERED: ${alert.metricName} - ${status} (${lastValue})`);
         }
 
       } catch (err) {
