@@ -47,6 +47,24 @@ let dashboards = [];
 let nextId = 1;
 let alerts = [];
 let alertId = 1;
+let alertLogs = [];
+
+function addAlertLog(alert, value, status) {
+  alertLogs.unshift({
+    id: alertId++,
+    alertId: alert.id,
+    metricId: alert.metricId,
+    metricName: alert.metricName,
+    query: alert.query,
+    threshold: alert.threshold,
+    value: Number(value).toFixed(2),
+    status,
+    unit: alert.unit || "%",
+    createdAt: new Date().toISOString()
+  });
+
+  alertLogs = alertLogs.slice(0, 50);
+}
 
 app.get("/", (req, res) => {
   res.render('main', { layout: 'main' });
@@ -144,68 +162,46 @@ app.post('/api/query', async (req, res) => {
       return res.json([]);
     }
 
-    // ALERTAS
-for (const alert of alerts) {
+    for (const alert of alerts) {
+      if (alert.query !== query) {
+        continue;
+      }
 
-  // usa metricId OU query
-  if (
-    alert.query !== query
-  ) {
-    continue;
-  }
+      const series = json.data.result || [];
+      let currentValue = 0;
 
-  const series =
-    json.data.result || [];
+      for (const s of series) {
+        const last = s.values?.[s.values.length - 1];
 
-  let currentValue = 0;
+        if (!last) {
+          continue;
+        }
 
-  for (const s of series) {
+        const value = Number(last[1]);
 
-    const last =
-      s.values?.[s.values.length - 1];
+        if (value > currentValue) {
+          currentValue = value;
+        }
+      }
 
-    if (!last) {
-      continue;
+      const previousStatus = alert.status;
+      const percent = (currentValue / alert.threshold) * 100;
+      let nextStatus = "OK";
+
+      if (currentValue >= alert.threshold) {
+        nextStatus = "CRITICAL";
+      } else if (percent >= 80) {
+        nextStatus = "WARNING";
+      }
+
+      alert.lastValue = currentValue.toFixed(2);
+      alert.status = nextStatus;
+
+      if (nextStatus !== "OK" && nextStatus !== previousStatus) {
+        addAlertLog(alert, currentValue, nextStatus);
+        console.log(`ALERTA ${nextStatus}: ${alert.metricName} = ${currentValue.toFixed(2)}`);
+      }
     }
-
-    const value =
-      Number(last[1]);
-
-    if (value > currentValue) {
-      currentValue = value;
-    }
-
-  }
-
-  alert.lastValue =
-    currentValue.toFixed(2);
-
-  const percent =
-    (currentValue / alert.threshold) * 100;
-
-  if (currentValue >= alert.threshold) {
-
-    alert.status = "CRITICAL";
-
-    console.log(
-      `🚨 ALERTA CRÍTICO: ${alert.metricName} = ${currentValue}`
-    );
-
-  } else if (percent >= 80) {
-
-    alert.status = "WARNING";
-
-    console.log(
-      `⚠️ ALERTA WARNING: ${alert.metricName} = ${currentValue}`
-    );
-
-  } else {
-
-    alert.status = "OK";
-
-  }
-
-}
     
 
     res.json(json.data.result);
@@ -250,29 +246,46 @@ app.get("/api/alerts", (req, res) => {
 });
 
 app.post("/api/alert", (req, res) => {
+  const threshold = Number(req.body.threshold);
+
+  if (!Number.isFinite(threshold)) {
+    return res.status(400).json({
+      error: "Threshold invalido"
+    });
+  }
+
+  const exists = alerts.find(a => a.metricId === req.body.metricId);
+
+  if (exists) {
+    exists.metricName = req.body.metricName;
+    exists.query = req.body.query;
+    exists.threshold = threshold;
+    exists.unit = req.body.unit || "%";
+    exists.status = "OK";
+    exists.lastValue = 0;
+
+    return res.json(exists);
+  }
 
   const alert = {
-  id: Date.now(),
-
-  metricId: req.body.metricId,
-
-  metricName: req.body.metricName,
-
-  query: req.body.query,
-
-  threshold: Number(req.body.threshold),
-
-  status: "OK",
-
-  lastValue: 0,
-
-  unit: req.body.unit || "%"
-};
+    id: alertId++,
+    metricId: req.body.metricId,
+    metricName: req.body.metricName,
+    query: req.body.query,
+    threshold,
+    status: "OK",
+    lastValue: 0,
+    unit: req.body.unit || "%"
+  };
 
   alerts.push(alert);
 
   res.json(alert);
 
+});
+
+app.get("/api/alert-logs", (req, res) => {
+  res.json(alertLogs);
 });
 
 app.delete("/api/alert/:id", (req, res) => {

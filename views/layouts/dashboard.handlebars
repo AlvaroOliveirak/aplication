@@ -6,163 +6,263 @@
     <title>Dashboard | Temporal Series</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-      body {
-        background: #0b1120;
-        color: white;
-        font-family: Arial, Helvetica, sans-serif;
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Dots&display=swap");
+
+      :root {
+        --bg: #08111f;
+        --panel: #101b2b;
+        --panel-strong: #142236;
+        --line: rgba(151, 164, 184, .18);
+        --muted: #91a0b8;
+        --text: #f7fbff;
+        --teal: #2dd4bf;
+        --green: #22c55e;
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --blue: #60a5fa;
+        --shadow: 0 18px 45px rgba(0, 0, 0, .28);
       }
 
-      /* HEADER */
-      header {
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 12% 8%, rgba(45, 212, 191, .12), transparent 26%),
+          linear-gradient(140deg, #08111f 0%, #0c1728 52%, #101827 100%);
+        color: var(--text);
+        font-family: Inter, Arial, Helvetica, sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 15px 30px;
-        border-bottom: 1px solid rgba(255, 255, 255, .1);
+        gap: 18px;
+        min-height: 72px;
+        padding: 14px 28px;
+        background: rgba(8, 17, 31, .88);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--teal), var(--blue));
+        color: #06111f;
+        font-weight: 800;
       }
 
       .logo {
-        font-family: "Zen Dots";
-        font-size: 20px;
+        font-family: "Zen Dots", Inter, sans-serif;
+        font-size: 18px;
+        letter-spacing: 0;
+        white-space: nowrap;
       }
 
-      nav a {
-        color: white;
-        margin-left: 20px;
+      .subtitle {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .nav a,
+      .nav button,
+      .ghost-btn,
+      .primary-btn,
+      .icon-btn,
+      .range-btn,
+      .metric-btn {
+        min-height: 38px;
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
         text-decoration: none;
+        transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
       }
 
-      /* LAYOUT */
+      .nav a,
+      .nav button,
+      .ghost-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 13px;
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid transparent;
+      }
+
+      .nav a:hover,
+      .nav button:hover,
+      .ghost-btn:hover {
+        background: rgba(255, 255, 255, .08);
+        border-color: var(--line);
+      }
+
+      .nav .active {
+        background: rgba(45, 212, 191, .12);
+        border-color: rgba(45, 212, 191, .35);
+        color: #bffaf2;
+      }
+
       .dashboard {
         display: grid;
-        grid-template-columns: 250px 1fr;
-        height: calc(100vh - 70px);
+        grid-template-columns: 300px minmax(0, 1fr);
+        min-height: calc(100vh - 72px);
       }
 
-      /* SIDEBAR */
       .sidebar {
-        border-right: 1px solid rgba(255, 255, 255, .1);
-        padding: 20px;
+        padding: 22px;
+        border-right: 1px solid var(--line);
+        background: rgba(8, 17, 31, .42);
       }
 
-      .sidebar button {
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, .1);
-        color: white;
-        cursor: pointer;
-      }
-
-      .sidebar button:hover {
-        background: rgba(255, 255, 255, .2);
-      }
-
-      /* MAIN */
       .main {
-        padding: 20px;
+        min-width: 0;
+        padding: 26px;
         overflow: auto;
       }
 
-      /* GRID DASHBOARDS */
+      .section-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        color: var(--teal);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 0;
+        font-size: clamp(26px, 3vw, 38px);
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin-bottom: 12px;
+        font-size: 15px;
+      }
+
+      h4 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .panel,
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: linear-gradient(180deg, rgba(20, 34, 54, .92), rgba(13, 24, 39, .92));
+        box-shadow: var(--shadow);
+      }
+
+      .panel {
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 25px;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 18px;
       }
 
-      /* CARD */
-      .card {
-        background: linear-gradient(145deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .02));
-        border: 1px solid rgba(255, 255, 255, .08);
-        border-radius: 20px;
-        padding: 20px;
-        backdrop-filter: blur(20px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
-        transition: 0.3s;
-      }
-
-      .card:hover {
-        transform: translateY(-5px) scale(1.01);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, .5);
-      }
-
-      /* BUILDER */
       .builder {
-        margin-bottom: 20px;
+        margin-bottom: 18px;
       }
 
-      .builder input {
-        width: 70%;
-        padding: 12px;
-        border-radius: 10px;
-        border: none;
-        margin-right: 10px;
+      .builder-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
       }
 
-      .builder button {
-        padding: 10px 18px;
-        border: none;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        color: white;
-        cursor: pointer;
-        font-size: 14px;
-        transition: .25s;
+      .primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 16px;
+        background: linear-gradient(135deg, #14b8a6, #60a5fa);
+        color: #05101d;
+        font-weight: 800;
       }
 
-      .builder button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(106, 0, 255, .3);
+      .primary-btn:hover,
+      .icon-btn:hover,
+      .range-btn:hover,
+      .metric-btn:hover {
+        transform: translateY(-1px);
       }
 
-      /* ALERT CONFIG */
-      .alert-box input {
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 8px;
-        border: none;
-      }
-
-      /* LOGS */
-      .logs {
-        max-height: 200px;
-        overflow: auto;
-      }
-
-      .log {
-        padding: 10px;
-        margin-bottom: 8px;
-        border-radius: 8px;
-        background: rgba(255, 0, 0, .2);
-        position: relative;
-      }
-
-      .log:hover::after {
-        content: attr(data-help);
-        position: absolute;
-        top: 100%;
-        left: 0;
-        background: black;
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 12px;
-        width: 250px;
-      }
-
-      /* MENU MÉTRICAS */
       #metricMenu {
+        display: none;
+        margin-top: 14px;
+        padding: 14px;
+        border-top: 1px solid var(--line);
         opacity: 0;
-        transform: translateY(-10px);
-        transition: .35s ease;
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, .08);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+        transform: translateY(-8px);
+        transition: .24s ease;
       }
 
       #metricMenu.show {
@@ -170,179 +270,334 @@
         transform: translateY(0);
       }
 
-      /* GRID MÉTRICAS */
       #metricOptions {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
         gap: 10px;
+        margin-bottom: 12px;
       }
 
-      /* BOTÕES */
-      .metric-btn {
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, .08);
+      .metric-btn,
+      .range-btn {
         background: rgba(255, 255, 255, .05);
-        color: rgba(255, 255, 255, .85);
-        cursor: pointer;
-        backdrop-filter: blur(12px);
-        transition: transform .2s, background .2s, border .2s, box-shadow .2s;
+        border: 1px solid var(--line);
       }
 
-      .metric-btn:hover {
-        transform: translateY(-2px);
-        background: rgba(255, 255, 255, .08);
+      .metric-btn {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 11px;
+        color: #dce7f7;
+        font-weight: 700;
+        text-align: left;
       }
 
       .metric-btn.active {
-        background: linear-gradient(90deg, #2b0166, #6200ff9c);
-        border: 1px solid rgba(255, 255, 255, .15);
-        color: white;
-        box-shadow: 0 0 20px rgba(157, 0, 255, .35);
+        background: rgba(45, 212, 191, .13);
+        border-color: rgba(45, 212, 191, .48);
+        color: #d9fffb;
       }
 
-      /* RANGE BUTTONS */
       .range-buttons {
         display: flex;
-        gap: 10px;
-        margin: 14px 0 10px 0;
+        gap: 8px;
+        margin: 14px 0 10px;
         flex-wrap: wrap;
       }
 
       .range-btn {
-        border: none;
-        padding: 8px 14px;
-        border-radius: 12px;
-        background: linear-gradient(145deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03));
-        color: rgba(255, 255, 255, .85);
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: .3px;
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, .08);
-        transition: transform .2s, background .2s, box-shadow .2s, border .2s;
-      }
-
-      .range-btn:hover {
-        transform: translateY(-2px);
-        background: linear-gradient(145deg, rgba(120, 0, 255, .35), rgba(80, 0, 180, .25));
-        box-shadow: 0 10px 25px rgba(98, 0, 255, .25);
-        color: white;
+        min-height: 32px;
+        padding: 0 11px;
+        color: #cdd8ea;
+        font-size: 12px;
+        font-weight: 800;
       }
 
       .range-btn.active {
-        background: linear-gradient(90deg, #3b0a91, #7b2cff);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, .2);
-        box-shadow: 0 0 20px rgba(123, 44, 255, .45);
+        background: rgba(96, 165, 250, .16);
+        border-color: rgba(96, 165, 250, .5);
+        color: #eaf4ff;
       }
 
-      .threshold-item {
-        padding: 10px;
+      .chart-header,
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 7px;
+        flex-shrink: 0;
+      }
+
+      .icon-btn {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        background: rgba(255, 255, 255, .06);
+        border: 1px solid var(--line);
+        color: #e9f2ff;
+        font-weight: 800;
+      }
+
+      .icon-btn.danger {
+        background: rgba(239, 68, 68, .12);
+        border-color: rgba(239, 68, 68, .34);
+        color: #fecaca;
+      }
+
+      .chart-box {
+        height: 300px;
+        min-width: 0;
+      }
+
+      .alert-inline {
+        display: none;
+        gap: 10px;
+        margin-top: 10px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      .thresholdInput {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 12px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, .07);
+        color: var(--text);
+        outline: none;
+      }
+
+      .thresholdInput:focus {
+        border-color: rgba(45, 212, 191, .62);
+      }
+
+      .threshold-item,
+      .alert-live,
+      .log {
+        padding: 12px;
         margin-bottom: 10px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, .05);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, .055);
+        border: 1px solid var(--line);
         font-size: 13px;
       }
 
+      .delete-threshold-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        background: rgba(239, 68, 68, .12);
+        color: #fecaca;
+        cursor: pointer;
+      }
+
       .alert-live {
-        padding: 12px;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        animation: pulse 1.5s infinite;
+        animation: pulse 1.8s infinite;
       }
 
       .alert-ok {
-        background: rgba(0, 255, 100, .15);
-        border: 1px solid rgba(0, 255, 100, .3);
+        border-color: rgba(34, 197, 94, .36);
       }
 
       .alert-warning {
-        background: rgba(255, 180, 0, .15);
-        border: 1px solid rgba(255, 180, 0, .4);
+        border-color: rgba(245, 158, 11, .46);
+        background: rgba(245, 158, 11, .11);
       }
 
       .alert-critical {
-        background: rgba(255, 0, 0, .18);
-        border: 1px solid rgba(255, 0, 0, .5);
+        border-color: rgba(239, 68, 68, .5);
+        background: rgba(239, 68, 68, .12);
+      }
+
+      .logs {
+        display: grid;
+        gap: 10px;
+        max-height: none;
+        overflow: visible;
+      }
+
+      .log {
+        display: grid;
+        grid-template-columns: 110px minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        margin: 0;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 26px;
+        padding: 0 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .status-OK {
+        background: rgba(34, 197, 94, .12);
+        color: #bbf7d0;
+      }
+
+      .status-WARNING {
+        background: rgba(245, 158, 11, .14);
+        color: #fde68a;
+      }
+
+      .status-CRITICAL {
+        background: rgba(239, 68, 68, .15);
+        color: #fecaca;
+      }
+
+      .empty-state {
+        display: grid;
+        place-items: center;
+        min-height: 160px;
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        color: var(--muted);
+        text-align: center;
+        padding: 18px;
       }
 
       @keyframes pulse {
-        0% {
+        0%, 100% {
           transform: scale(1);
         }
 
         50% {
-          transform: scale(1.02);
+          transform: scale(1.015);
+        }
+      }
+
+      @media (max-width: 880px) {
+        .topbar,
+        .section-head,
+        .builder-bar {
+          align-items: stretch;
+          flex-direction: column;
         }
 
-        100% {
-          transform: scale(1);
+        .nav {
+          justify-content: flex-start;
+        }
+
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .main {
+          padding: 18px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .log {
+          grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <header>
-      <div class="logo">Temporal Series</div>
-      <nav>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">TS</div>
+        <div>
+          <div class="logo">Temporal Series</div>
+          <div class="subtitle">Monitoramento Prometheus em tempo real</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Navegacao principal">
         <a href="/">Home</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/config">Config</a>
+        <button class="active" data-tab-button="dashboards" onclick="showTab('dashboards')">Dashboard</button>
+        <button data-tab-button="logs" onclick="showTab('logs')">Logs</button>
+        <button data-tab-button="settings" onclick="showTab('settings')">Config</button>
       </nav>
     </header>
 
     <div class="dashboard">
-      <!-- SIDEBAR -->
       <aside class="sidebar">
-        <button onclick="showTab('dashboards')">Dashboards</button>
-        <button onclick="showTab('logs')">Logs</button>
-        <button onclick="showTab('settings')">Configurações</button>
-
-        <!-- THRESHOLDS ATIVOS -->
-        <div class="card" style="margin-top:20px; padding:15px;">
-          <h3 style="margin-bottom:10px;">Thresholds Ativos</h3>
+        <div class="panel">
+          <h3>Thresholds ativos</h3>
           <div id="thresholdList"></div>
         </div>
 
-        <!-- ALERTAS -->
-        <div class="card" style="margin-top:20px; padding:15px;">
-          <h3 style="margin-bottom:10px;">Alertas</h3>
+        <div class="panel">
+          <h3>Alertas em aberto</h3>
           <div id="alertFeed"></div>
         </div>
       </aside>
 
-      <!-- MAIN -->
       <main class="main">
-        <!-- DASHBOARDS -->
         <section id="dashboards">
-          <div class="builder">
-            <button onclick="toggleMetricMenu()">Selecionar dashboards</button>
-            <div id="metricMenu" style="display:none; margin-top:15px; padding:15px; border-radius:16px;">
-              <div id="metricOptions" style="margin-bottom:15px;"></div>
-              <button onclick="createSelectedCharts()" style="background:linear-gradient(90deg,#411b01,#f00202);">Criar dashboards</button>
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Metricas</p>
+              <h1>Dashboards</h1>
+            </div>
+            <div class="muted">Atualizacao automatica a cada 5 segundos.</div>
+          </div>
+
+          <div class="builder panel">
+            <div class="builder-bar">
+              <div>
+                <h3>Selecionar dashboards</h3>
+                <div class="muted">Escolha as metricas que voce quer acompanhar.</div>
+              </div>
+              <button class="primary-btn" onclick="toggleMetricMenu()">Selecionar</button>
+            </div>
+
+            <div id="metricMenu">
+              <div id="metricOptions"></div>
+              <button class="primary-btn" onclick="createSelectedCharts()">Criar dashboards</button>
             </div>
           </div>
 
           <div class="grid" id="chartsContainer"></div>
         </section>
 
-        <!-- LOGS -->
         <section id="logs" style="display:none;">
-          <div class="card">
-            <h3>Logs de Alertas</h3>
-            <div class="logs" id="logContainer">
-              <!-- logs -->
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Historico</p>
+              <h1>Logs de alertas</h1>
             </div>
+            <button class="ghost-btn" onclick="loadAlertLogs()">Atualizar logs</button>
+          </div>
+
+          <div class="panel">
+            <div class="logs" id="logContainer"></div>
           </div>
         </section>
 
-        <!-- SETTINGS -->
         <section id="settings" style="display:none;">
-          <div class="card">
-            <h3>Configurações</h3>
-            <p>Configurações de visualização, refresh rate, tema, etc.</p>
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Preferencias</p>
+              <h1>Configuracoes</h1>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Visualizacao</h3>
+            <p class="muted">Os graficos usam janelas de tempo independentes por card e refresh automatico.</p>
           </div>
         </section>
       </main>
@@ -359,7 +614,7 @@
         {
           id: "cpu",
           name: "CPU",
-          query: "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode='idle'}[1m])) * 100)"
+          query: "100 * (1 - avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))"
         },
         {
           id: "disco",
@@ -367,7 +622,7 @@
           query: "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))"
         },
         {
-          id: "rede_rx", 
+          id: "rede_rx",
           name: "Rede RX",
           query: "rate(node_network_receive_bytes_total[5m])"
         },
@@ -391,14 +646,18 @@
       let selectedMetrics = new Set();
       const activeDashboards = new Set();
 
-      async function removeDashboardByQuery(query) {
-        const cards = document.querySelectorAll(".card[data-query]");
+      function emptyState(message) {
+        return `<div class="empty-state">${message}</div>`;
+      }
 
-        for (const card of cards) {
+      async function removeDashboardByQuery(query) {
+        document.querySelectorAll(".card[data-query]").forEach(card => {
           if (card.dataset.query === query) {
+            const chart = echarts.getInstanceByDom(card.querySelector("[data-chart-id]"));
+            chart?.dispose();
             card.remove();
           }
-        }
+        });
 
         activeDashboards.delete(query);
       }
@@ -406,16 +665,14 @@
       function toggleMetricMenu() {
         const menu = document.getElementById("metricMenu");
 
-        if (menu.style.display === "none") {
+        if (menu.style.display === "none" || !menu.style.display) {
           menu.style.display = "block";
-          requestAnimationFrame(() => {
-            menu.classList.add("show");
-          });
+          requestAnimationFrame(() => menu.classList.add("show"));
         } else {
           menu.classList.remove("show");
           setTimeout(() => {
             menu.style.display = "none";
-          }, 300);
+          }, 240);
         }
 
         renderMetricOptions();
@@ -427,90 +684,68 @@
 
         metricList.forEach(metric => {
           const btn = document.createElement("button");
-          btn.className = "metric-btn";
+          const isActive = selectedMetrics.has(metric.query) || activeDashboards.has(metric.query);
+          btn.className = `metric-btn${isActive ? " active" : ""}`;
+          btn.innerHTML = `<span>${metric.name}</span><span>${isActive ? "Ativo" : "Adicionar"}</span>`;
 
-          if (activeDashboards.has(metric.query)) {
-            btn.classList.add("active");
-          }
-
-          btn.innerText = metric.name;
           btn.onclick = async () => {
             if (activeDashboards.has(metric.query)) {
               await removeDashboardByQuery(metric.query);
-              activeDashboards.delete(metric.query);
-              btn.classList.remove("active");
-              btn.style.opacity = ".6";
-              return;
-            }
-
-            if (selectedMetrics.has(metric.query)) {
+            } else if (selectedMetrics.has(metric.query)) {
               selectedMetrics.delete(metric.query);
-              btn.classList.remove("active");
-              btn.style.opacity = ".6";
             } else {
               selectedMetrics.add(metric.query);
-              btn.classList.add("active");
-              btn.style.opacity = "1";
             }
-          };
 
-          if (selectedMetrics.has(metric.query) || activeDashboards.has(metric.query)) {
-            btn.classList.add("active");
-            btn.style.opacity = "1";
-          } else {
-            btn.classList.remove("active");
-            btn.style.opacity = ".6";
-          }
+            renderMetricOptions();
+          };
 
           container.appendChild(btn);
         });
       }
 
       async function createSelectedCharts() {
-  if (selectedMetrics.size === 0) {
-    return;
-  }
+        if (selectedMetrics.size === 0) {
+          return;
+        }
 
-  for (const query of selectedMetrics) {
+        for (const query of selectedMetrics) {
+          if (activeDashboards.has(query)) {
+            continue;
+          }
 
-    if (activeDashboards.has(query)) {
-      continue;
-    }
+          const metric = metricList.find(m => m.query === query);
+          const response = await fetch("/api/dashboard", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query,
+              metricId: metric.id
+            })
+          });
 
-    const metric = metricList.find(m => m.query === query);
+          const dashboard = await response.json();
+          await renderSavedChart(dashboard);
+          activeDashboards.add(query);
+        }
 
-    const response = await fetch("/api/dashboard", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        query,
-        metricId: metric.id
-      })
-    });
-
-    const dashboard = await response.json();
-
-    await renderSavedChart(dashboard);
-
-    activeDashboards.add(query);
-  }
-
-  selectedMetrics.clear();
-  renderMetricOptions();
-}
+        selectedMetrics.clear();
+        renderMetricOptions();
+      }
 
       function showTab(tab) {
         document.querySelectorAll("main section").forEach(s => s.style.display = "none");
         document.getElementById(tab).style.display = "block";
-      }
 
-      function formatMetricName(name) {
-        return name
-          .replace(/node_/g, "")
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, l => l.toUpperCase());
+        document.querySelectorAll("[data-tab-button]").forEach(button => {
+          button.classList.toggle("active", button.dataset.tabButton === tab);
+        });
+
+        if (tab === "logs") {
+          loadAlertLogs();
+        }
       }
 
       async function deleteDashboard(id, btn) {
@@ -521,30 +756,11 @@
           method: "DELETE"
         });
 
-        if (card) {
-          card.remove();
-        }
-
+        const chart = echarts.getInstanceByDom(card.querySelector("[data-chart-id]"));
+        chart?.dispose();
+        card.remove();
         activeDashboards.delete(query);
         renderMetricOptions();
-      }
-
-      function extractMetricName(query, data) {
-        if (data[0]?.metric?.__name__) {
-          return data[0].metric.__name__;
-        }
-
-        const match = query.match(/[a-zA-Z_:][a-zA-Z0-9_:]*/g);
-        if (match) {
-          const blacklist = ["rate", "avg", "sum", "by", "irate"];
-          const filtered = match.filter(m => !blacklist.includes(m));
-
-          if (filtered.length) {
-            return filtered[0];
-          }
-        }
-
-        return query;
       }
 
       function beautifyMetric(name) {
@@ -563,27 +779,11 @@
         }
 
         if (q.includes("node_memory_memavailable_bytes") && q.includes("node_memory_memtotal_bytes")) {
-          return "Uso de Memória (%)";
-        }
-
-        if (q.includes("node_memory_memavailable_bytes")) {
-          return "Memória Disponível";
-        }
-
-        if (q.includes("node_memory_memtotal_bytes")) {
-          return "Memória Total";
+          return "Uso de Memoria (%)";
         }
 
         if (q.includes("node_filesystem_size_bytes") && q.includes("node_filesystem_avail_bytes")) {
           return "Uso de Disco (%)";
-        }
-
-        if (q.includes("node_filesystem_avail_bytes")) {
-          return "Disco Livre";
-        }
-
-        if (q.includes("node_filesystem_size_bytes")) {
-          return "Tamanho do Disco";
         }
 
         if (q.includes("node_network_receive_bytes_total")) {
@@ -591,7 +791,7 @@
         }
 
         if (q.includes("node_network_transmit_bytes_total")) {
-          return "Saída de Rede (TX)";
+          return "Saida de Rede (TX)";
         }
 
         if (q.includes("node_load1")) {
@@ -600,10 +800,6 @@
 
         if (q.includes("node_load5")) {
           return "Load Average (5m)";
-        }
-
-        if (q.includes("node_load15")) {
-          return "Load Average (15m)";
         }
 
         if (data[0]?.metric?.__name__) {
@@ -627,30 +823,28 @@
           const data = await res.json();
 
           if (!Array.isArray(data)) {
-            console.warn("Formato inválido:", data);
+            console.warn("Formato invalido:", data);
             return;
           }
 
           const card = document.createElement("div");
+          const container = document.getElementById("chartsContainer");
+          const chartId = `chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+          const metricName = resolveMetricName(dashboard.query, data);
+
           card.className = "card";
           card.dataset.query = dashboard.query;
           card.dataset.metricId = dashboard.metricId;
-
-          const chartId =
-  "chart_" +
-  Date.now() +
-  "_" +
-  Math.random().toString(36).slice(2);
           card.dataset.chartId = chartId;
-          card.querySelector;
-
-          const metricName = resolveMetricName(dashboard.query, data);
           card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <h4>${metricName}</h4>
-              <div style="display:flex; gap:5px;">
-                <button onclick="toggleAlertBox(this)">⚠️</button>
-                <button onclick="deleteDashboard(${id}, this)" style="background:red; border:none; border-radius:6px; color:white; padding:5px 10px; cursor:pointer;">X</button>
+            <div class="chart-header">
+              <div>
+                <h4>${metricName}</h4>
+                <div class="muted" style="font-size:12px; margin-top:4px;">Janela movel de dados</div>
+              </div>
+              <div class="card-actions">
+                <button class="icon-btn" title="Configurar threshold" onclick="toggleAlertBox(this)">!</button>
+                <button class="icon-btn danger" title="Remover dashboard" onclick="deleteDashboard(${id}, this)">X</button>
               </div>
             </div>
             <div class="range-buttons">
@@ -660,45 +854,15 @@
               <button class="range-btn" onclick="changeRange(this, 43200)">12h</button>
               <button class="range-btn" onclick="changeRange(this, 86400)">24h</button>
             </div>
-           <div
-  id="${chartId}"
-  data-chart-id="${chartId}"
-  style="height:300px;">
-</div>
-           <div class="alert-inline" style="display:none; margin-top:10px;">
-  <input
-    placeholder="Threshold (ex: 80)"
-    class="thresholdInput"
-    style="
-      width:100%;
-      padding:10px;
-      border-radius:10px;
-      border:none;
-      margin-bottom:10px;
-      background:rgba(255,255,255,.08);
-      color:white;
-    "
-  >
-
-  <button
-    onclick='createInlineAlert(${JSON.stringify(query)}, this)'
-    style="
-      width:100%;
-      background:linear-gradient(90deg,#1f7a1f,#00c853);
-      border:none;
-      border-radius:10px;
-      color:white;
-      padding:10px;
-      cursor:pointer;
-      font-weight:bold;
-    "
-  >
-    Salvar threshold
-  </button>
-</div>
+            <div id="${chartId}" data-chart-id="${chartId}" class="chart-box"></div>
+            <div class="alert-inline">
+              <input placeholder="Threshold, ex: 80" class="thresholdInput" type="number" step="0.01">
+              <button class="primary-btn" onclick='createInlineAlert(${JSON.stringify(query)}, this)'>Salvar threshold</button>
+            </div>
           `;
 
-          document.getElementById("chartsContainer").appendChild(card);
+          container.querySelector(".empty-state")?.remove();
+          container.appendChild(card);
           activeDashboards.add(dashboard.query);
 
           const thresholdData = await getThresholdByQuery(dashboard.query);
@@ -709,48 +873,38 @@
       }
 
       function toggleAlertBox(btn) {
-        const card = btn.closest(".card");
-        const box = card.querySelector(".alert-inline");
-        box.style.display = box.style.display === "none" ? "block" : "none";
+        const box = btn.closest(".card").querySelector(".alert-inline");
+        box.style.display = box.style.display === "grid" ? "none" : "grid";
       }
 
       async function createInlineAlert(query, btn) {
+        const card = btn.closest(".card");
+        const input = card.querySelector(".thresholdInput");
+        const threshold = Number(input.value);
 
-  const card = btn.closest(".card");
+        if (!Number.isFinite(threshold)) {
+          alert("Defina um threshold valido");
+          return;
+        }
 
-  const input = card.querySelector(".thresholdInput");
+        await fetch("/api/alert", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            metricId: card.dataset.metricId,
+            query,
+            threshold,
+            metricName: card.querySelector("h4").innerText,
+            unit: "%"
+          })
+        });
 
-  const threshold = Number(input.value);
-
-  if (isNaN(threshold)) {
-    alert("Defina um threshold");
-    return;
-  }
-
-  const metricName = card.querySelector("h4").innerText;
-
-  const metricId = card.dataset.metricId;
-
-  await fetch("/api/alert", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      metricId,
-      query,
-      threshold,
-      metricName,
-      status: "OK",
-      lastValue: 0,
-      unit: "%"
-    })
-  });
-
-  input.value = "";
-
-  await loadThresholds();
-}
+        input.value = "";
+        await loadThresholds();
+        await refreshCharts();
+      }
 
       async function changeRange(btn, range) {
         const card = btn.closest(".card");
@@ -778,474 +932,324 @@
       }
 
       function renderChart(id, prometheusData, range = 300, thresholdData = null) {
+        const el = document.getElementById(id);
 
-  const el = document.getElementById(id);
+        if (!el) {
+          return;
+        }
 
-  if (!el) return;
+        let chart = echarts.getInstanceByDom(el);
 
-  let chart = echarts.getInstanceByDom(el);
+        if (!chart) {
+          chart = echarts.init(el);
+        }
 
-  // cria somente uma vez
-  if (!chart) {
-    chart = echarts.init(el);
-  }
+        const now = Date.now();
+        const startTime = now - range * 1000;
+        const series = prometheusData
+          .filter(item => item.values?.length)
+          .map((item, index) => ({
+            name: item.metric?.__name__ || "metric_" + index,
+            type: "line",
+            smooth: true,
+            showSymbol: false,
+            sampling: "lttb",
+            progressive: 200,
+            progressiveThreshold: 500,
+            animationDuration: 500,
+            animationEasing: "linear",
+            lineStyle: {
+              width: 3
+            },
+            areaStyle: {
+              opacity: .09
+            },
+            data: item.values.map(v => [
+              Number(v[0]) * 1000,
+              parseFloat(v[1])
+            ]),
+            markLine:
+              thresholdData && thresholdData.threshold != null
+                ? {
+                    silent: true,
+                    symbol: ["none", "none"],
+                    label: {
+                      show: true,
+                      position: "end",
+                      formatter: () => `THRESHOLD: ${thresholdData.threshold}${thresholdData.unit || ""}`,
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: "bold",
+                      backgroundColor:
+                        thresholdData.status === "CRITICAL"
+                          ? "rgba(239,68,68,.9)"
+                          : thresholdData.status === "WARNING"
+                          ? "rgba(245,158,11,.9)"
+                          : "rgba(34,197,94,.85)",
+                      padding: [5, 8],
+                      borderRadius: 6
+                    },
+                    lineStyle: {
+                      color:
+                        thresholdData.status === "CRITICAL"
+                          ? "#ef4444"
+                          : thresholdData.status === "WARNING"
+                          ? "#f59e0b"
+                          : "#22c55e",
+                      width: 3,
+                      type: "dashed"
+                    },
+                    data: [
+                      {
+                        yAxis: Number(thresholdData.threshold)
+                      }
+                    ]
+                  }
+                : undefined
+          }));
 
-  const now = Date.now();
-  const startTime = now - range * 1000;
-
-  const series = prometheusData
-    .filter(item => item.values?.length)
-    .map((item, index) => ({
-
-      name: item.metric?.__name__ || "metric_" + index,
-
-      type: "line",
-
-      smooth: true,
-
-      showSymbol: false,
-
-      sampling: "lttb",
-
-      progressive: 200,
-
-      progressiveThreshold: 500,
-
-      animationDuration: 500,
-
-      animationEasing: "linear",
-
-      lineStyle: {
-        width: 3
-      },
-
-      areaStyle: {
-        opacity: .1
-      },
-
-      data: item.values.map(v => [
-        Number(v[0]) * 1000,
-        parseFloat(v[1])
-      ]),
-
-      markLine:
-        thresholdData &&
-        thresholdData.threshold != null
-          ? {
-              silent: true,
-
-              symbol: ["none", "none"],
-
-              label: {
-                show: true,
-
-                position: "end",
-
-                formatter: () =>
-                  `THRESHOLD: ${thresholdData.threshold}${thresholdData.unit || ""}`,
-
-                color: "#fff",
-
-                fontSize: 13,
-
-                fontWeight: "bold",
-
-                backgroundColor:
-                  thresholdData.status === "CRITICAL"
-                    ? "rgba(255,0,0,.85)"
-                    : thresholdData.status === "WARNING"
-                    ? "rgba(255,180,0,.85)"
-                    : "rgba(0,255,140,.75)",
-
-                padding: [6, 10],
-
-                borderRadius: 8
-              },
-
-              lineStyle: {
-                color:
-                  thresholdData.status === "CRITICAL"
-                    ? "#ff0000"
-                    : thresholdData.status === "WARNING"
-                    ? "#ffb300"
-                    : "#00ff99",
-
-                width: 4,
-
-                type: "dashed",
-
-                shadowBlur: 20,
-
-                shadowColor:
-                  thresholdData.status === "CRITICAL"
-                    ? "#ff0000"
-                    : thresholdData.status === "WARNING"
-                    ? "#ffb300"
-                    : "#00ff99"
-              },
-
-              data: [
-                {
-                  yAxis: Number(thresholdData.threshold)
+        chart.setOption(
+          {
+            color: ["#2dd4bf", "#60a5fa", "#f59e0b", "#a78bfa", "#22c55e"],
+            backgroundColor: "transparent",
+            animation: true,
+            animationDurationUpdate: 500,
+            animationEasingUpdate: "linear",
+            tooltip: {
+              trigger: "axis",
+              backgroundColor: "#0b1220",
+              borderColor: "rgba(151,164,184,.28)",
+              textStyle: {
+                color: "#fff"
+              }
+            },
+            grid: {
+              left: 48,
+              right: 18,
+              top: 28,
+              bottom: 38
+            },
+            xAxis: {
+              type: "time",
+              min: startTime,
+              max: now,
+              axisLine: {
+                lineStyle: {
+                  color: "#64748b"
                 }
-              ]
-            }
-          : undefined
-    }));
+              },
+              axisLabel: {
+                color: "#a8b4c7",
+                formatter: value => {
+                  const d = new Date(value);
+                  return d.toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  });
+                }
+              }
+            },
+            yAxis: {
+              type: "value",
+              axisPointer: {
+                show: true
+              },
+              axisLine: {
+                lineStyle: {
+                  color: "#64748b"
+                }
+              },
+              splitLine: {
+                lineStyle: {
+                  color: "rgba(151,164,184,.1)"
+                }
+              },
+              axisLabel: {
+                color: "#a8b4c7"
+              }
+            },
+            series
+          },
+          false
+        );
 
-  chart.setOption(
-    {
-      backgroundColor: "transparent",
-
-      animation: true,
-
-      animationDurationUpdate: 500,
-
-      animationEasingUpdate: "linear",
-
-      tooltip: {
-        trigger: "axis",
-
-        backgroundColor: "#111",
-
-        borderColor: "#333",
-
-        textStyle: {
-          color: "#fff"
-        }
-      },
-
-      grid: {
-        left: 50,
-        right: 20,
-        top: 30,
-        bottom: 40
-      },
-
-      xAxis: {
-        type: "time",
-
-        min: startTime,
-
-        max: now,
-
-        axisLine: {
-          lineStyle: {
-            color: "#666"
-          }
-        },
-
-        axisLabel: {
-          color: "#aaa",
-
-          formatter: value => {
-            const d = new Date(value);
-
-            return d.toLocaleTimeString("pt-BR", {
-              hour: "2-digit",
-              minute: "2-digit"
+        if (!window.__chartResizeBound) {
+          window.addEventListener("resize", () => {
+            document.querySelectorAll("[data-chart-id]").forEach(chartEl => {
+              echarts.getInstanceByDom(chartEl)?.resize();
             });
-          }
+          });
+
+          window.__chartResizeBound = true;
         }
-      },
-
-      yAxis: {
-        type: "value",
-
-        axisPointer: {
-          show: true
-        },
-
-        axisLine: {
-          lineStyle: {
-            color: "#666"
-          }
-        },
-
-        splitLine: {
-          lineStyle: {
-            color: "rgba(255,255,255,.05)"
-          }
-        },
-
-        axisLabel: {
-          color: "#aaa"
-        }
-      },
-
-      series
-    },
-
-    false
-  );
-
-  // resize apenas uma vez
-  if (!window.__chartResizeBound) {
-
-    window.addEventListener("resize", () => {
-
-      document
-        .querySelectorAll("[data-chart-id]")
-        .forEach(el => {
-          echarts.getInstanceByDom(el)?.resize();
-        });
-
-    });
-
-    window.__chartResizeBound = true;
-  }
-}
-
-
-async function refreshAlertsEngine() {
-
-  const cards =
-    document.querySelectorAll(".card[data-query]");
-
-  for (const card of cards) {
-
-    const query =
-      card.dataset.query;
-
-    try {
-
-      await fetch("/api/query", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          query,
-          range: 300
-        })
-      });
-
-    } catch (err) {
-      console.error(err);
-    }
-
-  }
-
-}
-
-     async function loadDashboards() {
-
-  try {
-
-    const res = await fetch("/api/dashboard");
-
-    const dashboards = await res.json();
-
-    const container =
-      document.getElementById("chartsContainer");
-
-    container.innerHTML = "";
-
-    activeDashboards.clear();
-
-    for (const d of dashboards) {
-
-      await renderSavedChart(d);
-
-    }
-
-  } catch (err) {
-
-    console.error(err);
-
-  }
-
-}
-      
-
-
-      loadDashboards();
-
-
-      let alertCache = [];
-      
-      async function deleteAlert(id) {
-
-  try {
-
-    await fetch(`/api/alert/${id}`, {
-      method: "DELETE"
-    });
-
-    await loadThresholds();
-    await loadAlertFeed();
-    await refreshCharts();
-
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-async function loadThresholds() {
-
-  const res = await fetch("/api/alerts");
-
-  if (!res.ok) {
-    console.error("Erro alerts:", res.status);
-    return [];
-  }
-
-  const alerts = await res.json();
-
-  const thresholdList = document.getElementById("thresholdList");
-
-  thresholdList.innerHTML = "";
-
-  if (!alerts.length) {
-
-    thresholdList.innerHTML = `
-      <div style="
-        opacity:.6;
-        font-size:13px;
-      ">
-        Nenhum threshold ativo
-      </div>
-    `;
-
-    return;
-  }
-
- alerts.forEach(alert => {
-
-  const div = document.createElement("div");
-
-  div.className = "threshold-item";
-
-
- let color = "#00ff99";
-
-if (alert.status === "WARNING") {
-  color = "#ffb300";
-}
-
-if (alert.status === "CRITICAL") {
-  color = "#ff3b3b";
-}
-
-  div.innerHTML = `
-    <div style="
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-    ">
-
-      <div>
-        <strong style="color:${color}">
-          ${alert.metricName}
-        </strong><br>
-
-        <span style="opacity:.8;">
-          Limite:
-          ${alert.threshold}${alert.unit || ""}
-        </span><br>
-
-        <span style="
-          font-size:12px;
-          opacity:.6;
-        ">
-          Status:
-          ${alert.status}
-        </span>
-      </div>
-
-      <button class="delete-threshold-btn">
-        ✕
-      </button>
-
-    </div>
-  `;
-
-  const btn =
-    div.querySelector(".delete-threshold-btn");
-
-  btn.addEventListener("click", async () => {
-    await deleteAlert(alert.id);
-  });
-
-  thresholdList.appendChild(div);
-
-});
-
-}
-
-     async function loadAlertFeed() {
-
-  const res = await fetch("/api/alerts");
-
-  if (!res.ok) {
-    console.error("Erro alerts:", res.status);
-    return [];
-  }
-
-  const alerts = await res.json();
-
-  const feed = document.getElementById("alertFeed");
-
-  feed.innerHTML = "";
-
-  alerts
-    .filter(a => a.status !== "OK")
-    .forEach(alert => {
-
-      const div = document.createElement("div");
-
-      let css = "alert-warning";
-
-      if (alert.status === "CRITICAL") {
-        css = "alert-critical";
       }
 
-      div.className = `alert-live ${css}`;
+      async function refreshAlertsEngine() {
+        const cards = document.querySelectorAll(".card[data-query]");
 
-     div.innerHTML = `
-  <div style="
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:10px;
-  ">
+        for (const card of cards) {
+          try {
+            await fetch("/api/query", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                query: card.dataset.query,
+                range: 300
+              })
+            });
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      }
 
-    <div>
-      <strong>${alert.metricName}</strong><br>
+      async function loadDashboards() {
+        try {
+          const res = await fetch("/api/dashboard");
+          const dashboards = await res.json();
+          const container = document.getElementById("chartsContainer");
 
-      Valor atual:
-      ${alert.lastValue}
-      ${alert.unit || ""}<br>
+          container.innerHTML = "";
+          activeDashboards.clear();
 
-      Threshold:
-      ${alert.threshold}
-      ${alert.unit || ""}
-    </div>
+          if (!dashboards.length) {
+            container.innerHTML = emptyState("Nenhum dashboard criado ainda. Use o seletor acima para adicionar metricas.");
+            return;
+          }
 
-  </div>
-`;
+          for (const d of dashboards) {
+            await renderSavedChart(d);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
 
-    
+      async function deleteAlert(id) {
+        try {
+          await fetch(`/api/alert/${id}`, {
+            method: "DELETE"
+          });
 
-      feed.appendChild(div);
+          await loadThresholds();
+          await loadAlertFeed();
+          await refreshCharts();
+        } catch (err) {
+          console.error(err);
+        }
+      }
 
-    });
+      async function loadThresholds() {
+        const res = await fetch("/api/alerts");
 
-}
+        if (!res.ok) {
+          console.error("Erro alerts:", res.status);
+          return [];
+        }
 
-     setInterval(async () => {
+        const alerts = await res.json();
+        const thresholdList = document.getElementById("thresholdList");
+        thresholdList.innerHTML = "";
 
-  await refreshAlertsEngine();
+        if (!alerts.length) {
+          thresholdList.innerHTML = emptyState("Nenhum threshold ativo.");
+          return;
+        }
 
-  await loadThresholds();
+        alerts.forEach(alert => {
+          const div = document.createElement("div");
+          const color = alert.status === "CRITICAL" ? "#fca5a5" : alert.status === "WARNING" ? "#fcd34d" : "#86efac";
 
-  await loadAlertFeed();
+          div.className = "threshold-item";
+          div.innerHTML = `
+            <div class="item-row">
+              <div>
+                <strong style="color:${color}">${alert.metricName}</strong><br>
+                <span class="muted">Limite: ${alert.threshold}${alert.unit || ""}</span><br>
+                <span class="status-pill status-${alert.status}">${alert.status}</span>
+              </div>
+              <button class="delete-threshold-btn" title="Remover threshold">X</button>
+            </div>
+          `;
 
-}, 3000);
+          div.querySelector(".delete-threshold-btn").addEventListener("click", async () => {
+            await deleteAlert(alert.id);
+          });
 
-      loadThresholds();
-      loadAlertFeed();
+          thresholdList.appendChild(div);
+        });
+      }
+
+      async function loadAlertFeed() {
+        const res = await fetch("/api/alerts");
+
+        if (!res.ok) {
+          console.error("Erro alerts:", res.status);
+          return [];
+        }
+
+        const alerts = await res.json();
+        const feed = document.getElementById("alertFeed");
+        const activeAlerts = alerts.filter(a => a.status !== "OK");
+
+        feed.innerHTML = "";
+
+        if (!activeAlerts.length) {
+          feed.innerHTML = emptyState("Sem alertas ativos no momento.");
+          return;
+        }
+
+        activeAlerts.forEach(alert => {
+          const div = document.createElement("div");
+          const css = alert.status === "CRITICAL" ? "alert-critical" : "alert-warning";
+
+          div.className = `alert-live ${css}`;
+          div.innerHTML = `
+            <strong>${alert.metricName}</strong><br>
+            <span>Valor atual: ${alert.lastValue}${alert.unit || ""}</span><br>
+            <span class="muted">Threshold: ${alert.threshold}${alert.unit || ""}</span>
+          `;
+
+          feed.appendChild(div);
+        });
+      }
+
+      async function loadAlertLogs() {
+        const res = await fetch("/api/alert-logs");
+        const container = document.getElementById("logContainer");
+
+        if (!res.ok) {
+          container.innerHTML = emptyState("Nao foi possivel carregar os logs.");
+          return;
+        }
+
+        const logs = await res.json();
+        container.innerHTML = "";
+
+        if (!logs.length) {
+          container.innerHTML = emptyState("Nenhum alerta entrou em WARNING ou CRITICAL ainda.");
+          return;
+        }
+
+        logs.forEach(log => {
+          const div = document.createElement("div");
+          const createdAt = new Date(log.createdAt).toLocaleString("pt-BR");
+
+          div.className = "log";
+          div.innerHTML = `
+            <span class="status-pill status-${log.status}">${log.status}</span>
+            <div>
+              <strong>${log.metricName}</strong><br>
+              <span class="muted">Valor ${log.value}${log.unit || ""} / limite ${log.threshold}${log.unit || ""}</span>
+            </div>
+            <span class="muted">${createdAt}</span>
+          `;
+
+          container.appendChild(div);
+        });
+      }
 
       async function getThresholdByQuery(query) {
         try {
@@ -1257,10 +1261,10 @@ if (alert.status === "CRITICAL") {
 
           const alerts = await res.json();
           const metricId = [...document.querySelectorAll(".card")]
-  .find(c => c.dataset.query === query)
-  ?.dataset.metricId;
-return alerts.find(a => a.metricId === metricId);
+            .find(c => c.dataset.query === query)
+            ?.dataset.metricId;
 
+          return alerts.find(a => a.metricId === metricId);
         } catch (err) {
           console.error(err);
           return null;
@@ -1301,10 +1305,21 @@ return alerts.find(a => a.metricId === metricId);
         }
       }
 
+      setInterval(async () => {
+        await refreshAlertsEngine();
+        await loadThresholds();
+        await loadAlertFeed();
+        await loadAlertLogs();
+      }, 3000);
 
       setInterval(() => {
         refreshCharts();
       }, 5000);
+
+      loadDashboards();
+      loadThresholds();
+      loadAlertFeed();
+      loadAlertLogs();
     </script>
   </body>
 </html>
