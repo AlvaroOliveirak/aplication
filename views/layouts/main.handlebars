@@ -4,20 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Temporal Series | Monitoramento</title>
+    <link rel="stylesheet" href="/css/page-transition.css">
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Dots&display=swap");
 
       :root {
-        --bg: #08111f;
-        --panel: rgba(16, 27, 43, .72);
-        --line: rgba(151, 164, 184, .18);
-        --muted: #91a0b8;
+        --bg: #07101d;
+        --panel: rgba(10, 20, 35, .64);
+        --line: rgba(151, 164, 184, .16);
+        --line-strong: rgba(45, 212, 191, .36);
+        --muted: #8fa0b8;
         --text: #f7fbff;
         --teal: #2dd4bf;
         --blue: #60a5fa;
         --green: #22c55e;
         --amber: #f59e0b;
-        --shadow: 0 18px 45px rgba(0, 0, 0, .24);
       }
 
       * {
@@ -27,30 +28,122 @@
       body {
         margin: 0;
         min-height: 100vh;
-        background:
-          radial-gradient(circle at 18% 18%, rgba(45, 212, 191, .11), transparent 28%),
-          radial-gradient(circle at 78% 12%, rgba(96, 165, 250, .12), transparent 24%),
-          linear-gradient(140deg, #08111f 0%, #0b1626 55%, #0a1020 100%);
+        overflow-x: hidden;
+        background: var(--bg);
         color: var(--text);
         font-family: Inter, Arial, Helvetica, sans-serif;
+      }
+
+      a,
+      button {
+        font: inherit;
       }
 
       a {
         color: inherit;
       }
 
+      .ambient {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at var(--mx, 50%) var(--my, 35%), rgba(45, 212, 191, .11), transparent 23%),
+          radial-gradient(circle at 80% 18%, rgba(96, 165, 250, .09), transparent 26%),
+          linear-gradient(145deg, #07101d 0%, #0a1728 58%, #070b14 100%);
+        pointer-events: none;
+      }
+
+      .ambient::before {
+        content: "";
+        position: absolute;
+        inset: -20%;
+        background:
+          linear-gradient(rgba(96, 165, 250, .05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(45, 212, 191, .045) 1px, transparent 1px);
+        background-size: 52px 52px;
+        transform: translate3d(var(--px, 0), var(--py, 0), 0);
+        animation: gridDrift 18s linear infinite;
+      }
+
+      .ambient-field {
+        position: absolute;
+        inset: 42px -6vw auto auto;
+        width: min(980px, 78vw);
+        height: min(680px, 78vh);
+        opacity: .72;
+        transform: translate3d(calc(var(--px, 0) * -.5), calc(var(--py, 0) * -.5), 0);
+      }
+
+      .ambient-panel {
+        fill: rgba(10, 20, 35, .34);
+        stroke: rgba(151, 164, 184, .16);
+        stroke-width: 1;
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: floatPanel 8s ease-in-out infinite;
+      }
+
+      .ambient-panel:nth-of-type(2) {
+        animation-delay: -2.4s;
+      }
+
+      .ambient-panel:nth-of-type(3) {
+        animation-delay: -4.2s;
+      }
+
+      .ambient-wave {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 980;
+        animation: ambientWave 9s ease-in-out infinite;
+      }
+
+      .ambient-wave.primary {
+        stroke: rgba(45, 212, 191, .5);
+        stroke-width: 4;
+        filter: drop-shadow(0 0 18px rgba(45, 212, 191, .28));
+      }
+
+      .ambient-wave.secondary {
+        stroke: rgba(96, 165, 250, .34);
+        stroke-width: 2;
+        animation-delay: -3.2s;
+      }
+
+      .ambient-node {
+        fill: rgba(191, 250, 242, .86);
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: nodePulse 3s ease-in-out infinite;
+      }
+
+      .ambient-node:nth-of-type(odd) {
+        animation-delay: -1.5s;
+      }
+
+      .ambient-scan {
+        fill: rgba(45, 212, 191, .08);
+        animation: scan 7.5s ease-in-out infinite;
+      }
+
+      .topbar,
+      .page {
+        position: relative;
+        z-index: 1;
+      }
+
       .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 20;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 18px;
         min-height: 72px;
         padding: 14px 28px;
-        background: rgba(8, 17, 31, .82);
         border-bottom: 1px solid var(--line);
+        background: rgba(7, 16, 29, .68);
         backdrop-filter: blur(18px);
       }
 
@@ -65,17 +158,17 @@
       .brand-mark {
         display: grid;
         place-items: center;
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
         border-radius: 8px;
-        background: linear-gradient(135deg, var(--teal), var(--blue));
-        color: #06111f;
+        border: 1px solid var(--line-strong);
+        color: #bffaf2;
         font-weight: 800;
       }
 
       .logo {
         font-family: "Zen Dots", Inter, sans-serif;
-        font-size: 18px;
+        font-size: 17px;
         letter-spacing: 0;
         white-space: nowrap;
       }
@@ -96,7 +189,8 @@
 
       .nav a,
       .ghost-btn,
-      .primary-btn {
+      .primary-btn,
+      .metric-tab {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -106,32 +200,36 @@
         color: var(--text);
         cursor: pointer;
         text-decoration: none;
-        transition: background .18s ease, border-color .18s ease, transform .18s ease;
+        transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
       }
 
       .nav a,
-      .ghost-btn {
-        background: rgba(255, 255, 255, .04);
+      .ghost-btn,
+      .metric-tab {
         border: 1px solid transparent;
+        background: rgba(255, 255, 255, .035);
       }
 
       .nav a:hover,
-      .ghost-btn:hover {
-        background: rgba(255, 255, 255, .08);
+      .ghost-btn:hover,
+      .metric-tab:hover {
+        background: rgba(255, 255, 255, .075);
         border-color: var(--line);
       }
 
-      .nav .active {
-        background: rgba(45, 212, 191, .12);
-        border-color: rgba(45, 212, 191, .35);
+      .nav .active,
+      .metric-tab.active {
+        border-color: var(--line-strong);
+        background: rgba(45, 212, 191, .1);
         color: #bffaf2;
       }
 
       .primary-btn {
         min-height: 44px;
         padding: 0 18px;
-        background: linear-gradient(135deg, var(--teal), var(--blue));
-        color: #06111f;
+        border: 0;
+        background: var(--text);
+        color: #07101d;
         font-weight: 800;
       }
 
@@ -141,28 +239,28 @@
       }
 
       .page {
-        width: min(1120px, calc(100% - 40px));
+        width: min(1080px, calc(100% - 40px));
         margin: 0 auto;
       }
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
-        gap: 58px;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 72px;
         align-items: center;
         min-height: calc(100vh - 72px);
-        padding: 70px 0 54px;
+        padding: 76px 0 46px;
       }
 
       .hero-copy {
-        animation: fadeUp .7s ease both;
+        animation: fadeUp .65s ease both;
       }
 
       .eyebrow {
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 20px;
+        margin-bottom: 22px;
         color: #bffaf2;
         font-size: 12px;
         font-weight: 800;
@@ -187,10 +285,10 @@
       }
 
       .hero h1 {
-        margin-bottom: 18px;
         max-width: 680px;
-        font-size: clamp(38px, 6vw, 74px);
-        line-height: .98;
+        margin-bottom: 18px;
+        font-size: clamp(42px, 7vw, 82px);
+        line-height: .96;
         letter-spacing: 0;
       }
 
@@ -199,7 +297,7 @@
       }
 
       .hero p {
-        max-width: 610px;
+        max-width: 590px;
         color: var(--muted);
         font-size: 18px;
         line-height: 1.75;
@@ -213,40 +311,24 @@
         margin-top: 30px;
       }
 
-      .signal-card {
-        position: relative;
-        overflow: hidden;
-        min-height: 420px;
+      .mini-console {
         border: 1px solid var(--line);
         border-radius: 8px;
-        background:
-          linear-gradient(180deg, rgba(16, 27, 43, .86), rgba(8, 17, 31, .86)),
-          repeating-linear-gradient(90deg, rgba(151, 164, 184, .055) 0 1px, transparent 1px 44px);
-        box-shadow: var(--shadow);
-        animation: fadeUp .7s ease .12s both;
+        background: rgba(7, 16, 29, .68);
+        backdrop-filter: blur(12px);
+        animation: fadeUp .65s ease .12s both;
       }
 
-      .signal-card::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(105deg, transparent 0%, rgba(45, 212, 191, .1) 44%, transparent 62%);
-        transform: translateX(-120%);
-        animation: scan 4.5s ease-in-out infinite;
-      }
-
-      .signal-header {
-        position: relative;
-        z-index: 1;
+      .console-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        gap: 14px;
-        padding: 18px;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px;
         border-bottom: 1px solid var(--line);
       }
 
-      .signal-title {
+      .console-title {
         color: var(--muted);
         font-size: 12px;
         font-weight: 800;
@@ -254,127 +336,133 @@
         text-transform: uppercase;
       }
 
-      .signal-status {
-        color: #bbf7d0;
-        font-size: 12px;
+      .console-value {
+        color: #bffaf2;
         font-weight: 800;
       }
 
-      .signal-body {
-        position: relative;
-        z-index: 1;
-        padding: 24px 20px 20px;
+      .console-body {
+        padding: 16px;
       }
 
-      .signal-chart {
+      .metric-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+
+      .metric-tab {
+        min-height: 34px;
+        padding: 0 11px;
+        font-size: 13px;
+      }
+
+      .metric-tab:focus-visible,
+      .nav a:focus-visible,
+      .primary-btn:focus-visible,
+      .ghost-btn:focus-visible {
+        outline: 2px solid var(--teal);
+        outline-offset: 3px;
+      }
+
+      .series-preview {
         width: 100%;
-        height: 176px;
+        height: 170px;
       }
 
-      .signal-chart .grid-line {
-        stroke: rgba(151, 164, 184, .15);
+      .series-preview .grid-line {
+        stroke: rgba(151, 164, 184, .13);
         stroke-width: 1;
       }
 
-      .signal-chart .threshold {
+      .series-preview .threshold {
         stroke: var(--amber);
         stroke-width: 2;
         stroke-dasharray: 8 8;
       }
 
-      .signal-chart .line {
+      .series-preview .glow,
+      .series-preview .line {
         fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: stroke .2s ease;
+      }
+
+      .series-preview .glow {
+        stroke: rgba(45, 212, 191, .14);
+        stroke-width: 12;
+      }
+
+      .series-preview .line {
         stroke: var(--teal);
         stroke-width: 4;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        stroke-dasharray: 640;
-        stroke-dashoffset: 640;
-        animation: drawLine 2s ease .35s forwards;
+        stroke-dasharray: 660;
+        animation: flowLine 3.2s linear infinite;
       }
 
-      .signal-chart .glow {
-        fill: none;
-        stroke: rgba(45, 212, 191, .18);
-        stroke-width: 12;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        stroke-dasharray: 640;
-        stroke-dashoffset: 640;
-        animation: drawLine 2s ease .35s forwards;
-      }
-
-      .signal-meta {
+      .console-meta {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-        margin-top: 22px;
+        gap: 8px;
+        margin-top: 14px;
       }
 
-      .metric {
-        min-height: 82px;
-        padding: 13px;
-        border: 1px solid rgba(151, 164, 184, .14);
+      .console-meta div {
+        min-height: 68px;
+        padding: 11px;
+        border: 1px solid rgba(151, 164, 184, .12);
         border-radius: 8px;
-        background: rgba(5, 12, 23, .42);
+        background: rgba(255, 255, 255, .025);
       }
 
-      .metric span {
+      .console-meta span {
         display: block;
         color: var(--muted);
         font-size: 12px;
         font-weight: 700;
       }
 
-      .metric strong {
+      .console-meta strong {
         display: block;
         margin-top: 8px;
-        font-size: 24px;
+        font-size: 20px;
       }
 
-      .feature-grid {
+      .quiet-strip {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 14px;
         padding: 0 0 72px;
       }
 
-      .feature-card {
-        min-height: 164px;
+      .quiet-item {
+        min-height: 112px;
         padding: 18px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel);
-        transition: transform .2s ease, border-color .2s ease, background .2s ease;
-        animation: fadeUp .7s ease both;
+        border-top: 1px solid var(--line);
+        animation: fadeUp .65s ease both;
       }
 
-      .feature-card:nth-child(2) {
+      .quiet-item:nth-child(2) {
         animation-delay: .08s;
       }
 
-      .feature-card:nth-child(3) {
+      .quiet-item:nth-child(3) {
         animation-delay: .16s;
       }
 
-      .feature-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(45, 212, 191, .36);
-        background: rgba(20, 34, 54, .82);
-      }
-
-      .feature-card small {
+      .quiet-item small {
         color: var(--teal);
         font-weight: 800;
-        letter-spacing: .08em;
       }
 
-      .feature-card h3 {
-        margin: 16px 0 10px;
-        font-size: 17px;
+      .quiet-item h3 {
+        margin: 14px 0 8px;
+        font-size: 16px;
       }
 
-      .feature-card p {
+      .quiet-item p {
         margin-bottom: 0;
         color: var(--muted);
         line-height: 1.6;
@@ -383,7 +471,7 @@
       @keyframes fadeUp {
         from {
           opacity: 0;
-          transform: translateY(18px);
+          transform: translateY(14px);
         }
 
         to {
@@ -404,24 +492,70 @@
         }
       }
 
-      @keyframes drawLine {
+      @keyframes gridDrift {
         to {
+          transform: translate3d(calc(var(--px, 0) + 52px), calc(var(--py, 0) + 52px), 0);
+        }
+      }
+
+      @keyframes floatPanel {
+        0%, 100% {
+          transform: translateY(0);
+        }
+
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes ambientWave {
+        0% {
+          stroke-dashoffset: 980;
+          opacity: .3;
+        }
+
+        45% {
           stroke-dashoffset: 0;
+          opacity: .95;
+        }
+
+        100% {
+          stroke-dashoffset: -980;
+          opacity: .3;
+        }
+      }
+
+      @keyframes nodePulse {
+        0%, 100% {
+          opacity: .34;
+          transform: scale(1);
+        }
+
+        50% {
+          opacity: .95;
+          transform: scale(1.65);
         }
       }
 
       @keyframes scan {
-        0%, 38% {
+        0%, 42% {
           transform: translateX(-120%);
         }
 
-        72%, 100% {
+        78%, 100% {
           transform: translateX(120%);
+        }
+      }
+
+      @keyframes flowLine {
+        to {
+          stroke-dashoffset: -660;
         }
       }
 
       @media (prefers-reduced-motion: reduce) {
         *,
+        *::before,
         *::after {
           animation-duration: .001ms !important;
           animation-iteration-count: 1 !important;
@@ -440,34 +574,60 @@
           justify-content: flex-start;
         }
 
+        .ambient-field {
+          inset: 170px 2vw auto auto;
+          width: 86vw;
+          opacity: .28;
+        }
+
         .hero {
           grid-template-columns: 1fr;
           min-height: auto;
-          padding: 44px 0;
+          gap: 34px;
+          padding: 52px 0 42px;
         }
 
-        .feature-grid,
-        .signal-meta {
+        .mini-console {
+          max-width: 460px;
+        }
+
+        .quiet-strip,
+        .console-meta {
           grid-template-columns: 1fr;
         }
       }
 
       @media (max-width: 560px) {
         .page {
-          width: min(100% - 28px, 1120px);
+          width: min(100% - 28px, 1080px);
         }
 
-        .signal-card {
-          min-height: auto;
+        .hero h1 {
+          font-size: clamp(38px, 14vw, 58px);
         }
 
-        .signal-chart {
-          height: 138px;
+        .series-preview {
+          height: 132px;
         }
       }
     </style>
   </head>
   <body>
+    <div class="ambient" aria-hidden="true">
+      <svg class="ambient-field" viewBox="0 0 980 680">
+        <rect class="ambient-panel" x="520" y="86" width="300" height="146" rx="8"></rect>
+        <rect class="ambient-panel" x="620" y="292" width="250" height="124" rx="8"></rect>
+        <rect class="ambient-panel" x="398" y="432" width="210" height="104" rx="8"></rect>
+        <rect class="ambient-scan" x="-160" y="70" width="120" height="520" rx="60"></rect>
+        <path class="ambient-wave primary" d="M72 454 C176 304 250 520 356 348 S548 184 672 290 818 454 932 222"></path>
+        <path class="ambient-wave secondary" d="M88 254 C218 394 278 126 402 238 S604 452 724 204 842 126 934 174"></path>
+        <circle class="ambient-node" cx="356" cy="348" r="4"></circle>
+        <circle class="ambient-node" cx="672" cy="290" r="4"></circle>
+        <circle class="ambient-node" cx="724" cy="204" r="4"></circle>
+        <circle class="ambient-node" cx="932" cy="222" r="4"></circle>
+      </svg>
+    </div>
+
     <header class="topbar">
       <a class="brand" href="/">
         <div class="brand-mark">TS</div>
@@ -488,69 +648,135 @@
     <main class="page">
       <section class="hero">
         <div class="hero-copy">
-          <div class="eyebrow"><span class="status-dot"></span> Coleta e alertas em tempo real</div>
-          <h1>Monitoramento de <span>series temporais</span>.</h1>
-          <p>Centralize métricas prometheus em dashboards objetivos, visualizando o desempenho em tempo real. receba alertas automáticos, e obtenha insights valiosos sobre o comportamento do seu sistema.</p>
+          <div class="eyebrow"><span class="status-dot"></span> Series temporais em tempo real</div>
+          <h1>Observe metricas. Ajuste <span>thresholds</span>.</h1>
+          <p>Temporal Series organiza dados do Prometheus em dashboards diretos para CPU, memoria, disco, rede e load average, com alertas configuraveis e historico de eventos.</p>
 
           <div class="hero-actions">
-            <a class="primary-btn" href="/register">Criar conta</a>
-            <a class="ghost-btn" href="/dashboard">Ver dashboard</a>
+            <a class="primary-btn" href="/dashboard">Abrir dashboard</a>
+            <a class="ghost-btn" href="/register">Criar conta</a>
           </div>
         </div>
 
-        <aside class="signal-card" aria-label="Previa animada de serie temporal">
-          <div class="signal-header">
-            <div class="signal-title">node_cpu_seconds_total</div>
-            <div class="signal-status">ONLINE</div>
+        <aside class="mini-console" aria-label="Previa interativa de series temporais">
+          <div class="console-header">
+            <div class="console-title" id="metricTitle">node_cpu_seconds_total</div>
+            <div class="console-value" id="metricValue">42%</div>
           </div>
 
-          <div class="signal-body">
-            <svg class="signal-chart" viewBox="0 0 420 176" role="img" aria-label="Grafico animado de uso de CPU">
+          <div class="console-body">
+            <div class="metric-tabs" role="group" aria-label="Selecionar metrica da previa">
+              <button class="metric-tab active" type="button" data-metric="cpu">CPU</button>
+              <button class="metric-tab" type="button" data-metric="mem">Memoria</button>
+              <button class="metric-tab" type="button" data-metric="net">Rede</button>
+            </div>
+
+            <svg class="series-preview" viewBox="0 0 420 170" role="img" aria-label="Grafico interativo de serie temporal">
               <line class="grid-line" x1="0" y1="36" x2="420" y2="36"></line>
-              <line class="grid-line" x1="0" y1="88" x2="420" y2="88"></line>
-              <line class="grid-line" x1="0" y1="140" x2="420" y2="140"></line>
-              <line class="threshold" x1="0" y1="54" x2="420" y2="54"></line>
-              <polyline class="glow" points="0,132 40,124 80,138 120,96 160,110 200,70 240,84 280,46 320,68 360,50 420,62"></polyline>
-              <polyline class="line" points="0,132 40,124 80,138 120,96 160,110 200,70 240,84 280,46 320,68 360,50 420,62"></polyline>
+              <line class="grid-line" x1="0" y1="84" x2="420" y2="84"></line>
+              <line class="grid-line" x1="0" y1="132" x2="420" y2="132"></line>
+              <line class="threshold" x1="0" y1="52" x2="420" y2="52"></line>
+              <polyline class="glow" id="seriesGlow" points="0,128 46,120 92,132 138,92 184,106 230,68 276,82 322,48 368,66 420,58"></polyline>
+              <polyline class="line" id="seriesLine" points="0,128 46,120 92,132 138,92 184,106 230,68 276,82 322,48 368,66 420,58"></polyline>
             </svg>
 
-            <div class="signal-meta">
-              <div class="metric">
-                <span>CPU</span>
-                <strong>42%</strong>
+            <div class="console-meta">
+              <div>
+                <span>Janela</span>
+                <strong>5m</strong>
               </div>
-              <div class="metric">
+              <div>
                 <span>Threshold</span>
-                <strong>80%</strong>
+                <strong id="metricThreshold">80%</strong>
               </div>
-              <div class="metric">
+              <div>
                 <span>Status</span>
-                <strong>OK</strong>
+                <strong id="metricStatus">OK</strong>
               </div>
             </div>
           </div>
         </aside>
       </section>
 
-      <section class="feature-grid" aria-label="Recursos do projeto">
-        <article class="feature-card">
+      <section class="quiet-strip" aria-label="Recursos do projeto">
+        <article class="quiet-item">
           <small>01</small>
-          <h3>Dashboards por metrica</h3>
-          <p>Adicione cards de metricas conforme a necessidade da analise.</p>
+          <h3>Dashboards sob demanda</h3>
+          <p>Adicione apenas as metricas que fazem sentido para a analise atual.</p>
         </article>
 
-        <article class="feature-card">
+        <article class="quiet-item">
           <small>02</small>
-          <h3>Thresholds configuraveis</h3>
-          <p>Defina limites e acompanhe o estado do alerta direto no grafico e na lista lateral.</p>
+          <h3>Alertas por threshold</h3>
+          <p>Configure limites e acompanhe warning ou critical diretamente no painel.</p>
         </article>
 
-        <article class="feature-card">
+        <article class="quiet-item">
           <small>03</small>
-          <h3>Historico de eventos</h3>
-          <p>Consulte registros de warning e critical para entender quando uma serie saiu do comportamento esperado.</p>
+          <h3>Historico consultavel</h3>
+          <p>Veja quando uma serie saiu do comportamento esperado e volte ao grafico.</p>
         </article>
       </section>
     </main>
+
+    <script>
+      const metricData = {
+        cpu: {
+          title: "node_cpu_seconds_total",
+          value: "42%",
+          threshold: "80%",
+          status: "OK",
+          points: "0,128 46,120 92,132 138,92 184,106 230,68 276,82 322,48 368,66 420,58"
+        },
+        mem: {
+          title: "node_memory_MemAvailable_bytes",
+          value: "68%",
+          threshold: "75%",
+          status: "WARNING",
+          points: "0,118 46,106 92,96 138,88 184,78 230,74 276,62 322,58 368,54 420,50"
+        },
+        net: {
+          title: "node_network_receive_bytes_total",
+          value: "1.8MB/s",
+          threshold: "3MB/s",
+          status: "OK",
+          points: "0,134 46,88 92,126 138,70 184,120 230,64 276,112 322,78 368,104 420,72"
+        }
+      };
+
+      const root = document.documentElement;
+      const tabs = document.querySelectorAll(".metric-tab");
+      const line = document.getElementById("seriesLine");
+      const glow = document.getElementById("seriesGlow");
+      const title = document.getElementById("metricTitle");
+      const value = document.getElementById("metricValue");
+      const threshold = document.getElementById("metricThreshold");
+      const status = document.getElementById("metricStatus");
+
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          const data = metricData[tab.dataset.metric];
+
+          tabs.forEach(item => item.classList.toggle("active", item === tab));
+          title.textContent = data.title;
+          value.textContent = data.value;
+          threshold.textContent = data.threshold;
+          status.textContent = data.status;
+          line.setAttribute("points", data.points);
+          glow.setAttribute("points", data.points);
+        });
+      });
+
+      window.addEventListener("pointermove", event => {
+        const x = event.clientX / window.innerWidth;
+        const y = event.clientY / window.innerHeight;
+
+        root.style.setProperty("--mx", `${Math.round(x * 100)}%`);
+        root.style.setProperty("--my", `${Math.round(y * 100)}%`);
+        root.style.setProperty("--px", `${(x - .5) * 18}px`);
+        root.style.setProperty("--py", `${(y - .5) * 18}px`);
+      }, { passive: true });
+    </script>
+    <script src="/js/page-transition.js"></script>
   </body>
 </html>
