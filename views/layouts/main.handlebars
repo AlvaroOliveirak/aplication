@@ -3,41 +3,34 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temporal Series | Observabilidade</title>
+    <title>Temporal Series | Monitoramento</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Dots&display=swap");
 
       :root {
         --bg: #08111f;
-        --panel: #101b2b;
-        --panel-strong: #142236;
+        --panel: rgba(16, 27, 43, .72);
         --line: rgba(151, 164, 184, .18);
         --muted: #91a0b8;
         --text: #f7fbff;
         --teal: #2dd4bf;
+        --blue: #60a5fa;
         --green: #22c55e;
         --amber: #f59e0b;
-        --red: #ef4444;
-        --blue: #60a5fa;
-        --shadow: 0 18px 45px rgba(0, 0, 0, .28);
+        --shadow: 0 18px 45px rgba(0, 0, 0, .24);
       }
 
       * {
         box-sizing: border-box;
       }
 
-      html {
-        scroll-behavior: smooth;
-      }
-
       body {
         margin: 0;
         min-height: 100vh;
         background:
-          linear-gradient(rgba(96, 165, 250, .05) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(45, 212, 191, .045) 1px, transparent 1px),
-          linear-gradient(140deg, #08111f 0%, #0c1728 52%, #101827 100%);
-        background-size: auto, 34px 34px, auto;
+          radial-gradient(circle at 18% 18%, rgba(45, 212, 191, .11), transparent 28%),
+          radial-gradient(circle at 78% 12%, rgba(96, 165, 250, .12), transparent 24%),
+          linear-gradient(140deg, #08111f 0%, #0b1626 55%, #0a1020 100%);
         color: var(--text);
         font-family: Inter, Arial, Helvetica, sans-serif;
       }
@@ -51,12 +44,12 @@
         top: 0;
         z-index: 20;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
         gap: 18px;
         min-height: 72px;
         padding: 14px 28px;
-        background: rgba(8, 17, 31, .88);
+        background: rgba(8, 17, 31, .82);
         border-bottom: 1px solid var(--line);
         backdrop-filter: blur(18px);
       }
@@ -66,7 +59,6 @@
         align-items: center;
         gap: 12px;
         min-width: 0;
-        color: var(--text);
         text-decoration: none;
       }
 
@@ -105,20 +97,20 @@
       .nav a,
       .ghost-btn,
       .primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         min-height: 38px;
+        padding: 0 13px;
         border-radius: 8px;
         color: var(--text);
         cursor: pointer;
         text-decoration: none;
-        transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+        transition: background .18s ease, border-color .18s ease, transform .18s ease;
       }
 
       .nav a,
       .ghost-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 13px;
         background: rgba(255, 255, 255, .04);
         border: 1px solid transparent;
       }
@@ -136,45 +128,41 @@
       }
 
       .primary-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
         min-height: 44px;
         padding: 0 18px;
-        border: 0;
         background: linear-gradient(135deg, var(--teal), var(--blue));
         color: #06111f;
         font-weight: 800;
       }
 
-      .primary-btn:hover {
+      .primary-btn:hover,
+      .ghost-btn:hover {
         transform: translateY(-1px);
       }
 
       .page {
-        width: min(1180px, calc(100% - 40px));
+        width: min(1120px, calc(100% - 40px));
         margin: 0 auto;
       }
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
-        gap: 42px;
+        grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
+        gap: 58px;
         align-items: center;
         min-height: calc(100vh - 72px);
-        padding: 58px 0 42px;
+        padding: 70px 0 54px;
+      }
+
+      .hero-copy {
+        animation: fadeUp .7s ease both;
       }
 
       .eyebrow {
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        min-height: 34px;
-        margin-bottom: 18px;
-        padding: 0 12px;
-        border: 1px solid rgba(45, 212, 191, .35);
-        border-radius: 8px;
-        background: rgba(45, 212, 191, .1);
+        margin-bottom: 20px;
         color: #bffaf2;
         font-size: 12px;
         font-weight: 800;
@@ -187,7 +175,8 @@
         height: 8px;
         border-radius: 999px;
         background: var(--green);
-        box-shadow: 0 0 14px rgba(34, 197, 94, .9);
+        box-shadow: 0 0 16px rgba(34, 197, 94, .9);
+        animation: pulse 1.8s ease-in-out infinite;
       }
 
       h1,
@@ -199,8 +188,8 @@
 
       .hero h1 {
         margin-bottom: 18px;
-        max-width: 720px;
-        font-size: clamp(36px, 6vw, 72px);
+        max-width: 680px;
+        font-size: clamp(38px, 6vw, 74px);
         line-height: .98;
         letter-spacing: 0;
       }
@@ -209,11 +198,11 @@
         color: #a7f3d0;
       }
 
-      .hero-copy {
-        max-width: 640px;
+      .hero p {
+        max-width: 610px;
         color: var(--muted);
         font-size: 18px;
-        line-height: 1.7;
+        line-height: 1.75;
       }
 
       .hero-actions {
@@ -221,118 +210,43 @@
         align-items: center;
         gap: 12px;
         flex-wrap: wrap;
-        margin-top: 28px;
+        margin-top: 30px;
       }
 
-      .metric-row {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-        margin-top: 34px;
-      }
-
-      .metric-tile,
-      .feature-card,
-      .terminal-panel,
-      .monitor {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: linear-gradient(180deg, rgba(20, 34, 54, .88), rgba(13, 24, 39, .88));
-        box-shadow: var(--shadow);
-      }
-
-      .metric-tile {
-        min-height: 96px;
-        padding: 15px;
-      }
-
-      .metric-label {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-
-      .metric-value {
-        margin-top: 12px;
-        font-size: 28px;
-        font-weight: 800;
-      }
-
-      .metric-value.teal {
-        color: var(--teal);
-      }
-
-      .metric-value.green {
-        color: var(--green);
-      }
-
-      .metric-value.amber {
-        color: var(--amber);
-      }
-
-      .monitor {
+      .signal-card {
         position: relative;
         overflow: hidden;
-        min-height: 520px;
-        padding: 18px;
+        min-height: 420px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(16, 27, 43, .86), rgba(8, 17, 31, .86)),
+          repeating-linear-gradient(90deg, rgba(151, 164, 184, .055) 0 1px, transparent 1px 44px);
+        box-shadow: var(--shadow);
+        animation: fadeUp .7s ease .12s both;
       }
 
-      .monitor::before {
+      .signal-card::after {
         content: "";
         position: absolute;
         inset: 0;
-        background:
-          linear-gradient(90deg, transparent, rgba(45, 212, 191, .08), transparent),
-          repeating-linear-gradient(0deg, rgba(255, 255, 255, .025), rgba(255, 255, 255, .025) 1px, transparent 1px, transparent 5px);
-        opacity: .75;
-        pointer-events: none;
+        background: linear-gradient(105deg, transparent 0%, rgba(45, 212, 191, .1) 44%, transparent 62%);
+        transform: translateX(-120%);
+        animation: scan 4.5s ease-in-out infinite;
       }
 
-      .monitor-header,
-      .monitor-grid,
-      .chart-panel,
-      .alert-line,
-      .terminal-panel {
+      .signal-header {
         position: relative;
-      }
-
-      .monitor-header {
+        z-index: 1;
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 14px;
-        margin-bottom: 16px;
+        padding: 18px;
+        border-bottom: 1px solid var(--line);
       }
 
-      .window-dots {
-        display: flex;
-        gap: 7px;
-      }
-
-      .window-dots span {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        background: var(--line);
-      }
-
-      .window-dots span:nth-child(1) {
-        background: var(--red);
-      }
-
-      .window-dots span:nth-child(2) {
-        background: var(--amber);
-      }
-
-      .window-dots span:nth-child(3) {
-        background: var(--green);
-      }
-
-      .monitor-title {
+      .signal-title {
         color: var(--muted);
         font-size: 12px;
         font-weight: 800;
@@ -340,149 +254,123 @@
         text-transform: uppercase;
       }
 
-      .monitor-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+      .signal-status {
+        color: #bbf7d0;
+        font-size: 12px;
+        font-weight: 800;
       }
 
-      .chart-panel {
-        min-height: 150px;
+      .signal-body {
+        position: relative;
+        z-index: 1;
+        padding: 24px 20px 20px;
+      }
+
+      .signal-chart {
+        width: 100%;
+        height: 176px;
+      }
+
+      .signal-chart .grid-line {
+        stroke: rgba(151, 164, 184, .15);
+        stroke-width: 1;
+      }
+
+      .signal-chart .threshold {
+        stroke: var(--amber);
+        stroke-width: 2;
+        stroke-dasharray: 8 8;
+      }
+
+      .signal-chart .line {
+        fill: none;
+        stroke: var(--teal);
+        stroke-width: 4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 640;
+        stroke-dashoffset: 640;
+        animation: drawLine 2s ease .35s forwards;
+      }
+
+      .signal-chart .glow {
+        fill: none;
+        stroke: rgba(45, 212, 191, .18);
+        stroke-width: 12;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 640;
+        stroke-dashoffset: 640;
+        animation: drawLine 2s ease .35s forwards;
+      }
+
+      .signal-meta {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .metric {
+        min-height: 82px;
         padding: 13px;
         border: 1px solid rgba(151, 164, 184, .14);
         border-radius: 8px;
         background: rgba(5, 12, 23, .42);
       }
 
-      .chart-panel.wide {
-        grid-column: 1 / -1;
-        min-height: 190px;
-      }
-
-      .chart-head {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 14px;
+      .metric span {
+        display: block;
         color: var(--muted);
         font-size: 12px;
         font-weight: 700;
       }
 
-      .chart-value {
-        color: var(--text);
-        font-size: 22px;
-        font-weight: 800;
-      }
-
-      .bars {
-        display: grid;
-        align-items: end;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 5px;
-        height: 86px;
-      }
-
-      .bars span {
-        min-height: 12px;
-        border-radius: 4px 4px 0 0;
-        background: linear-gradient(180deg, var(--teal), rgba(96, 165, 250, .55));
-      }
-
-      .line-chart {
-        width: 100%;
-        height: 126px;
-      }
-
-      .line-chart polyline {
-        fill: none;
-        stroke: var(--teal);
-        stroke-width: 4;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      .line-chart .threshold {
-        stroke: var(--amber);
-        stroke-width: 2;
-        stroke-dasharray: 7 7;
-      }
-
-      .alert-line {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        margin-top: 12px;
-        padding: 12px;
-        border: 1px solid rgba(245, 158, 11, .28);
-        border-radius: 8px;
-        background: rgba(245, 158, 11, .08);
-        color: #fde68a;
-        font-size: 13px;
-      }
-
-      .terminal-panel {
-        margin-top: 12px;
-        padding: 14px;
-        color: #bffaf2;
-        font-family: Consolas, "Courier New", monospace;
-        font-size: 13px;
-        line-height: 1.7;
-      }
-
-      .terminal-panel span {
-        color: var(--muted);
-      }
-
-      .section {
-        padding: 28px 0 70px;
-      }
-
-      .section-head {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 18px;
-        margin-bottom: 18px;
-      }
-
-      .section-head h2 {
-        margin-bottom: 0;
-        font-size: clamp(24px, 3vw, 36px);
-      }
-
-      .section-head p {
-        max-width: 520px;
-        margin-bottom: 0;
-        color: var(--muted);
-        line-height: 1.6;
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 24px;
       }
 
       .feature-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 14px;
+        padding: 0 0 72px;
       }
 
       .feature-card {
-        min-height: 184px;
+        min-height: 164px;
         padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        transition: transform .2s ease, border-color .2s ease, background .2s ease;
+        animation: fadeUp .7s ease both;
       }
 
-      .feature-icon {
-        display: grid;
-        place-items: center;
-        width: 38px;
-        height: 38px;
-        margin-bottom: 18px;
-        border-radius: 8px;
-        background: rgba(45, 212, 191, .12);
-        color: #bffaf2;
+      .feature-card:nth-child(2) {
+        animation-delay: .08s;
+      }
+
+      .feature-card:nth-child(3) {
+        animation-delay: .16s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(45, 212, 191, .36);
+        background: rgba(20, 34, 54, .82);
+      }
+
+      .feature-card small {
+        color: var(--teal);
         font-weight: 800;
+        letter-spacing: .08em;
       }
 
       .feature-card h3 {
-        margin-bottom: 10px;
+        margin: 16px 0 10px;
         font-size: 17px;
       }
 
@@ -492,11 +380,60 @@
         line-height: 1.6;
       }
 
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          opacity: .65;
+          transform: scale(1);
+        }
+
+        50% {
+          opacity: 1;
+          transform: scale(1.35);
+        }
+      }
+
+      @keyframes drawLine {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+
+      @keyframes scan {
+        0%, 38% {
+          transform: translateX(-120%);
+        }
+
+        72%, 100% {
+          transform: translateX(120%);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::after {
+          animation-duration: .001ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
       @media (max-width: 920px) {
-        .topbar,
-        .section-head {
+        .topbar {
           align-items: flex-start;
           flex-direction: column;
+          padding: 14px 18px;
         }
 
         .nav {
@@ -506,29 +443,26 @@
         .hero {
           grid-template-columns: 1fr;
           min-height: auto;
-        }
-
-        .monitor {
-          min-height: auto;
+          padding: 44px 0;
         }
 
         .feature-grid,
-        .metric-row {
+        .signal-meta {
           grid-template-columns: 1fr;
         }
       }
 
       @media (max-width: 560px) {
         .page {
-          width: min(100% - 28px, 1180px);
+          width: min(100% - 28px, 1120px);
         }
 
-        .hero {
-          padding-top: 36px;
+        .signal-card {
+          min-height: auto;
         }
 
-        .monitor-grid {
-          grid-template-columns: 1fr;
+        .signal-chart {
+          height: 138px;
         }
       }
     </style>
@@ -539,7 +473,7 @@
         <div class="brand-mark">TS</div>
         <div>
           <div class="logo">Temporal Series</div>
-          <div class="subtitle">Observabilidade e alertas</div>
+          <div class="subtitle">Monitoramento Prometheus</div>
         </div>
       </a>
 
@@ -553,134 +487,69 @@
 
     <main class="page">
       <section class="hero">
-        <div>
-          <div class="eyebrow"><span class="status-dot"></span> Prometheus-ready monitoring</div>
-          <h1>Series temporais com leitura <span>operacional</span>, nao decorativa.</h1>
-          <p class="hero-copy">Acompanhe CPU, memoria, disco e rede em tempo real. Crie thresholds por metrica, visualize historico de alertas e navegue direto para o dashboard quando precisar agir.</p>
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="status-dot"></span> Coleta e alertas em tempo real</div>
+          <h1>Monitoramento de <span>series temporais</span>.</h1>
+          <p>Centralize métricas prometheus em dashboards objetivos, visualizando o desempenho em tempo real. receba alertas automáticos, e obtenha insights valiosos sobre o comportamento do seu sistema.</p>
 
           <div class="hero-actions">
-            <a class="primary-btn" href="/register">Comecar agora</a>
-            <a class="ghost-btn" href="/dashboard">Abrir dashboard</a>
-          </div>
-
-          <div class="metric-row" aria-label="Resumo de metricas">
-            <div class="metric-tile">
-              <div class="metric-label"><span>CPU</span><span>5m</span></div>
-              <div class="metric-value teal">42%</div>
-            </div>
-            <div class="metric-tile">
-              <div class="metric-label"><span>RAM</span><span>live</span></div>
-              <div class="metric-value green">68%</div>
-            </div>
-            <div class="metric-tile">
-              <div class="metric-label"><span>Alertas</span><span>ativo</span></div>
-              <div class="metric-value amber">03</div>
-            </div>
+            <a class="primary-btn" href="/register">Criar conta</a>
+            <a class="ghost-btn" href="/dashboard">Ver dashboard</a>
           </div>
         </div>
 
-        <aside class="monitor" aria-label="Previa visual do dashboard">
-          <div class="monitor-header">
-            <div class="window-dots" aria-hidden="true">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-            <div class="monitor-title">node-exporter / query_range</div>
+        <aside class="signal-card" aria-label="Previa animada de serie temporal">
+          <div class="signal-header">
+            <div class="signal-title">node_cpu_seconds_total</div>
+            <div class="signal-status">ONLINE</div>
           </div>
 
-          <div class="monitor-grid">
-            <div class="chart-panel wide">
-              <div class="chart-head">
-                <span>Uso de CPU (%)</span>
-                <span class="chart-value">42.8</span>
-              </div>
-              <svg class="line-chart" viewBox="0 0 420 126" role="img" aria-label="Linha de uso de CPU">
-                <line class="threshold" x1="0" y1="44" x2="420" y2="44"></line>
-                <polyline points="0,90 34,84 68,92 102,70 136,76 170,52 204,66 238,40 272,58 306,32 340,48 374,34 420,46"></polyline>
-              </svg>
-            </div>
+          <div class="signal-body">
+            <svg class="signal-chart" viewBox="0 0 420 176" role="img" aria-label="Grafico animado de uso de CPU">
+              <line class="grid-line" x1="0" y1="36" x2="420" y2="36"></line>
+              <line class="grid-line" x1="0" y1="88" x2="420" y2="88"></line>
+              <line class="grid-line" x1="0" y1="140" x2="420" y2="140"></line>
+              <line class="threshold" x1="0" y1="54" x2="420" y2="54"></line>
+              <polyline class="glow" points="0,132 40,124 80,138 120,96 160,110 200,70 240,84 280,46 320,68 360,50 420,62"></polyline>
+              <polyline class="line" points="0,132 40,124 80,138 120,96 160,110 200,70 240,84 280,46 320,68 360,50 420,62"></polyline>
+            </svg>
 
-            <div class="chart-panel">
-              <div class="chart-head">
-                <span>Rede RX</span>
-                <span>MB/s</span>
+            <div class="signal-meta">
+              <div class="metric">
+                <span>CPU</span>
+                <strong>42%</strong>
               </div>
-              <div class="bars" aria-hidden="true">
-                <span style="height:34%"></span>
-                <span style="height:48%"></span>
-                <span style="height:39%"></span>
-                <span style="height:62%"></span>
-                <span style="height:52%"></span>
-                <span style="height:77%"></span>
-                <span style="height:60%"></span>
-                <span style="height:88%"></span>
-                <span style="height:70%"></span>
-                <span style="height:56%"></span>
-                <span style="height:68%"></span>
-                <span style="height:82%"></span>
+              <div class="metric">
+                <span>Threshold</span>
+                <strong>80%</strong>
+              </div>
+              <div class="metric">
+                <span>Status</span>
+                <strong>OK</strong>
               </div>
             </div>
-
-            <div class="chart-panel">
-              <div class="chart-head">
-                <span>Disco</span>
-                <span>status</span>
-              </div>
-              <div class="bars" aria-hidden="true">
-                <span style="height:22%"></span>
-                <span style="height:28%"></span>
-                <span style="height:35%"></span>
-                <span style="height:42%"></span>
-                <span style="height:46%"></span>
-                <span style="height:52%"></span>
-                <span style="height:55%"></span>
-                <span style="height:58%"></span>
-                <span style="height:64%"></span>
-                <span style="height:69%"></span>
-                <span style="height:72%"></span>
-                <span style="height:74%"></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="alert-line">
-            <strong>WARNING</strong>
-            <span>CPU acima de 80% do threshold configurado</span>
-          </div>
-
-          <div class="terminal-panel">
-            <div><span>$</span> query_range node_cpu_seconds_total</div>
-            <div><span>&gt;</span> status OK | threshold sync | refresh 10s</div>
           </div>
         </aside>
       </section>
 
-      <section class="section">
-        <div class="section-head">
-          <h2>Feito para operar rapido.</h2>
-          <p>Sem pagina de marketing perdida no caminho: cada entrada leva para uma acao util dentro do sistema.</p>
-        </div>
+      <section class="feature-grid" aria-label="Recursos do projeto">
+        <article class="feature-card">
+          <small>01</small>
+          <h3>Dashboards por metrica</h3>
+          <p>Adicione cards de metricas conforme a necessidade da analise.</p>
+        </article>
 
-        <div class="feature-grid">
-          <article class="feature-card">
-            <div class="feature-icon">01</div>
-            <h3>Dashboards vivos</h3>
-            <p>Cards independentes por metrica, janelas de tempo por grafico e atualizacao automatica.</p>
-          </article>
+        <article class="feature-card">
+          <small>02</small>
+          <h3>Thresholds configuraveis</h3>
+          <p>Defina limites e acompanhe o estado do alerta direto no grafico e na lista lateral.</p>
+        </article>
 
-          <article class="feature-card">
-            <div class="feature-icon">02</div>
-            <h3>Thresholds visiveis</h3>
-            <p>Linhas de limite aparecem no grafico e a lista lateral mostra o status de cada alerta.</p>
-          </article>
-
-          <article class="feature-card">
-            <div class="feature-icon">03</div>
-            <h3>Navegacao direta</h3>
-            <p>Inicio, login, registro e dashboard usam a mesma linguagem visual e links consistentes.</p>
-          </article>
-        </div>
+        <article class="feature-card">
+          <small>03</small>
+          <h3>Historico de eventos</h3>
+          <p>Consulte registros de warning e critical para entender quando uma serie saiu do comportamento esperado.</p>
+        </article>
       </section>
     </main>
   </body>
