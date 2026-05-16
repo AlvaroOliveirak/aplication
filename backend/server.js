@@ -22,6 +22,7 @@ app.use(express.static(path.join(__dirname, "../views")));
 app.use("/api/query", queryRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/alert", alertRoutes);
+app.use("/api/alerts", alertRoutes);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../views/layouts/dashboard.handlebars"), {

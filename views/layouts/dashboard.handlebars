@@ -66,6 +66,8 @@
         align-items: center;
         gap: 12px;
         min-width: 0;
+        color: var(--text);
+        text-decoration: none;
       }
 
       .brand-mark {
@@ -516,19 +518,21 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">
+      <a class="brand" href="/">
         <div class="brand-mark">TS</div>
         <div>
           <div class="logo">Temporal Series</div>
           <div class="subtitle">Monitoramento Prometheus em tempo real</div>
         </div>
-      </div>
+      </a>
 
       <nav class="nav" aria-label="Navegacao principal">
-        <a href="/">Home</a>
+        <a href="/">Inicio</a>
         <button class="active" data-tab-button="dashboards" onclick="showTab('dashboards')">Dashboard</button>
         <button data-tab-button="logs" onclick="showTab('logs')">Logs</button>
         <button data-tab-button="settings" onclick="showTab('settings')">Config</button>
+        <a href="/login">Login</a>
+        <a href="/register">Registro</a>
       </nav>
     </header>
 
@@ -552,14 +556,14 @@
               <p class="eyebrow">Metricas</p>
               <h1>Dashboards</h1>
             </div>
-            <div class="muted">Atualizacao automatica a cada 5 segundos.</div>
+            <div class="muted">Atualização automática a cada 5 segundos.</div>
           </div>
 
           <div class="builder panel">
             <div class="builder-bar">
               <div>
                 <h3>Selecionar dashboards</h3>
-                <div class="muted">Escolha as metricas que voce quer acompanhar.</div>
+                <div class="muted">Escolha as métricas que voce quer acompanhar.</div>
               </div>
               <button class="primary-btn" onclick="toggleMetricMenu()">Selecionar</button>
             </div>
@@ -645,6 +649,18 @@
 
       let selectedMetrics = new Set();
       const activeDashboards = new Set();
+
+      function getMetricDefinitionByQuery(query) {
+        return metricList.find(metric => metric.query === query);
+      }
+
+      function resolveMetricId(query, metricId) {
+        if (metricId && metricId !== "undefined" && metricId !== "null") {
+          return metricId;
+        }
+
+        return getMetricDefinitionByQuery(query)?.id || query;
+      }
 
       function emptyState(message) {
         return `<div class="empty-state">${message}</div>`;
@@ -831,16 +847,17 @@
           const container = document.getElementById("chartsContainer");
           const chartId = `chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
           const metricName = resolveMetricName(dashboard.query, data);
+          const metricId = resolveMetricId(dashboard.query, dashboard.metricId);
 
           card.className = "card";
           card.dataset.query = dashboard.query;
-          card.dataset.metricId = dashboard.metricId;
+          card.dataset.metricId = metricId;
           card.dataset.chartId = chartId;
           card.innerHTML = `
             <div class="chart-header">
               <div>
                 <h4>${metricName}</h4>
-                <div class="muted" style="font-size:12px; margin-top:4px;">Janela movel de dados</div>
+                <div class="muted" style="font-size:12px; margin-top:4px;">Janela móvel de dados</div>
               </div>
               <div class="card-actions">
                 <button class="icon-btn" title="Configurar threshold" onclick="toggleAlertBox(this)">!</button>
@@ -857,12 +874,15 @@
             <div id="${chartId}" data-chart-id="${chartId}" class="chart-box"></div>
             <div class="alert-inline">
               <input placeholder="Threshold, ex: 80" class="thresholdInput" type="number" step="0.01">
-              <button class="primary-btn" onclick='createInlineAlert(${JSON.stringify(query)}, this)'>Salvar threshold</button>
+              <button class="primary-btn save-threshold-btn">Salvar threshold</button>
             </div>
           `;
 
           container.querySelector(".empty-state")?.remove();
           container.appendChild(card);
+          card.querySelector(".save-threshold-btn").addEventListener("click", event => {
+            createInlineAlert(dashboard.query, event.currentTarget);
+          });
           activeDashboards.add(dashboard.query);
 
           const thresholdData = await getThresholdByQuery(dashboard.query);
@@ -887,19 +907,25 @@
           return;
         }
 
-        await fetch("/api/alert", {
+        const response = await fetch("/api/alert", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            metricId: card.dataset.metricId,
+            metricId: resolveMetricId(query, card.dataset.metricId),
             query,
             threshold,
             metricName: card.querySelector("h4").innerText,
             unit: "%"
           })
         });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          alert(error.error || "Nao foi possivel salvar o threshold");
+          return;
+        }
 
         input.value = "";
         await loadThresholds();
@@ -1264,7 +1290,8 @@
             .find(c => c.dataset.query === query)
             ?.dataset.metricId;
 
-          return alerts.find(a => a.metricId === metricId);
+          return alerts.find(a => a.query === query)
+            || alerts.find(a => a.metricId === resolveMetricId(query, metricId));
         } catch (err) {
           console.error(err);
           return null;

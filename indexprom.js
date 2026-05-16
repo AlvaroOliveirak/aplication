@@ -77,19 +77,27 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-  console.log(req.body);
-  const hashedPassword = await bcrypt.hash(req.body.password, 10);
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const password = String(req.body.password || '');
 
-  Post.create({
-    email: req.body.email,
-    password: hashedPassword
-  })
-    .then(() => {
-      res.redirect('/login');
-    })
-    .catch((err) => {
-      res.send('Houve um erro: ' + err);
-    });
+  if (!email || !password) {
+    return res.redirect('/register');
+  }
+
+  try {
+    const existingUser = await Post.findOne({ where: { email } });
+
+    if (existingUser) {
+      existingUser.password = password;
+      await existingUser.save();
+    } else {
+      await Post.create({ email, password });
+    }
+
+    res.redirect('/login');
+  } catch (err) {
+    res.status(500).send('Houve um erro: ' + err.message);
+  }
 });
 
 app.get('/login', (req, res) => {
@@ -97,19 +105,20 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const password = String(req.body.password || '');
 
-  Post.findOne({ where: { email: email } }).then(async (post) => {
+  Post.findOne({ where: { email } }).then(async (post) => {
     if (!post) {
-      return res.send("Usuário não encontrado");
+      return res.redirect('/login');
     }
 
     const match = await bcrypt.compare(password, post.password);
 
     if (match) {
-      res.send("Login realizado com sucesso");
+      res.redirect('/dashboard');
     } else {
-      res.send("Senha incorreta");
+      res.redirect('/login');
     }
   });
 });
@@ -220,6 +229,10 @@ app.post("/api/dashboard", (req, res) => {
   const exists = dashboards.find(d => d.query === query);
 
   if (exists) {
+    if (metricId) {
+      exists.metricId = metricId;
+    }
+
     return res.json(exists);
   }
 
@@ -254,11 +267,14 @@ app.post("/api/alert", (req, res) => {
     });
   }
 
-  const exists = alerts.find(a => a.metricId === req.body.metricId);
+  const metricId = req.body.metricId || req.body.query;
+  const exists = alerts.find(a => a.query === req.body.query)
+    || alerts.find(a => a.metricId === metricId);
 
   if (exists) {
     exists.metricName = req.body.metricName;
     exists.query = req.body.query;
+    exists.metricId = metricId;
     exists.threshold = threshold;
     exists.unit = req.body.unit || "%";
     exists.status = "OK";
@@ -269,7 +285,7 @@ app.post("/api/alert", (req, res) => {
 
   const alert = {
     id: alertId++,
-    metricId: req.body.metricId,
+    metricId,
     metricName: req.body.metricName,
     query: req.body.query,
     threshold,

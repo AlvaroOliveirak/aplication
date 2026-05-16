@@ -1,257 +1,359 @@
 <!doctype html>
 <html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Temporal Series Analyser</title>
-  <link rel="stylesheet" href="../public/css/style.css">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro | Temporal Series</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Dots&display=swap");
 
-   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Iceland&family=New+Rocker&family=Zen+Dots&display=swap");
+      :root {
+        --bg: #08111f;
+        --panel: #101b2b;
+        --panel-strong: #142236;
+        --line: rgba(151, 164, 184, .18);
+        --muted: #91a0b8;
+        --text: #f7fbff;
+        --teal: #2dd4bf;
+        --blue: #60a5fa;
+        --green: #22c55e;
+        --shadow: 0 18px 45px rgba(0, 0, 0, .28);
+      }
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
+      * {
+        box-sizing: border-box;
+      }
 
-    body{
-      min-height:100vh;
-      background:#0b1120;
-      background:  radial-gradient(circle at top left,#1e3a8a 0%,transparent 30%),radial-gradient(circle at bottom right,#7c3aed 0%,transparent 25%),
-#0b1120;
-      font-family: Arial, Helvetica, sans-serif;
-    }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 12% 8%, rgba(45, 212, 191, .12), transparent 26%),
+          linear-gradient(140deg, #08111f 0%, #0c1728 52%, #101827 100%);
+        color: var(--text);
+        font-family: Inter, Arial, Helvetica, sans-serif;
+      }
 
-    header{
-      font-family: "Zen Dots", cursive, serif;
-    }
+      button,
+      input {
+        font: inherit;
+      }
 
-    #head{
-      color: rgb(27, 118, 204);
-      padding: 8px 15px;
-      font-size: 14px;
-      border-bottom: 1px solid rgb(159, 156, 197);
-    }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        min-height: 72px;
+        padding: 14px 28px;
+        background: rgba(8, 17, 31, .88);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(18px);
+      }
 
-    #navegation{
-      background:black;
-      width:100%;
-      box-shadow:2px 2px 3px rgba(245,245,245,.25);
-    }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        color: var(--text);
+        text-decoration: none;
+      }
 
-    nav{
-      display:flex;
-      flex-wrap:wrap;
-      justify-content:center;
-      gap:15px;
-      padding:15px;
-    }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--teal), var(--blue));
+        color: #06111f;
+        font-weight: 800;
+      }
 
-    nav a{
-      color: antiquewhite;
-      text-decoration:none;
-      padding:8px 14px;
-      border-left:1px solid white;
-      border-right:1px solid whitesmoke;
-      transition:.3s;
-    }
+      .logo {
+        font-family: "Zen Dots", Inter, sans-serif;
+        font-size: 18px;
+        letter-spacing: 0;
+        white-space: nowrap;
+      }
 
-    nav a:hover{
-      background:rgba(255,255,255,.08);
-      text-shadow:0 0 5px white;
-      border-radius:8px;
-      
-    }
+      .subtitle {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
 
-    main{
-      max-width:1200px;
-      margin:auto;
-      padding:40px 20px;
-      text-align:center;
-    }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
 
-    #titulo{
-      color:antiquewhite;
-      font-family:"Zen Dots", cursive;
-      margin-bottom:15px;
-    }
+      .nav a,
+      .secondary-link,
+      .primary-btn {
+        min-height: 38px;
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        text-decoration: none;
+        transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+      }
 
-    #subtitulo{
-      color:#fff;
-      font-family:"Zen Dots", cursive;
-      margin-bottom:40px;
-      font-size:18px;
-    }
+      .nav a,
+      .secondary-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 13px;
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid transparent;
+      }
 
-    /* CARDS */
-    #info{
-      display:flex;
-      flex-wrap:wrap;
-      justify-content:center;
-      gap:20px;
-      margin-bottom:40px;
-    }
+      .nav a:hover,
+      .secondary-link:hover {
+        background: rgba(255, 255, 255, .08);
+        border-color: var(--line);
+      }
 
-    .info{
-      min-width:220px;
-      padding:25px;
-      color:white;
-      font-family:"Zen Dots", cursive;
-      border-radius:18px;
+      .nav .active {
+        background: rgba(45, 212, 191, .12);
+        border-color: rgba(45, 212, 191, .35);
+        color: #bffaf2;
+      }
 
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.18);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      .auth-page {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 420px;
+        gap: 34px;
+        align-items: center;
+        width: min(1120px, calc(100% - 40px));
+        min-height: calc(100vh - 72px);
+        margin: 0 auto;
+        padding: 44px 0;
+      }
 
-      box-shadow:0 8px 25px rgba(0,0,0,.25);
-      transition:.35s ease;
-    }
+      .auth-copy h1 {
+        margin: 0 0 14px;
+        max-width: 680px;
+        font-size: clamp(30px, 5vw, 54px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
 
-    .info:hover{
-      transform:translateY(-8px) scale(1.03);
-      background:rgba(255,255,255,.16);
-      box-shadow:0 15px 35px rgba(0,0,0,.35);
-    }
+      .auth-copy p {
+        margin: 0;
+        max-width: 590px;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.7;
+      }
 
-    /* FORMULÁRIO */
-    .form-box{
-      max-width:420px;
-      margin:0 auto;
-      padding:30px;
-      border-radius:20px;
+      .workflow-list {
+        display: grid;
+        gap: 12px;
+        max-width: 660px;
+        margin-top: 28px;
+      }
 
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.18);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      .workflow-item {
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(16, 27, 43, .68);
+      }
 
-      box-shadow:0 10px 30px rgba(0,0,0,.30);
-    }
+      .workflow-index {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: rgba(34, 197, 94, .14);
+        color: #bbf7d0;
+        font-weight: 800;
+      }
 
-    .form-box input{
-      width:100%;
-      padding:14px 16px;
-      margin-bottom:16px;
-      border:none;
-      outline:none;
-      border-radius:12px;
-      font-size:15px;
-      background:rgba(255,255,255,.15);
-      color:white;
-    }
+      .workflow-item strong {
+        display: block;
+        margin-bottom: 4px;
+      }
 
-    .form-box input::placeholder{
-      color:rgba(255,255,255,.75);
-    }
+      .workflow-item span {
+        color: var(--muted);
+        font-size: 13px;
+      }
 
-    #reg{
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:12px;
-      font-size:16px;
-      font-weight:bold;
-      background:linear-gradient(90deg,#6a00ff,#9d00ff);
-      color:white;
-      cursor:pointer;
-      transition:.3s;
-    }
+      .auth-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: linear-gradient(180deg, rgba(20, 34, 54, .94), rgba(13, 24, 39, .94));
+        box-shadow: var(--shadow);
+        padding: 24px;
+      }
 
-    #reg:hover{
-      transform:translateY(-3px);
-      box-shadow:0 10px 20px rgba(0,0,0,.35);
-    }
+      .auth-card h2 {
+        margin: 0 0 6px;
+        font-size: 24px;
+      }
 
-    #reg a{
-      color:white;
-      text-decoration:none;
-      display:block;
-      width:100%;
-      height:100%;
-    }
+      .auth-card p {
+        margin: 0 0 22px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
 
-  </style>
-</head>
+      .field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
 
-<body>
+      .field label {
+        color: #dce7f8;
+        font-size: 13px;
+        font-weight: 700;
+      }
 
-<header>
-  <div id="head">
-    <h1>Temporal Series</h1>
-  </div>
+      .field input {
+        width: 100%;
+        min-height: 46px;
+        padding: 0 13px;
+        border: 1px solid rgba(151, 164, 184, .25);
+        border-radius: 8px;
+        outline: none;
+        background: rgba(5, 12, 23, .52);
+        color: var(--text);
+      }
 
- 
-</header>
+      .field input:focus {
+        border-color: rgba(45, 212, 191, .68);
+        box-shadow: 0 0 0 3px rgba(45, 212, 191, .12);
+      }
 
-<main>
+      .primary-btn {
+        width: 100%;
+        min-height: 46px;
+        border: 0;
+        background: linear-gradient(135deg, var(--teal), var(--blue));
+        color: #06111f;
+        font-weight: 800;
+      }
 
-  <h1 id="titulo">Monitoramento inteligente de séries temporais</h1>
-  <h2 id="subtitulo">
-    Detecte anomalias em tempo real e tenha insights valiosos
-  </h2>
+      .primary-btn:hover {
+        transform: translateY(-1px);
+      }
 
-  <section id="info">
-    <div class="info">Análise em tempo real</div>
-    <div class="info">Gráficos interativos</div>
-    <div class="info">Alertas personalizados</div>
-  </section>
-<form action="/register" method="POST">
-  
-    <section class="form-box">
-      <input type="email" id="email" name="email" placeholder="Digite seu email" required>
-      <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
-  
-      <button type="submit" id="reg">Register</button>
-    </section>
-</form>
+      .auth-switch {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 14px;
+      }
 
-</main>
+      @media (max-width: 840px) {
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 14px 18px;
+        }
 
-</body>
+        .nav {
+          justify-content: flex-start;
+        }
 
-</html> 
+        .auth-page {
+          grid-template-columns: 1fr;
+          width: min(100% - 28px, 520px);
+          padding: 30px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/">
+        <div class="brand-mark">TS</div>
+        <div>
+          <div class="logo">Temporal Series</div>
+          <div class="subtitle">Observabilidade e alertas</div>
+        </div>
+      </a>
 
+      <nav class="nav" aria-label="Navegacao principal">
+        <a href="/">Inicio</a>
+        <a href="/login">Login</a>
+        <a class="active" href="/register">Registro</a>
+        <a href="/dashboard">Dashboard</a>
+      </nav>
+    </header>
 
-<!-- ========================= -->
-<!-- views/login.handlebars -->
-<!-- ========================= -->
-<!--
-<!doctype html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login</title>
-<link rel="stylesheet" href="/css/style.css">
-</head>
+    <main class="auth-page">
+      <section class="auth-copy">
+        <h1>Crie sua area de monitoramento em poucos segundos.</h1>
+        <p>Depois do registro voce volta ao login e entra no dashboard com metricas, thresholds e alertas organizados no mesmo painel.</p>
 
-<body>
+        <div class="workflow-list" aria-label="Fluxo de uso">
+          <div class="workflow-item">
+            <div class="workflow-index">1</div>
+            <div>
+              <strong>Cadastre as credenciais</strong>
+              <span>Email e senha sao salvos para acesso local.</span>
+            </div>
+          </div>
+          <div class="workflow-item">
+            <div class="workflow-index">2</div>
+            <div>
+              <strong>Entre no sistema</strong>
+              <span>O login leva direto ao dashboard operacional.</span>
+            </div>
+          </div>
+          <div class="workflow-item">
+            <div class="workflow-index">3</div>
+            <div>
+              <strong>Configure thresholds</strong>
+              <span>Defina limites para CPU, memoria, disco e rede.</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-<header>
-<div class="logo">Temporal Series</div>
+      <section class="auth-card" aria-labelledby="register-title">
+        <h2 id="register-title">Registro</h2>
+        <p>Crie sua conta para acessar o monitoramento.</p>
 
-<nav>
-<a href="/">Home</a>
-<a href="/register">Register</a>
-</nav>
-</header>
+        <form action="/register" method="POST">
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@empresa.com" required>
+          </div>
 
-<div class="auth-box">
+          <div class="field">
+            <label for="password">Senha</label>
+            <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha" required>
+          </div>
 
-<h2>Entrar</h2>
+          <button class="primary-btn" type="submit">Criar conta</button>
+        </form>
 
-<form action="/login" method="POST">
-
-<input class="input" type="email" name="email" placeholder="Seu email">
-<input class="input" type="password" name="password" placeholder="Sua senha">
-
-<button class="full-btn" type="submit">Login</button>
-
-</form>
-
-</div>
-
-</body>
+        <div class="auth-switch">
+          <span>Ja tem conta?</span>
+          <a class="secondary-link" href="/login">Entrar</a>
+        </div>
+      </section>
+    </main>
+  </body>
 </html>
