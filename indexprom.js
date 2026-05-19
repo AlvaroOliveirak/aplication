@@ -49,14 +49,45 @@ let alerts = [];
 let alertId = 1;
 let alertLogs = [];
 
+function resolveThresholds(alert) {
+  const criticalThreshold = Number(alert.criticalThreshold ?? alert.threshold);
+  const warningThreshold = Number(
+    alert.warningThreshold ?? (Number.isFinite(criticalThreshold) ? criticalThreshold * 0.8 : NaN)
+  );
+
+  return { warningThreshold, criticalThreshold };
+}
+
+function evaluateAlertStatus(value, alert) {
+  const { warningThreshold, criticalThreshold } = resolveThresholds(alert);
+
+  if (!Number.isFinite(value) || !Number.isFinite(warningThreshold) || !Number.isFinite(criticalThreshold)) {
+    return "OK";
+  }
+
+  if (value >= criticalThreshold) {
+    return "CRITICAL";
+  }
+
+  if (value >= warningThreshold) {
+    return "WARNING";
+  }
+
+  return "OK";
+}
+
 function addAlertLog(alert, value, status) {
+  const { warningThreshold, criticalThreshold } = resolveThresholds(alert);
+
   alertLogs.unshift({
     id: alertId++,
     alertId: alert.id,
     metricId: alert.metricId,
     metricName: alert.metricName,
     query: alert.query,
-    threshold: alert.threshold,
+    warningThreshold,
+    criticalThreshold,
+    threshold: criticalThreshold,
     value: Number(value).toFixed(2),
     status,
     unit: alert.unit || "%",
@@ -134,33 +165,58 @@ app.get('/metrics', async (req, res) => {
   res.end(await client.register.metrics());
 });
 
+function buildQueryRangeParams(rangeSec) {
+  const range = Math.max(Number(rangeSec) || 300, 60);
+  const end = Math.floor(Date.now() / 1000);
+  const lookback = 300;
+  const displayStart = end - range;
+  const queryStart = displayStart - lookback;
+
+  let step = Math.max(Math.ceil(range / 240), 5);
+
+  if (range >= 86400) {
+    step = 120;
+  } else if (range >= 43200) {
+    step = 60;
+  } else if (range >= 21600) {
+    step = 30;
+  } else if (range >= 10800) {
+    step = 20;
+  } else if (range >= 3600) {
+    step = 10;
+  }
+
+  const alignedStart = Math.floor(queryStart / step) * step;
+
+  return { range, end, displayStart, alignedStart, step };
+}
+
+function filterSeriesToWindow(series, displayStart) {
+  return series.map((item) => ({
+    ...item,
+    values: (item.values || []).filter(([timestamp, value]) => {
+      if (Number(timestamp) < displayStart) {
+        return false;
+      }
+
+      if (value === null || value === undefined || value === "NaN") {
+        return false;
+      }
+
+      return true;
+    })
+  }));
+}
+
 app.post('/api/query', async (req, res) => {
   try {
-    const {
-      query,
-      range = 300 // default = 5 minutos
-    } = req.body;
-
-    const end = Math.floor(Date.now() / 1000);
-    const start = end - Number(range);
-
-    // step inteligente
-    let step = 5;
-
-    if (range >= 86400) {
-      step = 120;
-    } else if (range >= 43200) {
-      step = 60;
-    } else if (range >= 21600) {
-      step = 30;
-    } else if (range >= 3600) {
-      step = 15;
-    }
+    const { query, range: rangeInput = 300 } = req.body;
+    const { range, end, displayStart, alignedStart, step } = buildQueryRangeParams(rangeInput);
 
     const url =
       `http://prometheus:9090/api/v1/query_range` +
       `?query=${encodeURIComponent(query)}` +
-      `&start=${start}` +
+      `&start=${alignedStart}` +
       `&end=${end}` +
       `&step=${step}`;
 
@@ -168,8 +224,16 @@ app.post('/api/query', async (req, res) => {
     const json = await response.json();
 
     if (!json.data || !json.data.result) {
-      return res.json([]);
+      return res.json({
+        series: [],
+        start: displayStart,
+        end,
+        step,
+        range
+      });
     }
+
+    const series = filterSeriesToWindow(json.data.result, displayStart);
 
     for (const alert of alerts) {
       if (alert.query !== query) {
@@ -194,14 +258,7 @@ app.post('/api/query', async (req, res) => {
       }
 
       const previousStatus = alert.status;
-      const percent = (currentValue / alert.threshold) * 100;
-      let nextStatus = "OK";
-
-      if (currentValue >= alert.threshold) {
-        nextStatus = "CRITICAL";
-      } else if (percent >= 80) {
-        nextStatus = "WARNING";
-      }
+      const nextStatus = evaluateAlertStatus(currentValue, alert);
 
       alert.lastValue = currentValue.toFixed(2);
       alert.status = nextStatus;
@@ -211,9 +268,14 @@ app.post('/api/query', async (req, res) => {
         console.log(`ALERTA ${nextStatus}: ${alert.metricName} = ${currentValue.toFixed(2)}`);
       }
     }
-    
 
-    res.json(json.data.result);
+    res.json({
+      series,
+      start: displayStart,
+      end,
+      step,
+      range
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -259,11 +321,18 @@ app.get("/api/alerts", (req, res) => {
 });
 
 app.post("/api/alert", (req, res) => {
-  const threshold = Number(req.body.threshold);
+  const warningThreshold = Number(req.body.warningThreshold);
+  const criticalThreshold = Number(req.body.criticalThreshold ?? req.body.threshold);
 
-  if (!Number.isFinite(threshold)) {
+  if (!Number.isFinite(warningThreshold) || !Number.isFinite(criticalThreshold)) {
     return res.status(400).json({
-      error: "Threshold invalido"
+      error: "Informe os limites de atencao e alerta"
+    });
+  }
+
+  if (warningThreshold >= criticalThreshold) {
+    return res.status(400).json({
+      error: "O limite de atencao deve ser menor que o limite de alerta"
     });
   }
 
@@ -275,7 +344,9 @@ app.post("/api/alert", (req, res) => {
     exists.metricName = req.body.metricName;
     exists.query = req.body.query;
     exists.metricId = metricId;
-    exists.threshold = threshold;
+    exists.warningThreshold = warningThreshold;
+    exists.criticalThreshold = criticalThreshold;
+    exists.threshold = criticalThreshold;
     exists.unit = req.body.unit || "%";
     exists.status = "OK";
     exists.lastValue = 0;
@@ -288,7 +359,9 @@ app.post("/api/alert", (req, res) => {
     metricId,
     metricName: req.body.metricName,
     query: req.body.query,
-    threshold,
+    warningThreshold,
+    criticalThreshold,
+    threshold: criticalThreshold,
     status: "OK",
     lastValue: 0,
     unit: req.body.unit || "%"

@@ -361,10 +361,43 @@
 
       .alert-inline {
         display: none;
-        gap: 10px;
+        gap: 12px;
         margin-top: 10px;
         padding-top: 12px;
         border-top: 1px solid var(--line);
+      }
+
+      .threshold-form {
+        display: grid;
+        gap: 10px;
+      }
+
+      .threshold-form legend {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .threshold-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .threshold-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #dce7f8;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .threshold-field label.warning-label {
+        color: #fcd34d;
+      }
+
+      .threshold-field label.critical-label {
+        color: #fca5a5;
       }
 
       .thresholdInput {
@@ -390,7 +423,24 @@
         border-radius: 8px;
         background: rgba(255, 255, 255, .055);
         border: 1px solid var(--line);
+        border-left-width: 4px;
         font-size: 13px;
+        transition: border-color .2s ease, background .2s ease;
+      }
+
+      .threshold-item.status-OK {
+        border-left-color: #22c55e;
+        background: rgba(34, 197, 94, .08);
+      }
+
+      .threshold-item.status-WARNING {
+        border-left-color: #f59e0b;
+        background: rgba(245, 158, 11, .1);
+      }
+
+      .threshold-item.status-CRITICAL {
+        border-left-color: #ef4444;
+        background: rgba(239, 68, 68, .12);
       }
 
       .delete-threshold-btn {
@@ -532,8 +582,6 @@
         <button class="active" data-tab-button="dashboards" onclick="showTab('dashboards')">Dashboard</button>
         <button data-tab-button="logs" onclick="showTab('logs')">Logs</button>
         <button data-tab-button="settings" onclick="showTab('settings')">Config</button>
-        <a href="/login">Login</a>
-        <a href="/register">Registro</a>
       </nav>
     </header>
 
@@ -650,6 +698,81 @@
 
       let selectedMetrics = new Set();
       const activeDashboards = new Set();
+
+      function resolveThresholds(alert) {
+        const criticalThreshold = Number(alert?.criticalThreshold ?? alert?.threshold);
+        const warningThreshold = Number(
+          alert?.warningThreshold ?? (Number.isFinite(criticalThreshold) ? criticalThreshold * 0.8 : NaN)
+        );
+
+        return { warningThreshold, criticalThreshold };
+      }
+
+      function statusColor(status) {
+        if (status === "CRITICAL") {
+          return "#fca5a5";
+        }
+
+        if (status === "WARNING") {
+          return "#fcd34d";
+        }
+
+        return "#86efac";
+      }
+
+      function buildThresholdMarkLines(thresholdData) {
+        if (!thresholdData) {
+          return undefined;
+        }
+
+        const { warningThreshold, criticalThreshold } = resolveThresholds(thresholdData);
+        const unit = thresholdData.unit || "%";
+
+        return {
+          silent: true,
+          symbol: ["none", "none"],
+          data: [
+            {
+              yAxis: warningThreshold,
+              lineStyle: {
+                color: "#f59e0b",
+                width: 2,
+                type: "dashed"
+              },
+              label: {
+                show: true,
+                position: "end",
+                formatter: `Atencao ${warningThreshold}${unit}`,
+                color: "#fff",
+                fontSize: 11,
+                fontWeight: "bold",
+                backgroundColor: "rgba(245,158,11,.9)",
+                padding: [4, 7],
+                borderRadius: 6
+              }
+            },
+            {
+              yAxis: criticalThreshold,
+              lineStyle: {
+                color: "#ef4444",
+                width: 2,
+                type: "dashed"
+              },
+              label: {
+                show: true,
+                position: "end",
+                formatter: `Alerta ${criticalThreshold}${unit}`,
+                color: "#fff",
+                fontSize: 11,
+                fontWeight: "bold",
+                backgroundColor: "rgba(239,68,68,.9)",
+                padding: [4, 7],
+                borderRadius: 6
+              }
+            }
+          ]
+        };
+      }
 
       function getMetricDefinitionByQuery(query) {
         return metricList.find(metric => metric.query === query);
@@ -837,23 +960,25 @@
           });
 
           const { id, query } = dashboard;
-          const data = await res.json();
+          const payload = await res.json();
+          const data = normalizeQueryPayload(payload);
 
-          if (!Array.isArray(data)) {
-            console.warn("Formato invalido:", data);
+          if (!Array.isArray(data.series)) {
+            console.warn("Formato invalido:", payload);
             return;
           }
 
           const card = document.createElement("div");
           const container = document.getElementById("chartsContainer");
           const chartId = `chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-          const metricName = resolveMetricName(dashboard.query, data);
+          const metricName = resolveMetricName(dashboard.query, data.series);
           const metricId = resolveMetricId(dashboard.query, dashboard.metricId);
 
           card.className = "card";
           card.dataset.query = dashboard.query;
           card.dataset.metricId = metricId;
           card.dataset.chartId = chartId;
+          card.dataset.range = "300";
           card.innerHTML = `
             <div class="chart-header">
               <div>
@@ -874,8 +999,20 @@
             </div>
             <div id="${chartId}" data-chart-id="${chartId}" class="chart-box"></div>
             <div class="alert-inline">
-              <input placeholder="Threshold, ex: 80" class="thresholdInput" type="number" step="0.01">
-              <button class="primary-btn save-threshold-btn">Salvar threshold</button>
+              <form class="threshold-form">
+                <legend>Zona verde abaixo do limite de atencao. Entre atencao e alerta: WARNING. Acima do alerta: CRITICAL.</legend>
+                <div class="threshold-fields">
+                  <div class="threshold-field">
+                    <label class="warning-label" for="warning_${chartId}">Limite de atencao</label>
+                    <input id="warning_${chartId}" class="thresholdInput warningInput" type="number" step="0.01" placeholder="Ex: 60" required>
+                  </div>
+                  <div class="threshold-field">
+                    <label class="critical-label" for="critical_${chartId}">Limite de alerta</label>
+                    <input id="critical_${chartId}" class="thresholdInput criticalInput" type="number" step="0.01" placeholder="Ex: 80" required>
+                  </div>
+                </div>
+                <button class="primary-btn save-threshold-btn" type="button">Salvar limites</button>
+              </form>
             </div>
           `;
 
@@ -887,6 +1024,13 @@
           activeDashboards.add(dashboard.query);
 
           const thresholdData = await getThresholdByQuery(dashboard.query);
+
+          if (thresholdData) {
+            const { warningThreshold, criticalThreshold } = resolveThresholds(thresholdData);
+            card.querySelector(".warningInput").value = warningThreshold;
+            card.querySelector(".criticalInput").value = criticalThreshold;
+          }
+
           renderChart(chartId, data, 300, thresholdData);
         } catch (err) {
           console.error("Erro renderSavedChart:", err);
@@ -900,11 +1044,16 @@
 
       async function createInlineAlert(query, btn) {
         const card = btn.closest(".card");
-        const input = card.querySelector(".thresholdInput");
-        const threshold = Number(input.value);
+        const warningThreshold = Number(card.querySelector(".warningInput")?.value);
+        const criticalThreshold = Number(card.querySelector(".criticalInput")?.value);
 
-        if (!Number.isFinite(threshold)) {
-          alert("Defina um threshold valido");
+        if (!Number.isFinite(warningThreshold) || !Number.isFinite(criticalThreshold)) {
+          alert("Defina os limites de atencao e alerta");
+          return;
+        }
+
+        if (warningThreshold >= criticalThreshold) {
+          alert("O limite de atencao deve ser menor que o limite de alerta");
           return;
         }
 
@@ -916,7 +1065,8 @@
           body: JSON.stringify({
             metricId: resolveMetricId(query, card.dataset.metricId),
             query,
-            threshold,
+            warningThreshold,
+            criticalThreshold,
             metricName: card.querySelector("h4").innerText,
             unit: "%"
           })
@@ -924,13 +1074,31 @@
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          alert(error.error || "Nao foi possivel salvar o threshold");
+          alert(error.error || "Nao foi possivel salvar os limites");
           return;
         }
 
-        input.value = "";
+        card.querySelector(".alert-inline").style.display = "none";
         await loadThresholds();
+        await loadAlertFeed();
         await refreshCharts();
+      }
+
+      function normalizeQueryPayload(payload, fallbackRange = 300) {
+        if (Array.isArray(payload)) {
+          const end = Math.floor(Date.now() / 1000);
+          return {
+            series: payload,
+            start: end - fallbackRange,
+            end
+          };
+        }
+
+        return {
+          series: payload.series || [],
+          start: payload.start,
+          end: payload.end
+        };
       }
 
       async function changeRange(btn, range) {
@@ -938,6 +1106,7 @@
         const query = card.dataset.query;
         const chartId = card.dataset.chartId;
 
+        card.dataset.range = String(range);
         card.querySelectorAll(".range-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
 
@@ -950,7 +1119,8 @@
             body: JSON.stringify({ query, range })
           });
 
-          const data = await res.json();
+          const payload = await res.json();
+          const data = normalizeQueryPayload(payload, range);
           const thresholdData = await getThresholdByQuery(query);
           renderChart(chartId, data, range, thresholdData);
         } catch (err) {
@@ -958,7 +1128,7 @@
         }
       }
 
-      function renderChart(id, prometheusData, range = 300, thresholdData = null) {
+      function renderChart(id, prometheusPayload, range = 300, thresholdData = null) {
         const el = document.getElementById(id);
 
         if (!el) {
@@ -971,8 +1141,13 @@
           chart = echarts.init(el);
         }
 
-        const now = Date.now();
-        const startTime = now - range * 1000;
+        const { series: prometheusData, start, end } = normalizeQueryPayload(prometheusPayload, range);
+        const windowStart = Number(start) * 1000;
+        const windowEnd = Number(end) * 1000;
+        const maxPoints = prometheusData.reduce(
+          (max, item) => Math.max(max, item.values?.length || 0),
+          0
+        );
         const series = prometheusData
           .filter(item => item.values?.length)
           .map((item, index) => ({
@@ -980,9 +1155,9 @@
             type: "line",
             smooth: true,
             showSymbol: false,
-            sampling: "lttb",
-            progressive: 200,
-            progressiveThreshold: 500,
+            sampling: maxPoints > 800 ? "lttb" : false,
+            progressive: maxPoints > 800 ? 200 : 0,
+            progressiveThreshold: 800,
             animationDuration: 500,
             animationEasing: "linear",
             lineStyle: {
@@ -995,44 +1170,7 @@
               Number(v[0]) * 1000,
               parseFloat(v[1])
             ]),
-            markLine:
-              thresholdData && thresholdData.threshold != null
-                ? {
-                    silent: true,
-                    symbol: ["none", "none"],
-                    label: {
-                      show: true,
-                      position: "end",
-                      formatter: () => `THRESHOLD: ${thresholdData.threshold}${thresholdData.unit || ""}`,
-                      color: "#fff",
-                      fontSize: 12,
-                      fontWeight: "bold",
-                      backgroundColor:
-                        thresholdData.status === "CRITICAL"
-                          ? "rgba(239,68,68,.9)"
-                          : thresholdData.status === "WARNING"
-                          ? "rgba(245,158,11,.9)"
-                          : "rgba(34,197,94,.85)",
-                      padding: [5, 8],
-                      borderRadius: 6
-                    },
-                    lineStyle: {
-                      color:
-                        thresholdData.status === "CRITICAL"
-                          ? "#ef4444"
-                          : thresholdData.status === "WARNING"
-                          ? "#f59e0b"
-                          : "#22c55e",
-                      width: 3,
-                      type: "dashed"
-                    },
-                    data: [
-                      {
-                        yAxis: Number(thresholdData.threshold)
-                      }
-                    ]
-                  }
-                : undefined
+            markLine: buildThresholdMarkLines(thresholdData)
           }));
 
         chart.setOption(
@@ -1058,8 +1196,8 @@
             },
             xAxis: {
               type: "time",
-              min: startTime,
-              max: now,
+              min: windowStart,
+              max: windowEnd,
               axisLine: {
                 lineStyle: {
                   color: "#64748b"
@@ -1187,18 +1325,22 @@
 
         alerts.forEach(alert => {
           const div = document.createElement("div");
-          const color = alert.status === "CRITICAL" ? "#fca5a5" : alert.status === "WARNING" ? "#fcd34d" : "#86efac";
+          const { warningThreshold, criticalThreshold } = resolveThresholds(alert);
+          const color = statusColor(alert.status);
+          const unit = alert.unit || "%";
 
-          div.className = "threshold-item";
+          div.className = `threshold-item status-${alert.status || "OK"}`;
+          div.dataset.query = alert.query;
           div.innerHTML = `
             <div class="item-row">
               <div>
                 <strong style="color:${color}">${alert.metricName}</strong><br>
-                <span class="muted">Limite: ${alert.threshold}${alert.unit || ""}</span><br>
+                <span class="muted">Atual: ${alert.lastValue ?? "-"}${unit}</span><br>
+                <span class="muted">Atencao: ${warningThreshold}${unit} | Alerta: ${criticalThreshold}${unit}</span><br>
                 <span class="status-pill status-${alert.status}">${alert.status}</span>
-              </div>
-              <button class="delete-threshold-btn" title="Remover threshold">X</button>
-            </div>
+              </motion.div>
+              <button class="delete-threshold-btn" title="Remover limites">X</button>
+            </motion.div>
           `;
 
           div.querySelector(".delete-threshold-btn").addEventListener("click", async () => {
@@ -1305,16 +1447,7 @@
         for (const card of cards) {
           const query = card.dataset.query;
           const chartId = card.dataset.chartId;
-          const activeBtn = card.querySelector(".range-btn.active");
-          let range = 300;
-
-          if (activeBtn) {
-            const txt = activeBtn.innerText;
-            if (txt === "1h") range = 3600;
-            if (txt === "3h") range = 10800;
-            if (txt === "12h") range = 43200;
-            if (txt === "24h") range = 86400;
-          }
+          const range = Number(card.dataset.range) || 300;
 
           try {
             const res = await fetch("/api/query", {
@@ -1324,7 +1457,8 @@
               },
               body: JSON.stringify({ query, range })
             });
-            const data = await res.json();
+            const payload = await res.json();
+            const data = normalizeQueryPayload(payload, range);
             const thresholdData = await getThresholdByQuery(query);
             renderChart(chartId, data, range, thresholdData);
           } catch (err) {
