@@ -1031,7 +1031,7 @@
             card.querySelector(".criticalInput").value = criticalThreshold;
           }
 
-          renderChart(chartId, data, 300, thresholdData);
+          renderChart(chartId, data, dashboard.query, 300, thresholdData);
         } catch (err) {
           console.error("Erro renderSavedChart:", err);
         }
@@ -1122,13 +1122,13 @@
           const payload = await res.json();
           const data = normalizeQueryPayload(payload, range);
           const thresholdData = await getThresholdByQuery(query);
-          renderChart(chartId, data, range, thresholdData);
+          renderChart(chartId, data, query, range, thresholdData);
         } catch (err) {
           console.error(err);
         }
       }
 
-      function renderChart(id, prometheusPayload, range = 300, thresholdData = null) {
+      function renderChart(id, prometheusPayload, query, range = 300, thresholdData = null) {
         const el = document.getElementById(id);
 
         if (!el) {
@@ -1151,7 +1151,7 @@
         const series = prometheusData
           .filter(item => item.values?.length)
           .map((item, index) => ({
-            name: item.metric?.__name__ || "metric_" + index,
+            name: resolveMetricName(query, prometheusData),
             type: "line",
             smooth: true,
             showSymbol: false,
@@ -1338,9 +1338,9 @@
                 <span class="muted">Atual: ${alert.lastValue ?? "-"}${unit}</span><br>
                 <span class="muted">Atencao: ${warningThreshold}${unit} | Alerta: ${criticalThreshold}${unit}</span><br>
                 <span class="status-pill status-${alert.status}">${alert.status}</span>
-              </motion.div>
+              </div>
               <button class="delete-threshold-btn" title="Remover limites">X</button>
-            </motion.div>
+            </div>
           `;
 
           div.querySelector(".delete-threshold-btn").addEventListener("click", async () => {
@@ -1460,7 +1460,7 @@
             const payload = await res.json();
             const data = normalizeQueryPayload(payload, range);
             const thresholdData = await getThresholdByQuery(query);
-            renderChart(chartId, data, range, thresholdData);
+            renderChart(chartId, data, query, range, thresholdData);
           } catch (err) {
             console.error(err);
           }
