@@ -577,11 +577,14 @@
         </div>
       </a>
 
-      <nav class="nav" aria-label="Navegacao principal">
+<nav class="nav" aria-label="Navegacao principal">
         <a href="/">Inicio</a>
         <button class="active" data-tab-button="dashboards" onclick="showTab('dashboards')">Dashboard</button>
         <button data-tab-button="logs" onclick="showTab('logs')">Logs</button>
         <button data-tab-button="settings" onclick="showTab('settings')">Config</button>
+        {{#if user}}
+          <a href="/logout">Sair</a>
+        {{/if}}
       </nav>
     </header>
 

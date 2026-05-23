@@ -4,6 +4,7 @@ import handlebars from "express-handlebars";
 import { fileURLToPath } from 'url';
 import client from 'prom-client';
 import bcrypt from 'bcryptjs';
+import session from 'express-session';
 import db from "./models/db.js";
 import Post from './models/post.js';
 
@@ -42,6 +43,22 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(session({
+  secret: 'seu_segredo_aqui',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // definido como false para HTTP
+}));
+
+// Middleware de autenticação
+const isAuthenticated = (req, res, next) => {
+  if (req.session.user) {
+    return next();
+  }
+  // Se não estiver logado, redireciona para o login salvando a página de destino
+  res.redirect(`/login?redirectTo=${req.originalUrl}`);
+};
 
 let dashboards = [];
 let nextId = 1;
@@ -138,25 +155,33 @@ app.get('/login', (req, res) => {
 app.post('/login', async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
+  const redirectTo = req.query.redirectTo || '/dashboard';
 
   Post.findOne({ where: { email } }).then(async (post) => {
     if (!post) {
-      return res.redirect('/login');
+      return res.redirect(`/login?redirectTo=${redirectTo}`);
     }
 
     const match = await bcrypt.compare(password, post.password);
 
     if (match) {
-      res.redirect('/dashboard');
+      req.session.user = { id: post.id, email: post.email };
+      res.redirect(redirectTo);
     } else {
-      res.redirect('/login');
+      res.redirect(`/login?redirectTo=${redirectTo}`);
     }
   });
 });
 
-app.get('/dashboard', (req, res) => {
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/');
+});
+
+app.get('/dashboard', isAuthenticated, (req, res) => {
   res.render('dashboard', {
-    layout: 'dashboard'
+    layout: 'dashboard',
+    user: req.session.user
   });
 });
 

@@ -637,11 +637,16 @@
         </div>
       </a>
 
-      <nav class="nav" aria-label="Navegacao principal">
+<nav class="nav" aria-label="Navegacao principal">
         <a class="active" href="/">Inicio</a>
-        <a href="/login">Login</a>
-        <a href="/register">Registro</a>
-        <a href="/dashboard">Dashboard</a>
+        {{#if user}}
+          <a href="/dashboard">Dashboard</a>
+          <a href="/logout">Sair ({{user.email}})</a>
+        {{else}}
+          <a href="/login">Login</a>
+          <a href="/register">Registro</a>
+          <a href="/dashboard">Dashboard</a>
+        {{/if}}
       </nav>
     </header>
 

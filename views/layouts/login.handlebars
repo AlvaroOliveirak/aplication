@@ -318,7 +318,14 @@
         <h2 id="login-title">Login</h2>
         <p>Acesse sua area de monitoramento.</p>
 
-        <form action="/login" method="POST">
+        <form id="loginForm" action="/login" method="POST">
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirectTo = urlParams.get('redirectTo');
+  if (redirectTo) {
+    document.getElementById('loginForm').action = `/login?redirectTo=${encodeURIComponent(redirectTo)}`;
+  }
+</script>
           <div class="field">
             <label for="email">Email</label>
             <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@empresa.com" required>
