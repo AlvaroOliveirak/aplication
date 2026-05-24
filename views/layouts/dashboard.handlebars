@@ -39,27 +39,31 @@
       }
 
       body[data-theme="light"] {
-        --bg: #89ccf3;
-        --panel: #000000;
-        --panel-strong: #020daa;
-        --line: rgba(0, 119, 255, 0.712);
-        --muted: #002144;
-        --text: #000102;
-        --shadow: 0 16px 38px rgba(8, 10, 15, 0.09);
-        background:
-          radial-gradient(circle at 18% 8%, rgba(20, 184, 166, .08), transparent 28%),
-          radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .07), transparent 28%),
-          linear-gradient(140deg, #9bcce2 0%, #555555b9 54%, #1c4e80 100%);
+        --bg: #f0f4f8;
+        --panel: #ffffff;
+        --panel-strong: #f8fafc;
+        --line: rgba(148, 163, 184, 0.2);
+        --muted: #64748b;
+        --text: #1e293b;
+        --shadow: 0 10px 25px rgba(148, 163, 184, 0.1);
+        background: 
+          radial-gradient(circle at 18% 8%, rgba(45, 212, 191, .05), transparent 28%),
+          radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .05), transparent 28%),
+          linear-gradient(140deg, #f0f4f8 0%, #e2e8f0 100%);
       }
 
       body[data-theme="light"] .topbar,
       body[data-theme="light"] .sidebar {
-        background: rgba(10, 85, 100, 0.82);
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-color: var(--line);
       }
 
       body[data-theme="light"] .panel,
       body[data-theme="light"] .card {
-        background: linear-gradient(180deg, rgba(4, 8, 37, 0.9), rgba(0, 0, 0, 0.9));
+        background: #ffffff;
+        border-color: var(--line);
+        box-shadow: var(--shadow);
       }
 
       body[data-theme="light"] .nav a,
@@ -68,16 +72,46 @@
       body[data-theme="light"] .metric-btn,
       body[data-theme="light"] .range-btn,
       body[data-theme="light"] .icon-btn {
-        background: rgba(1, 10, 138, 0.52);
-        color: #000000;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid transparent;
       }
 
       body[data-theme="light"] .nav .active,
       body[data-theme="light"] .range-btn.active,
       body[data-theme="light"] .metric-btn.active {
-        background: rgb(174, 220, 231);
-        border-color: rgba(2, 43, 39, 0.28);
-        color: #000000;
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+        color: #1e293b;
+      }
+
+      body[data-theme="light"] input, 
+      body[data-theme="light"] select {
+        background: #ffffff;
+        color: #1e293b;
+        border: 1px solid #cbd5e1;
+      }
+
+      body[data-theme="light"] .brand-mark {
+        background: #334155;
+        color: #f8fafc;
+      }
+
+      body[data-theme="light"] .logo {
+        color: #1e293b;
+      }
+
+      body[data-theme="light"] .subtitle,
+      body[data-theme="light"] .muted,
+      body[data-theme="light"] .eyebrow {
+        color: #64748b;
+      }
+
+      body[data-theme="light"] h1, 
+      body[data-theme="light"] h2, 
+      body[data-theme="light"] h3, 
+      body[data-theme="light"] h4 {
+        color: #0f172a;
       }
 
       button,
@@ -794,6 +828,14 @@
           </div>
 
           <div class="grid" id="chartsContainer"></div>
+
+          <div class="panel" style="margin-top: 24px;">
+            <h3>Análise de Tendências</h3>
+            <div class="muted" style="margin-bottom: 16px;">Insights baseados no comportamento recente das métricas.</div>
+            <div class="grid" id="trendContainer" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+              <div class="empty-state">Carregando análise de tendências...</div>
+            </div>
+          </div>
         </section>
 
         <section id="logs" style="display:none;">
@@ -1053,25 +1095,46 @@
       }
 
       async function createSelectedCharts() {
-        const customQuery = document.getElementById("customQueryInput")?.value.trim();
+        const customInput = document.getElementById("customQueryInput")?.value.trim();
 
-        if (customQuery) {
+        if (customInput) {
+          let queryToUse = customInput;
+          let nameToUse = customInput;
+
+          // Mapeamento de nomes amigáveis para queries reais
+          const nameToQueryMap = {
+            "uso de cpu": "100 - (avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "cpu": "100 - (avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "memoria": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
+            "ram": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
+            "disco": "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))",
+            "rede": "rate(node_network_receive_bytes_total[5m])"
+          };
+
+          const lowerInput = customInput.toLowerCase();
+          if (nameToQueryMap[lowerInput]) {
+            queryToUse = nameToQueryMap[lowerInput];
+            nameToUse = customInput;
+          }
+
           const inferredResponse = await fetch("/api/metrics/infer", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({ query: customQuery })
+            body: JSON.stringify({ query: queryToUse })
           });
           const inferred = await inferredResponse.json();
-          metricList = metricList.filter(metric => metric.query !== customQuery);
+          
+          // Evitar duplicatas na lista de métricas
+          metricList = metricList.filter(metric => metric.query !== queryToUse);
           metricList.push({
-            id: inferred.id || customQuery,
-            name: inferred.name || resolveMetricName(customQuery, []),
-            query: customQuery,
+            id: inferred.id || queryToUse,
+            name: nameToUse || inferred.name || resolveMetricName(queryToUse, []),
+            query: queryToUse,
             unit: inferred.unit || ""
           });
-          selectedMetrics.add(customQuery);
+          selectedMetrics.add(queryToUse);
           document.getElementById("customQueryInput").value = "";
         }
 
@@ -1380,14 +1443,19 @@
         };
       }
 
-      function aggregateValues(values, mode) {
-        if (!mode || mode === "none" || !values.length) {
+      function aggregateValues(values, mode, chartType) {
+        if (!values || !values.length) return [];
+        
+        // Se for gráfico de linha/área/barra/scatter e não tiver agregação, retorna tudo
+        if ((!mode || mode === "none") && ["line", "area", "bar", "scatter"].includes(chartType)) {
           return values;
         }
 
         const nums = values.map(point => Number(point[1])).filter(Number.isFinite);
+        if (!nums.length) return [];
+        
         const timestamp = values[values.length - 1][0];
-        let value = nums[nums.length - 1] || 0;
+        let value = nums[nums.length - 1];
 
         if (mode === "avg") {
           value = nums.reduce((sum, item) => sum + item, 0) / nums.length;
@@ -1404,6 +1472,14 @@
             counts.set(rounded, (counts.get(rounded) || 0) + 1);
           });
           value = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? value;
+        }
+
+        // Para tipos que esperam série temporal (linha, etc), se houver agregação,
+        // repetimos o valor agregado para manter a janela visual ou retornamos ponto único.
+        // Aqui, para simplificar e corrigir o bug, se houver agregação em gráfico de linha,
+        // mostramos uma linha constante.
+        if (["line", "area", "bar", "scatter"].includes(chartType)) {
+          return values.map(v => [v[0], value]);
         }
 
         return [[timestamp, value]];
@@ -1556,7 +1632,7 @@
             areaStyle: chartType === "area" ? {
               opacity: .18
             } : undefined,
-            data: aggregateValues(item.values, aggregation).map(v => [
+            data: aggregateValues(item.values, aggregation, chartType).map(v => [
               Number(v[0]) * 1000,
               parseFloat(v[1])
             ]),
@@ -1573,7 +1649,7 @@
               width: 2,
               type: "dashed"
             },
-            data: aggregateValues(item.values, aggregation).map(v => [
+            data: aggregateValues(item.values, aggregation, chartType).map(v => [
               Number(v[0]) * 1000 + ((windowEnd - windowStart) || 0),
               parseFloat(v[1])
             ])
@@ -1582,7 +1658,7 @@
         const latestValues = prometheusData
           .filter(item => item.values?.length)
           .map((item, index) => {
-            const values = aggregateValues(item.values, aggregation);
+            const values = aggregateValues(item.values, aggregation, chartType);
             const last = values[values.length - 1];
             return {
               name: item.metric?.instance || item.metric?.device || item.metric?.__name__ || `Serie ${index + 1}`,
@@ -1937,6 +2013,72 @@
 
         for (const card of cards) {
           await refreshCard(card);
+        }
+        await updateTrends();
+      }
+
+      async function updateTrends() {
+        const cards = document.querySelectorAll(".card[data-query]");
+        const trendContainer = document.getElementById("trendContainer");
+        if (!cards.length) {
+          trendContainer.innerHTML = emptyState("Crie dashboards para ver a análise de tendências.");
+          return;
+        }
+
+        let trendsHtml = "";
+        for (const card of cards) {
+          const query = card.dataset.query;
+          const name = card.querySelector("h4").textContent;
+          
+          try {
+            const res = await fetch("/api/query", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ query, range: 3600 }) // Analisa última hora
+            });
+            const payload = await res.json();
+            const series = payload.series || [];
+            
+            if (series.length > 0 && series[0].values?.length > 5) {
+              const values = series[0].values.map(v => parseFloat(v[1]));
+              const first = values[0];
+              const last = values[values.length - 1];
+              const diff = last - first;
+              const percentChange = first !== 0 ? (diff / Math.abs(first)) * 100 : 0;
+              
+              const isUp = diff > 0;
+              const color = isUp ? "#ef4444" : "#22c55e";
+              const icon = isUp ? "↗" : "↘";
+              const trendText = isUp ? "Tendência de Alta" : "Tendência de Queda";
+              
+              trendsHtml += `
+                <div class="card" style="padding: 16px; border-left: 4px solid ${color}">
+                  <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                      <h4 style="margin: 0;">${name}</h4>
+                      <div class="muted" style="font-size: 12px;">Última 1 hora</div>
+                    </div>
+                    <div style="font-size: 24px; color: ${color}; font-weight: bold;">${icon}</div>
+                  </div>
+                  <div style="margin-top: 12px;">
+                    <span style="font-size: 18px; font-weight: 800; color: ${color};">
+                      ${percentChange > 0 ? "+" : ""}${percentChange.toFixed(1)}%
+                    </span>
+                    <span class="muted" style="margin-left: 8px;">${trendText}</span>
+                  </div>
+                  <div class="muted" style="font-size: 12px; margin-top: 8px;">
+                    Variação de ${first.toFixed(2)} para ${last.toFixed(2)}
+                  </div>
+                </div>
+              `;
+            }
+          } catch (e) { console.error(e); }
+        }
+        
+        if (trendsHtml) {
+          trendContainer.innerHTML = trendsHtml;
+        } else {
+          trendContainer.innerHTML = emptyState("Dados insuficientes para análise de tendências.");
         }
       }
 

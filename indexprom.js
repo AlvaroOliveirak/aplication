@@ -563,16 +563,25 @@ app.get('/metrics', async (req, res) => {
 });
 
 function buildQueryRangeParams(rangeSec, startInput, endInput) {
-  const requestedEnd = endInput ? Math.floor(new Date(endInput).getTime() / 1000) : Math.floor(Date.now() / 1000);
-  const requestedStart = startInput ? Math.floor(new Date(startInput).getTime() / 1000) : null;
-  const end = Number.isFinite(requestedEnd) ? requestedEnd : Math.floor(Date.now() / 1000);
-  const range = requestedStart && requestedStart < end ? Math.max(end - requestedStart, 60) : Math.max(Number(rangeSec) || 300, 60);
-  const lookback = 300;
-  const displayStart = requestedStart && requestedStart < end ? requestedStart : end - range;
+  const now = Math.floor(Date.now() / 1000);
+  
+  // Se tivermos endInput, usamos ele, senão usamos o agora
+  const end = endInput ? Math.floor(new Date(endInput).getTime() / 1000) : now;
+  
+  // Se tivermos startInput, usamos ele. Senão, calculamos baseado no rangeSec retrocedendo a partir do end
+  const start = startInput ? Math.floor(new Date(startInput).getTime() / 1000) : (end - (Number(rangeSec) || 300));
+  
+  const range = Math.max(end - start, 60);
+  const displayStart = start;
+  
+  // Precisamos de um pequeno lookback para funções de rate/irate funcionarem bem no início do gráfico
+  const lookback = 300; 
   const queryStart = displayStart - lookback;
 
+  // Calcula o step para ter aproximadamente 720 pontos (resolução do gráfico)
   let step = Math.max(Math.ceil(range / 720), 5);
 
+  // Alinha o start para o Prometheus
   const alignedStart = Math.floor(queryStart / step) * step;
 
   return { range, end, displayStart, alignedStart, step };
