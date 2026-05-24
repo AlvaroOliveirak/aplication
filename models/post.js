@@ -13,7 +13,26 @@ const Post = db.sequelize.define('users', {
     },
     password: {
         type: db.Sequelize.STRING,
-        allowNull: false
+        allowNull: true
+    },
+    googleId: {
+        type: db.Sequelize.STRING,
+        allowNull: true,
+        unique: true
+    },
+    name: {
+        type: db.Sequelize.STRING,
+        allowNull: true
+    },
+    authProvider: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'local'
+    },
+    theme: {
+        type: db.Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'dark'
     }
 }, {
     hooks: {

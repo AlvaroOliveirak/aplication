@@ -1,9 +1,10 @@
-version: '3.8'
-
 services:
   app:
     build: .
     container_name: node_app
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - .:/app
       - /app/node_modules

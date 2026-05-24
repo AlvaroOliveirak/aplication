@@ -38,6 +38,48 @@
         font-family: Inter, Arial, Helvetica, sans-serif;
       }
 
+      body[data-theme="light"] {
+        --bg: #e6edf1;
+        --panel: #f3f7f8;
+        --panel-strong: #eaf1f3;
+        --line: rgba(55, 74, 96, .18);
+        --muted: #5d6f82;
+        --text: #172235;
+        --shadow: 0 16px 38px rgba(31, 42, 68, .09);
+        background:
+          radial-gradient(circle at 18% 8%, rgba(20, 184, 166, .08), transparent 28%),
+          radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .07), transparent 28%),
+          linear-gradient(140deg, #e6edf1 0%, #dfe9e8 54%, #e8edf2 100%);
+      }
+
+      body[data-theme="light"] .topbar,
+      body[data-theme="light"] .sidebar {
+        background: rgba(241, 246, 247, .82);
+      }
+
+      body[data-theme="light"] .panel,
+      body[data-theme="light"] .card {
+        background: linear-gradient(180deg, rgba(247, 250, 251, .90), rgba(235, 242, 244, .90));
+      }
+
+      body[data-theme="light"] .nav a,
+      body[data-theme="light"] .nav button,
+      body[data-theme="light"] .ghost-btn,
+      body[data-theme="light"] .metric-btn,
+      body[data-theme="light"] .range-btn,
+      body[data-theme="light"] .icon-btn {
+        background: rgba(255, 255, 255, .52);
+        color: #172235;
+      }
+
+      body[data-theme="light"] .nav .active,
+      body[data-theme="light"] .range-btn.active,
+      body[data-theme="light"] .metric-btn.active {
+        background: rgba(20, 184, 166, .13);
+        border-color: rgba(15, 118, 110, .28);
+        color: #0f766e;
+      }
+
       button,
       input {
         font: inherit;
@@ -161,6 +203,34 @@
         overflow: auto;
       }
 
+      .overview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .overview-item {
+        min-height: 92px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, .045);
+      }
+
+      .overview-item span {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .overview-item strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 28px;
+      }
+
       .section-head {
         display: flex;
         align-items: flex-end;
@@ -221,11 +291,12 @@
 
       .card {
         padding: 18px;
+        overflow: hidden;
       }
 
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
         gap: 18px;
       }
 
@@ -355,7 +426,7 @@
       }
 
       .chart-box {
-        height: 300px;
+        height: 320px;
         min-width: 0;
       }
 
@@ -413,6 +484,82 @@
 
       .thresholdInput:focus {
         border-color: rgba(45, 212, 191, .62);
+      }
+
+      .control-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .control-field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .control-field label {
+        color: #dce7f8;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      body[data-theme="light"] .control-field label {
+        color: #25344a;
+      }
+
+      .control-field input,
+      .control-field select,
+      .custom-query {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 11px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, .07);
+        color: var(--text);
+        outline: none;
+      }
+
+      .control-field select option {
+        background: #101b2b;
+        color: #f7fbff;
+      }
+
+      body[data-theme="light"] .control-field input,
+      body[data-theme="light"] .control-field select,
+      body[data-theme="light"] .custom-query {
+        background: rgba(255, 255, 255, .84);
+        color: #132033;
+      }
+
+      body[data-theme="light"] .control-field select option {
+        background: #f8fbfc;
+        color: #132033;
+      }
+
+      .custom-query {
+        margin-top: 12px;
+        font-family: Consolas, monospace;
+      }
+
+      .stat-card {
+        display: grid;
+        align-content: center;
+        min-height: 300px;
+        padding: 18px;
+      }
+
+      .stat-value {
+        font-size: clamp(42px, 7vw, 76px);
+        line-height: 1;
+        font-weight: 800;
+      }
+
+      .stat-label {
+        margin-top: 10px;
+        color: var(--muted);
+        font-weight: 700;
       }
 
       .threshold-item,
@@ -561,13 +708,17 @@
           grid-template-columns: 1fr;
         }
 
+        .overview {
+          grid-template-columns: 1fr;
+        }
+
         .log {
           grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
-  <body>
+  <body data-theme="{{theme}}">
     <header class="topbar">
       <a class="brand" href="/">
         <div class="brand-mark">TS</div>
@@ -608,7 +759,22 @@
               <p class="eyebrow">Metricas</p>
               <h1>Dashboards</h1>
             </div>
-            <div class="muted">Atualização automática a cada 5 segundos.</div>
+            <div class="muted" id="refreshStatus">Atualizacao automatica ativa.</div>
+          </div>
+
+          <div class="overview" aria-label="Resumo dos dashboards">
+            <div class="overview-item">
+              <span>Dashboards</span>
+              <strong id="dashboardCount">0</strong>
+            </div>
+            <div class="overview-item">
+              <span>Alertas ativos</span>
+              <strong id="activeAlertCount">0</strong>
+            </div>
+            <div class="overview-item">
+              <span>Refresh</span>
+              <strong id="refreshSummary">5s</strong>
+            </div>
           </div>
 
           <div class="builder panel">
@@ -622,6 +788,7 @@
 
             <div id="metricMenu">
               <div id="metricOptions"></div>
+              <input id="customQueryInput" class="custom-query" type="text" placeholder="Cole uma query Prometheus personalizada">
               <button class="primary-btn" onclick="createSelectedCharts()">Criar dashboards</button>
             </div>
           </div>
@@ -653,15 +820,36 @@
 
           <div class="panel">
             <h3>Visualizacao</h3>
-            <p class="muted">Os graficos usam janelas de tempo independentes por card e refresh automatico.</p>
+            <p class="muted">Os graficos usam janelas independentes por card, refresh automatico, anomalias por z-score e media movel.</p>
+            <div class="control-grid">
+              <div class="control-field">
+                <label for="refreshIntervalInput">Atualizar dashboards a cada</label>
+                <select id="refreshIntervalInput" onchange="updateRefreshInterval()">
+                  <option value="3000">3 segundos</option>
+                  <option value="5000">5 segundos</option>
+                  <option value="10000">10 segundos</option>
+                  <option value="30000">30 segundos</option>
+                  <option value="60000">1 minuto</option>
+                </select>
+              </div>
+              <div class="control-field">
+                <label>Tema</label>
+                <button class="ghost-btn" onclick="toggleTheme()">Alternar tema claro/escuro</button>
+              </div>
+              <div class="control-field">
+                <label>Email de alertas</label>
+                <button class="ghost-btn" onclick="sendTestEmail()">Enviar email de teste</button>
+              </div>
+            </div>
           </div>
         </section>
       </main>
     </div>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script>
-      const metricList = [
+      let metricList = [
         {
           id: "ram",
           name: "RAM",
@@ -701,6 +889,13 @@
 
       let selectedMetrics = new Set();
       const activeDashboards = new Set();
+      const socket = io();
+
+      socket.on("alert:created", () => {
+        loadThresholds();
+        loadAlertFeed();
+        loadAlertLogs();
+      });
 
       function resolveThresholds(alert) {
         const criticalThreshold = Number(alert?.criticalThreshold ?? alert?.threshold);
@@ -793,6 +988,16 @@
         return `<div class="empty-state">${message}</div>`;
       }
 
+      function formatNumber(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number.toFixed(2) : "-";
+      }
+
+      function formatInterval(ms) {
+        const seconds = Math.round(Number(ms) / 1000);
+        return seconds >= 60 ? `${Math.round(seconds / 60)}min` : `${seconds}s`;
+      }
+
       async function removeDashboardByQuery(query) {
         document.querySelectorAll(".card[data-query]").forEach(card => {
           if (card.dataset.query === query) {
@@ -848,6 +1053,28 @@
       }
 
       async function createSelectedCharts() {
+        const customQuery = document.getElementById("customQueryInput")?.value.trim();
+
+        if (customQuery) {
+          const inferredResponse = await fetch("/api/metrics/infer", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query: customQuery })
+          });
+          const inferred = await inferredResponse.json();
+          metricList = metricList.filter(metric => metric.query !== customQuery);
+          metricList.push({
+            id: inferred.id || customQuery,
+            name: inferred.name || resolveMetricName(customQuery, []),
+            query: customQuery,
+            unit: inferred.unit || ""
+          });
+          selectedMetrics.add(customQuery);
+          document.getElementById("customQueryInput").value = "";
+        }
+
         if (selectedMetrics.size === 0) {
           return;
         }
@@ -865,7 +1092,9 @@
             },
             body: JSON.stringify({
               query,
-              metricId: metric.id
+              metricId: metric?.id || query,
+              chartType: "line",
+              aggregation: "none"
             })
           });
 
@@ -903,6 +1132,7 @@
         chart?.dispose();
         card.remove();
         activeDashboards.delete(query);
+        document.getElementById("dashboardCount").textContent = String(document.querySelectorAll(".card[data-query]").length);
         renderMetricOptions();
       }
 
@@ -959,7 +1189,9 @@
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({ query: dashboard.query })
+            body: JSON.stringify({
+              query: dashboard.query
+            })
           });
 
           const { id, query } = dashboard;
@@ -982,15 +1214,57 @@
           card.dataset.metricId = metricId;
           card.dataset.chartId = chartId;
           card.dataset.range = "300";
+          card.dataset.chartType = dashboard.chartType || "line";
+          card.dataset.aggregation = dashboard.aggregation || "none";
           card.innerHTML = `
             <div class="chart-header">
               <div>
                 <h4>${metricName}</h4>
-                <div class="muted" style="font-size:12px; margin-top:4px;">Janela móvel de dados</div>
+                <div class="muted chart-window" style="font-size:12px; margin-top:4px;">Janela movel de dados</div>
               </div>
               <div class="card-actions">
                 <button class="icon-btn" title="Configurar threshold" onclick="toggleAlertBox(this)">!</button>
                 <button class="icon-btn danger" title="Remover dashboard" onclick="deleteDashboard(${id}, this)">X</button>
+              </div>
+            </div>
+            <div class="control-grid">
+              <div class="control-field">
+                <label>Grafico</label>
+                <select onchange="updateCardMode(this)">
+                  <option value="line" ${card.dataset.chartType === "line" ? "selected" : ""}>Linha</option>
+                  <option value="bar" ${card.dataset.chartType === "bar" ? "selected" : ""}>Barras</option>
+                  <option value="area" ${card.dataset.chartType === "area" ? "selected" : ""}>Area</option>
+                  <option value="scatter" ${card.dataset.chartType === "scatter" ? "selected" : ""}>Pontos</option>
+                  <option value="gauge" ${card.dataset.chartType === "gauge" ? "selected" : ""}>Medidor</option>
+                  <option value="pie" ${card.dataset.chartType === "pie" ? "selected" : ""}>Pizza</option>
+                  <option value="stat" ${card.dataset.chartType === "stat" ? "selected" : ""}>Indicador</option>
+                </select>
+              </div>
+              <div class="control-field">
+                <label>Agregacao</label>
+                <select onchange="updateCardMode(this)">
+                  <option value="none" ${card.dataset.aggregation === "none" ? "selected" : ""}>Sem agregacao</option>
+                  <option value="avg" ${card.dataset.aggregation === "avg" ? "selected" : ""}>Media</option>
+                  <option value="sum" ${card.dataset.aggregation === "sum" ? "selected" : ""}>Soma</option>
+                  <option value="min" ${card.dataset.aggregation === "min" ? "selected" : ""}>Minimo</option>
+                  <option value="max" ${card.dataset.aggregation === "max" ? "selected" : ""}>Maximo</option>
+                  <option value="mode" ${card.dataset.aggregation === "mode" ? "selected" : ""}>Moda</option>
+                </select>
+              </div>
+              <div class="control-field">
+                <label>Inicio</label>
+                <input class="card-start-input" type="datetime-local" onchange="refreshCard(this.closest('.card'))">
+              </div>
+              <div class="control-field">
+                <label>Fim</label>
+                <input class="card-end-input" type="datetime-local" onchange="refreshCard(this.closest('.card'))">
+              </div>
+              <div class="control-field">
+                <label>Comparacao</label>
+                <select class="card-compare-input" onchange="refreshCard(this.closest('.card'))">
+                  <option value="false">Desativada</option>
+                  <option value="true">Periodo anterior</option>
+                </select>
               </div>
             </div>
             <div class="range-buttons">
@@ -1021,6 +1295,7 @@
 
           container.querySelector(".empty-state")?.remove();
           container.appendChild(card);
+          document.getElementById("dashboardCount").textContent = String(document.querySelectorAll(".card[data-query]").length);
           card.querySelector(".save-threshold-btn").addEventListener("click", event => {
             createInlineAlert(dashboard.query, event.currentTarget);
           });
@@ -1099,9 +1374,91 @@
 
         return {
           series: payload.series || [],
+          comparisonSeries: payload.comparisonSeries || [],
           start: payload.start,
           end: payload.end
         };
+      }
+
+      function aggregateValues(values, mode) {
+        if (!mode || mode === "none" || !values.length) {
+          return values;
+        }
+
+        const nums = values.map(point => Number(point[1])).filter(Number.isFinite);
+        const timestamp = values[values.length - 1][0];
+        let value = nums[nums.length - 1] || 0;
+
+        if (mode === "avg") {
+          value = nums.reduce((sum, item) => sum + item, 0) / nums.length;
+        } else if (mode === "sum") {
+          value = nums.reduce((sum, item) => sum + item, 0);
+        } else if (mode === "min") {
+          value = Math.min(...nums);
+        } else if (mode === "max") {
+          value = Math.max(...nums);
+        } else if (mode === "mode") {
+          const counts = new Map();
+          nums.forEach(item => {
+            const rounded = Number(item.toFixed(2));
+            counts.set(rounded, (counts.get(rounded) || 0) + 1);
+          });
+          value = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? value;
+        }
+
+        return [[timestamp, value]];
+      }
+
+      async function updateCardMode(select) {
+        const card = select.closest(".card");
+        const selects = card.querySelectorAll(".control-grid select");
+        card.dataset.chartType = selects[0]?.value || "line";
+        card.dataset.aggregation = selects[1]?.value || "none";
+        fetch("/api/dashboard", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            query: card.dataset.query,
+            metricId: card.dataset.metricId,
+            chartType: card.dataset.chartType,
+            aggregation: card.dataset.aggregation
+          })
+        }).catch(console.error);
+        await refreshCard(card);
+      }
+
+      async function refreshCard(card) {
+        if (!card) {
+          return;
+        }
+
+        const query = card.dataset.query;
+        const chartId = card.dataset.chartId;
+        const range = Number(card.dataset.range) || 300;
+
+        try {
+          const res = await fetch("/api/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query,
+              range,
+              start: card.querySelector(".card-start-input")?.value,
+              end: card.querySelector(".card-end-input")?.value,
+              comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
+            })
+          });
+          const payload = await res.json();
+          const data = normalizeQueryPayload(payload, range);
+          const thresholdData = await getThresholdByQuery(query);
+          renderChart(chartId, data, query, range, thresholdData);
+        } catch (err) {
+          console.error(err);
+        }
       }
 
       async function changeRange(btn, range) {
@@ -1119,7 +1476,13 @@
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({ query, range })
+            body: JSON.stringify({
+              query,
+              range,
+              start: card.querySelector(".card-start-input")?.value,
+              end: card.querySelector(".card-end-input")?.value,
+              comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
+            })
           });
 
           const payload = await res.json();
@@ -1138,15 +1501,39 @@
           return;
         }
 
+        const card = el.closest(".card");
+        const chartType = card?.dataset.chartType || "line";
+        const aggregation = card?.dataset.aggregation || "none";
         let chart = echarts.getInstanceByDom(el);
-
-        if (!chart) {
-          chart = echarts.init(el);
-        }
 
         const { series: prometheusData, start, end } = normalizeQueryPayload(prometheusPayload, range);
         const windowStart = Number(start) * 1000;
         const windowEnd = Number(end) * 1000;
+        const firstPoint = prometheusData
+          .flatMap(item => item.values || [])
+          .map(item => Number(item[0]) * 1000)
+          .filter(Number.isFinite)
+          .sort((a, b) => a - b)[0];
+        const windowLabel = card?.querySelector(".chart-window");
+
+        if (windowLabel) {
+          const selectedStart = new Date(windowStart).toLocaleString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+          const selectedEnd = new Date(windowEnd).toLocaleString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+          const coverage = firstPoint
+            ? `dados desde ${new Date(firstPoint).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}`
+            : "sem dados no intervalo";
+          windowLabel.textContent = `${selectedStart} - ${selectedEnd} | ${coverage}`;
+        }
         const maxPoints = prometheusData.reduce(
           (max, item) => Math.max(max, item.values?.length || 0),
           0
@@ -1155,9 +1542,9 @@
           .filter(item => item.values?.length)
           .map((item, index) => ({
             name: resolveMetricName(query, prometheusData),
-            type: "line",
-            smooth: true,
-            showSymbol: false,
+            type: chartType === "area" ? "line" : chartType,
+            smooth: chartType !== "bar" && chartType !== "scatter",
+            showSymbol: chartType === "scatter",
             sampling: maxPoints > 800 ? "lttb" : false,
             progressive: maxPoints > 800 ? 200 : 0,
             progressiveThreshold: 800,
@@ -1166,15 +1553,109 @@
             lineStyle: {
               width: 3
             },
-            areaStyle: {
-              opacity: .09
-            },
-            data: item.values.map(v => [
+            areaStyle: chartType === "area" ? {
+              opacity: .18
+            } : undefined,
+            data: aggregateValues(item.values, aggregation).map(v => [
               Number(v[0]) * 1000,
               parseFloat(v[1])
             ]),
             markLine: buildThresholdMarkLines(thresholdData)
           }));
+        const comparisonSeries = (prometheusPayload.comparisonSeries || [])
+          .filter(item => item.values?.length)
+          .map(item => ({
+            name: `${resolveMetricName(query, prometheusData)} periodo anterior`,
+            type: "line",
+            smooth: true,
+            showSymbol: false,
+            lineStyle: {
+              width: 2,
+              type: "dashed"
+            },
+            data: aggregateValues(item.values, aggregation).map(v => [
+              Number(v[0]) * 1000 + ((windowEnd - windowStart) || 0),
+              parseFloat(v[1])
+            ])
+          }));
+
+        const latestValues = prometheusData
+          .filter(item => item.values?.length)
+          .map((item, index) => {
+            const values = aggregateValues(item.values, aggregation);
+            const last = values[values.length - 1];
+            return {
+              name: item.metric?.instance || item.metric?.device || item.metric?.__name__ || `Serie ${index + 1}`,
+              value: Number(last?.[1] || 0)
+            };
+          });
+        const latestValue = latestValues[0]?.value || 0;
+
+        if (chartType === "stat") {
+          chart?.dispose();
+          el.innerHTML = `
+            <div class="stat-card">
+              <div class="stat-value">${formatNumber(latestValue)}${thresholdData?.unit || ""}</div>
+              <div class="stat-label">${resolveMetricName(query, prometheusData)}</div>
+            </div>
+          `;
+          return;
+        }
+
+        if (el.querySelector(".stat-card")) {
+          el.innerHTML = "";
+        }
+
+        chart = echarts.getInstanceByDom(el) || echarts.init(el);
+        const light = document.body.dataset.theme === "light";
+        const axisColor = light ? "#5d6f82" : "#a8b4c7";
+        const splitColor = light ? "rgba(55,74,96,.13)" : "rgba(151,164,184,.1)";
+        const tooltipBg = light ? "#f7fafb" : "#0b1220";
+        const tooltipText = light ? "#172235" : "#fff";
+
+        if (chartType === "gauge") {
+          chart.setOption({
+            color: ["#2dd4bf"],
+            backgroundColor: "transparent",
+            series: [{
+              type: "gauge",
+              min: 0,
+              max: Math.max(100, Math.ceil(latestValue * 1.2)),
+              progress: { show: true, width: 14 },
+              axisLine: { lineStyle: { width: 14 } },
+              pointer: { width: 5 },
+              detail: {
+                formatter: value => `${formatNumber(value)}${thresholdData?.unit || ""}`,
+                color: axisColor,
+                fontSize: 28,
+                fontWeight: 800
+              },
+              data: [{ value: latestValue, name: resolveMetricName(query, prometheusData) }]
+            }]
+          }, true);
+          return;
+        }
+
+        if (chartType === "pie") {
+          chart.setOption({
+            color: ["#2dd4bf", "#60a5fa", "#f59e0b", "#a78bfa", "#22c55e"],
+            backgroundColor: "transparent",
+            tooltip: {
+              trigger: "item",
+              backgroundColor: tooltipBg,
+              borderColor: splitColor,
+              textStyle: { color: tooltipText },
+              formatter: item => `${item.name}: ${formatNumber(item.value)}${thresholdData?.unit || ""}`
+            },
+            series: [{
+              type: "pie",
+              radius: ["42%", "72%"],
+              avoidLabelOverlap: true,
+              data: latestValues.length ? latestValues : [{ name: resolveMetricName(query, prometheusData), value: 0 }]
+            }]
+          }, true);
+          return;
+        }
 
         chart.setOption(
           {
@@ -1185,10 +1666,10 @@
             animationEasingUpdate: "linear",
             tooltip: {
               trigger: "axis",
-              backgroundColor: "#0b1220",
-              borderColor: "rgba(151,164,184,.28)",
+              backgroundColor: tooltipBg,
+              borderColor: splitColor,
               textStyle: {
-                color: "#fff"
+                color: tooltipText
               }
             },
             grid: {
@@ -1203,11 +1684,11 @@
               max: windowEnd,
               axisLine: {
                 lineStyle: {
-                  color: "#64748b"
+                  color: axisColor
                 }
               },
               axisLabel: {
-                color: "#a8b4c7",
+                color: axisColor,
                 formatter: value => {
                   const d = new Date(value);
                   return d.toLocaleTimeString("pt-BR", {
@@ -1224,21 +1705,21 @@
               },
               axisLine: {
                 lineStyle: {
-                  color: "#64748b"
+                  color: axisColor
                 }
               },
               splitLine: {
                 lineStyle: {
-                  color: "rgba(151,164,184,.1)"
+                  color: splitColor
                 }
               },
               axisLabel: {
-                color: "#a8b4c7"
+                color: axisColor
               }
             },
-            series
+            series: [...series, ...comparisonSeries]
           },
-          false
+          true
         );
 
         if (!window.__chartResizeBound) {
@@ -1264,7 +1745,10 @@
               },
               body: JSON.stringify({
                 query: card.dataset.query,
-                range: 300
+                range: 300,
+                start: card.querySelector(".card-start-input")?.value,
+                end: card.querySelector(".card-end-input")?.value,
+                comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
               })
             });
           } catch (err) {
@@ -1284,8 +1768,11 @@
 
           if (!dashboards.length) {
             container.innerHTML = emptyState("Nenhum dashboard criado ainda. Use o seletor acima para adicionar metricas.");
+            document.getElementById("dashboardCount").textContent = "0";
             return;
           }
+
+          document.getElementById("dashboardCount").textContent = String(dashboards.length);
 
           for (const d of dashboards) {
             await renderSavedChart(d);
@@ -1338,8 +1825,8 @@
             <div class="item-row">
               <div>
                 <strong style="color:${color}">${alert.metricName}</strong><br>
-                <span class="muted">Atual: ${alert.lastValue ?? "-"}${unit}</span><br>
-                <span class="muted">Atencao: ${warningThreshold}${unit} | Alerta: ${criticalThreshold}${unit}</span><br>
+                <span class="muted">Atual: ${formatNumber(alert.lastValue)}${unit}</span><br>
+                <span class="muted">Atencao: ${formatNumber(warningThreshold)}${unit} | Alerta: ${formatNumber(criticalThreshold)}${unit}</span><br>
                 <span class="status-pill status-${alert.status}">${alert.status}</span>
               </div>
               <button class="delete-threshold-btn" title="Remover limites">X</button>
@@ -1365,6 +1852,7 @@
         const alerts = await res.json();
         const feed = document.getElementById("alertFeed");
         const activeAlerts = alerts.filter(a => a.status !== "OK");
+        document.getElementById("activeAlertCount").textContent = String(activeAlerts.length);
 
         feed.innerHTML = "";
 
@@ -1380,8 +1868,8 @@
           div.className = `alert-live ${css}`;
           div.innerHTML = `
             <strong>${alert.metricName}</strong><br>
-            <span>Valor atual: ${alert.lastValue}${alert.unit || ""}</span><br>
-            <span class="muted">Threshold: ${alert.threshold}${alert.unit || ""}</span>
+            <span>Valor atual: ${formatNumber(alert.lastValue)}${alert.unit || ""}</span><br>
+            <span class="muted">Threshold: ${formatNumber(alert.threshold)}${alert.unit || ""}</span>
           `;
 
           feed.appendChild(div);
@@ -1414,7 +1902,7 @@
             <span class="status-pill status-${log.status}">${log.status}</span>
             <div>
               <strong>${log.metricName}</strong><br>
-              <span class="muted">Valor ${log.value}${log.unit || ""} / limite ${log.threshold}${log.unit || ""}</span>
+              <span class="muted">Valor ${formatNumber(log.value)}${log.unit || ""} / limite ${formatNumber(log.threshold)}${log.unit || ""}</span>
             </div>
             <span class="muted">${createdAt}</span>
           `;
@@ -1448,26 +1936,85 @@
         const cards = document.querySelectorAll(".card[data-query]");
 
         for (const card of cards) {
-          const query = card.dataset.query;
-          const chartId = card.dataset.chartId;
-          const range = Number(card.dataset.range) || 300;
-
-          try {
-            const res = await fetch("/api/query", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({ query, range })
-            });
-            const payload = await res.json();
-            const data = normalizeQueryPayload(payload, range);
-            const thresholdData = await getThresholdByQuery(query);
-            renderChart(chartId, data, query, range, thresholdData);
-          } catch (err) {
-            console.error(err);
-          }
+          await refreshCard(card);
         }
+      }
+
+      async function loadMetricCatalog() {
+        try {
+          const res = await fetch("/api/metrics/catalog");
+
+          if (!res.ok) {
+            return;
+          }
+
+          const catalog = await res.json();
+          metricList = catalog;
+          renderMetricOptions();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function toggleTheme() {
+        const nextTheme = document.body.dataset.theme === "light" ? "dark" : "light";
+        document.body.dataset.theme = nextTheme;
+        localStorage.setItem("temporal-series-theme", nextTheme);
+        fetch("/api/preferences", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ theme: nextTheme })
+        }).catch(console.error);
+        document.querySelectorAll("[data-chart-id]").forEach(chartEl => {
+          echarts.getInstanceByDom(chartEl)?.resize();
+        });
+        refreshCharts();
+      }
+
+      function updateRefreshInterval() {
+        const input = document.getElementById("refreshIntervalInput");
+        const interval = Number(input?.value) || 5000;
+        localStorage.setItem("temporal-series-refresh", String(interval));
+        document.getElementById("refreshSummary").textContent = formatInterval(interval);
+        document.getElementById("refreshStatus").textContent = `Atualizacao automatica a cada ${formatInterval(interval)}.`;
+        fetch("/api/preferences", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            theme: document.body.dataset.theme || "dark",
+            refreshInterval: interval
+          })
+        }).catch(console.error);
+
+        if (window.__chartRefreshTimer) {
+          clearInterval(window.__chartRefreshTimer);
+        }
+
+        window.__chartRefreshTimer = setInterval(() => {
+          refreshCharts();
+        }, interval);
+      }
+
+      async function sendTestEmail() {
+        const res = await fetch("/api/alerts/test-email", { method: "POST" });
+        alert(res.ok ? "Email de teste solicitado." : "Nao foi possivel solicitar o email de teste.");
+      }
+
+      const savedTheme = localStorage.getItem("temporal-series-theme");
+
+      if (savedTheme) {
+        document.body.dataset.theme = savedTheme;
+      }
+
+      const savedRefresh = localStorage.getItem("temporal-series-refresh") || "5000";
+      const refreshInput = document.getElementById("refreshIntervalInput");
+
+      if (refreshInput) {
+        refreshInput.value = savedRefresh;
       }
 
       setInterval(async () => {
@@ -1477,10 +2024,9 @@
         await loadAlertLogs();
       }, 3000);
 
-      setInterval(() => {
-        refreshCharts();
-      }, 5000);
+      updateRefreshInterval();
 
+      loadMetricCatalog();
       loadDashboards();
       loadThresholds();
       loadAlertFeed();

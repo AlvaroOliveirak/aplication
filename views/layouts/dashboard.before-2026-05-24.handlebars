@@ -1,0 +1,1913 @@
+﻿<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Temporal Series</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page-transition.css">
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Dots&display=swap");
+
+      :root {
+        --bg: #08111f;
+        --panel: #101b2b;
+        --panel-strong: #142236;
+        --line: rgba(151, 164, 184, .18);
+        --muted: #91a0b8;
+        --text: #f7fbff;
+        --teal: #2dd4bf;
+        --green: #22c55e;
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --blue: #60a5fa;
+        --shadow: 0 18px 45px rgba(0, 0, 0, .28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 12% 8%, rgba(45, 212, 191, .12), transparent 26%),
+          linear-gradient(140deg, #08111f 0%, #0c1728 52%, #101827 100%);
+        color: var(--text);
+        font-family: Inter, Arial, Helvetica, sans-serif;
+      }
+
+      body[data-theme="light"] {
+        --bg: #eef3f6;
+        --panel: #f8fbfc;
+        --panel-strong: #eef5f6;
+        --line: rgba(42, 62, 87, .16);
+        --muted: #64748b;
+        --text: #132033;
+        --shadow: 0 18px 45px rgba(31, 42, 68, .10);
+        background:
+          radial-gradient(circle at 18% 8%, rgba(20, 184, 166, .12), transparent 28%),
+          radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .10), transparent 28%),
+          linear-gradient(140deg, #eef3f6 0%, #e8f1ef 52%, #edf2f7 100%);
+      }
+
+      body[data-theme="light"] .topbar,
+      body[data-theme="light"] .sidebar {
+        background: rgba(248, 251, 252, .78);
+      }
+
+      body[data-theme="light"] .panel,
+      body[data-theme="light"] .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, .86), rgba(242, 247, 249, .88));
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        min-height: 72px;
+        padding: 14px 28px;
+        background: rgba(8, 17, 31, .88);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        color: var(--text);
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--teal), var(--blue));
+        color: #06111f;
+        font-weight: 800;
+      }
+
+      .logo {
+        font-family: "Zen Dots", Inter, sans-serif;
+        font-size: 18px;
+        letter-spacing: 0;
+        white-space: nowrap;
+      }
+
+      .subtitle {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .nav a,
+      .nav button,
+      .ghost-btn,
+      .primary-btn,
+      .icon-btn,
+      .range-btn,
+      .metric-btn {
+        min-height: 38px;
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        text-decoration: none;
+        transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+      }
+
+      .nav a,
+      .nav button,
+      .ghost-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 13px;
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid transparent;
+      }
+
+      .nav a:hover,
+      .nav button:hover,
+      .ghost-btn:hover {
+        background: rgba(255, 255, 255, .08);
+        border-color: var(--line);
+      }
+
+      .nav .active {
+        background: rgba(45, 212, 191, .12);
+        border-color: rgba(45, 212, 191, .35);
+        color: #bffaf2;
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        min-height: calc(100vh - 72px);
+      }
+
+      .sidebar {
+        padding: 22px;
+        border-right: 1px solid var(--line);
+        background: rgba(8, 17, 31, .42);
+      }
+
+      .main {
+        min-width: 0;
+        padding: 26px;
+        overflow: auto;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        color: var(--teal);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 0;
+        font-size: clamp(26px, 3vw, 38px);
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin-bottom: 12px;
+        font-size: 15px;
+      }
+
+      h4 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .panel,
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: linear-gradient(180deg, rgba(20, 34, 54, .92), rgba(13, 24, 39, .92));
+        box-shadow: var(--shadow);
+      }
+
+      .panel {
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 18px;
+      }
+
+      .builder {
+        margin-bottom: 18px;
+      }
+
+      .builder-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 16px;
+        background: linear-gradient(135deg, #14b8a6, #60a5fa);
+        color: #05101d;
+        font-weight: 800;
+      }
+
+      .primary-btn:hover,
+      .icon-btn:hover,
+      .range-btn:hover,
+      .metric-btn:hover {
+        transform: translateY(-1px);
+      }
+
+      #metricMenu {
+        display: none;
+        margin-top: 14px;
+        padding: 14px;
+        border-top: 1px solid var(--line);
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: .24s ease;
+      }
+
+      #metricMenu.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      #metricOptions {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .metric-btn,
+      .range-btn {
+        background: rgba(255, 255, 255, .05);
+        border: 1px solid var(--line);
+      }
+
+      .metric-btn {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 11px;
+        color: #dce7f7;
+        font-weight: 700;
+        text-align: left;
+      }
+
+      .metric-btn.active {
+        background: rgba(45, 212, 191, .13);
+        border-color: rgba(45, 212, 191, .48);
+        color: #d9fffb;
+      }
+
+      .range-buttons {
+        display: flex;
+        gap: 8px;
+        margin: 14px 0 10px;
+        flex-wrap: wrap;
+      }
+
+      .range-btn {
+        min-height: 32px;
+        padding: 0 11px;
+        color: #cdd8ea;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .range-btn.active {
+        background: rgba(96, 165, 250, .16);
+        border-color: rgba(96, 165, 250, .5);
+        color: #eaf4ff;
+      }
+
+      .chart-header,
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 7px;
+        flex-shrink: 0;
+      }
+
+      .icon-btn {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        background: rgba(255, 255, 255, .06);
+        border: 1px solid var(--line);
+        color: #e9f2ff;
+        font-weight: 800;
+      }
+
+      .icon-btn.danger {
+        background: rgba(239, 68, 68, .12);
+        border-color: rgba(239, 68, 68, .34);
+        color: #fecaca;
+      }
+
+      .chart-box {
+        height: 300px;
+        min-width: 0;
+      }
+
+      .alert-inline {
+        display: none;
+        gap: 12px;
+        margin-top: 10px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      .threshold-form {
+        display: grid;
+        gap: 10px;
+      }
+
+      .threshold-form legend {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .threshold-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .threshold-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #dce7f8;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .threshold-field label.warning-label {
+        color: #fcd34d;
+      }
+
+      .threshold-field label.critical-label {
+        color: #fca5a5;
+      }
+
+      .thresholdInput {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 12px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, .07);
+        color: var(--text);
+        outline: none;
+      }
+
+      .thresholdInput:focus {
+        border-color: rgba(45, 212, 191, .62);
+      }
+
+      .control-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .control-field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .control-field label {
+        color: #dce7f8;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      body[data-theme="light"] .control-field label {
+        color: #25344a;
+      }
+
+      .control-field input,
+      .control-field select,
+      .custom-query {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 11px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, .07);
+        color: var(--text);
+        outline: none;
+      }
+
+      .control-field select option {
+        background: #101b2b;
+        color: #f7fbff;
+      }
+
+      body[data-theme="light"] .control-field input,
+      body[data-theme="light"] .control-field select,
+      body[data-theme="light"] .custom-query {
+        background: rgba(255, 255, 255, .84);
+        color: #132033;
+      }
+
+      body[data-theme="light"] .control-field select option {
+        background: #f8fbfc;
+        color: #132033;
+      }
+
+      .custom-query {
+        margin-top: 12px;
+        font-family: Consolas, monospace;
+      }
+
+      .stat-card {
+        display: grid;
+        align-content: center;
+        min-height: 300px;
+        padding: 18px;
+      }
+
+      .stat-value {
+        font-size: clamp(42px, 7vw, 76px);
+        line-height: 1;
+        font-weight: 800;
+      }
+
+      .stat-label {
+        margin-top: 10px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .threshold-item,
+      .alert-live,
+      .log {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, .055);
+        border: 1px solid var(--line);
+        border-left-width: 4px;
+        font-size: 13px;
+        transition: border-color .2s ease, background .2s ease;
+      }
+
+      .threshold-item.status-OK {
+        border-left-color: #22c55e;
+        background: rgba(34, 197, 94, .08);
+      }
+
+      .threshold-item.status-WARNING {
+        border-left-color: #f59e0b;
+        background: rgba(245, 158, 11, .1);
+      }
+
+      .threshold-item.status-CRITICAL {
+        border-left-color: #ef4444;
+        background: rgba(239, 68, 68, .12);
+      }
+
+      .delete-threshold-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        background: rgba(239, 68, 68, .12);
+        color: #fecaca;
+        cursor: pointer;
+      }
+
+      .alert-live {
+        animation: pulse 1.8s infinite;
+      }
+
+      .alert-ok {
+        border-color: rgba(34, 197, 94, .36);
+      }
+
+      .alert-warning {
+        border-color: rgba(245, 158, 11, .46);
+        background: rgba(245, 158, 11, .11);
+      }
+
+      .alert-critical {
+        border-color: rgba(239, 68, 68, .5);
+        background: rgba(239, 68, 68, .12);
+      }
+
+      .logs {
+        display: grid;
+        gap: 10px;
+        max-height: none;
+        overflow: visible;
+      }
+
+      .log {
+        display: grid;
+        grid-template-columns: 110px minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        margin: 0;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 26px;
+        padding: 0 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .status-OK {
+        background: rgba(34, 197, 94, .12);
+        color: #bbf7d0;
+      }
+
+      .status-WARNING {
+        background: rgba(245, 158, 11, .14);
+        color: #fde68a;
+      }
+
+      .status-CRITICAL {
+        background: rgba(239, 68, 68, .15);
+        color: #fecaca;
+      }
+
+      .empty-state {
+        display: grid;
+        place-items: center;
+        min-height: 160px;
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        color: var(--muted);
+        text-align: center;
+        padding: 18px;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(1.015);
+        }
+      }
+
+      @media (max-width: 880px) {
+        .topbar,
+        .section-head,
+        .builder-bar {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .nav {
+          justify-content: flex-start;
+        }
+
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .main {
+          padding: 18px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .log {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="{{theme}}">
+    <header class="topbar">
+      <a class="brand" href="/">
+        <div class="brand-mark">TS</div>
+        <div>
+          <div class="logo">Prom_TS</div>
+          <div class="subtitle">Monitoramento Prometheus em tempo real</div>
+        </div>
+      </a>
+
+<nav class="nav" aria-label="Navegacao principal">
+        <a href="/">Inicio</a>
+        <button class="active" data-tab-button="dashboards" onclick="showTab('dashboards')">Dashboard</button>
+        <button data-tab-button="logs" onclick="showTab('logs')">Logs</button>
+        <button data-tab-button="settings" onclick="showTab('settings')">Config</button>
+        {{#if user}}
+          <a href="/logout">Sair</a>
+        {{/if}}
+      </nav>
+    </header>
+
+    <div class="dashboard">
+      <aside class="sidebar">
+        <div class="panel">
+          <h3>Thresholds ativos</h3>
+          <div id="thresholdList"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Alertas em aberto</h3>
+          <div id="alertFeed"></div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section id="dashboards">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Metricas</p>
+              <h1>Dashboards</h1>
+            </div>
+            <div class="muted">Atualização automática a cada 5 segundos.</div>
+          </div>
+
+          <div class="builder panel">
+            <div class="builder-bar">
+              <div>
+                <h3>Selecionar dashboards</h3>
+                <div class="muted">Escolha as métricas que voce quer acompanhar.</div>
+              </div>
+              <button class="primary-btn" onclick="toggleMetricMenu()">Selecionar</button>
+            </div>
+
+            <div id="metricMenu">
+              <div id="metricOptions"></div>
+              <input id="customQueryInput" class="custom-query" type="text" placeholder="Cole uma query Prometheus personalizada">
+              <button class="primary-btn" onclick="createSelectedCharts()">Criar dashboards</button>
+            </div>
+          </div>
+
+          <div class="grid" id="chartsContainer"></div>
+        </section>
+
+        <section id="logs" style="display:none;">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Historico</p>
+              <h1>Logs de alertas</h1>
+            </div>
+            <button class="ghost-btn" onclick="loadAlertLogs()">Atualizar logs</button>
+          </div>
+
+          <div class="panel">
+            <div class="logs" id="logContainer"></div>
+          </div>
+        </section>
+
+        <section id="settings" style="display:none;">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Preferencias</p>
+              <h1>Configuracoes</h1>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Visualizacao</h3>
+            <p class="muted">Os graficos usam janelas independentes por card, refresh automatico, anomalias por z-score e media movel.</p>
+            <div class="control-grid">
+              <div class="control-field">
+                <label for="refreshIntervalInput">Atualizar dashboards a cada</label>
+                <select id="refreshIntervalInput" onchange="updateRefreshInterval()">
+                  <option value="3000">3 segundos</option>
+                  <option value="5000">5 segundos</option>
+                  <option value="10000">10 segundos</option>
+                  <option value="30000">30 segundos</option>
+                  <option value="60000">1 minuto</option>
+                </select>
+              </div>
+              <div class="control-field">
+                <label>Tema</label>
+                <button class="ghost-btn" onclick="toggleTheme()">Alternar tema claro/escuro</button>
+              </div>
+              <div class="control-field">
+                <label>Email de alertas</label>
+                <button class="ghost-btn" onclick="sendTestEmail()">Enviar email de teste</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script>
+      let metricList = [
+        {
+          id: "ram",
+          name: "RAM",
+          query: "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))"
+        },
+        {
+          id: "cpu",
+          name: "CPU",
+          query: "100 * (1 - avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))"
+        },
+        {
+          id: "disco",
+          name: "Disco (%)",
+          query: "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))"
+        },
+        {
+          id: "rede_rx",
+          name: "Rede RX",
+          query: "rate(node_network_receive_bytes_total[5m])"
+        },
+        {
+          id: "rede_tx",
+          name: "Rede TX",
+          query: "rate(node_network_transmit_bytes_total[5m])"
+        },
+        {
+          id: "load_1m",
+          name: "Load 1m",
+          query: "node_load1"
+        },
+        {
+          id: "load_5m",
+          name: "Load 5m",
+          query: "node_load5"
+        }
+      ];
+
+      let selectedMetrics = new Set();
+      const activeDashboards = new Set();
+      const socket = io();
+
+      socket.on("alert:created", () => {
+        loadThresholds();
+        loadAlertFeed();
+        loadAlertLogs();
+      });
+
+      function resolveThresholds(alert) {
+        const criticalThreshold = Number(alert?.criticalThreshold ?? alert?.threshold);
+        const warningThreshold = Number(
+          alert?.warningThreshold ?? (Number.isFinite(criticalThreshold) ? criticalThreshold * 0.8 : NaN)
+        );
+
+        return { warningThreshold, criticalThreshold };
+      }
+
+      function statusColor(status) {
+        if (status === "CRITICAL") {
+          return "#fca5a5";
+        }
+
+        if (status === "WARNING") {
+          return "#fcd34d";
+        }
+
+        return "#86efac";
+      }
+
+      function buildThresholdMarkLines(thresholdData) {
+        if (!thresholdData) {
+          return undefined;
+        }
+
+        const { warningThreshold, criticalThreshold } = resolveThresholds(thresholdData);
+        const unit = thresholdData.unit || "%";
+
+        return {
+          silent: true,
+          symbol: ["none", "none"],
+          data: [
+            {
+              yAxis: warningThreshold,
+              lineStyle: {
+                color: "#f59e0b",
+                width: 2,
+                type: "dashed"
+              },
+              label: {
+                show: true,
+                position: "end",
+                formatter: `Atencao ${warningThreshold}${unit}`,
+                color: "#fff",
+                fontSize: 11,
+                fontWeight: "bold",
+                backgroundColor: "rgba(245,158,11,.9)",
+                padding: [4, 7],
+                borderRadius: 6
+              }
+            },
+            {
+              yAxis: criticalThreshold,
+              lineStyle: {
+                color: "#ef4444",
+                width: 2,
+                type: "dashed"
+              },
+              label: {
+                show: true,
+                position: "end",
+                formatter: `Alerta ${criticalThreshold}${unit}`,
+                color: "#fff",
+                fontSize: 11,
+                fontWeight: "bold",
+                backgroundColor: "rgba(239,68,68,.9)",
+                padding: [4, 7],
+                borderRadius: 6
+              }
+            }
+          ]
+        };
+      }
+
+      function getMetricDefinitionByQuery(query) {
+        return metricList.find(metric => metric.query === query);
+      }
+
+      function resolveMetricId(query, metricId) {
+        if (metricId && metricId !== "undefined" && metricId !== "null") {
+          return metricId;
+        }
+
+        return getMetricDefinitionByQuery(query)?.id || query;
+      }
+
+      function emptyState(message) {
+        return `<div class="empty-state">${message}</div>`;
+      }
+
+      function formatNumber(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number.toFixed(2) : "-";
+      }
+
+      async function removeDashboardByQuery(query) {
+        document.querySelectorAll(".card[data-query]").forEach(card => {
+          if (card.dataset.query === query) {
+            const chart = echarts.getInstanceByDom(card.querySelector("[data-chart-id]"));
+            chart?.dispose();
+            card.remove();
+          }
+        });
+
+        activeDashboards.delete(query);
+      }
+
+      function toggleMetricMenu() {
+        const menu = document.getElementById("metricMenu");
+
+        if (menu.style.display === "none" || !menu.style.display) {
+          menu.style.display = "block";
+          requestAnimationFrame(() => menu.classList.add("show"));
+        } else {
+          menu.classList.remove("show");
+          setTimeout(() => {
+            menu.style.display = "none";
+          }, 240);
+        }
+
+        renderMetricOptions();
+      }
+
+      function renderMetricOptions() {
+        const container = document.getElementById("metricOptions");
+        container.innerHTML = "";
+
+        metricList.forEach(metric => {
+          const btn = document.createElement("button");
+          const isActive = selectedMetrics.has(metric.query) || activeDashboards.has(metric.query);
+          btn.className = `metric-btn${isActive ? " active" : ""}`;
+          btn.innerHTML = `<span>${metric.name}</span><span>${isActive ? "Ativo" : "Adicionar"}</span>`;
+
+          btn.onclick = async () => {
+            if (activeDashboards.has(metric.query)) {
+              await removeDashboardByQuery(metric.query);
+            } else if (selectedMetrics.has(metric.query)) {
+              selectedMetrics.delete(metric.query);
+            } else {
+              selectedMetrics.add(metric.query);
+            }
+
+            renderMetricOptions();
+          };
+
+          container.appendChild(btn);
+        });
+      }
+
+      async function createSelectedCharts() {
+        const customQuery = document.getElementById("customQueryInput")?.value.trim();
+
+        if (customQuery) {
+          const inferredResponse = await fetch("/api/metrics/infer", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query: customQuery })
+          });
+          const inferred = await inferredResponse.json();
+          metricList = metricList.filter(metric => metric.query !== customQuery);
+          metricList.push({
+            id: inferred.id || customQuery,
+            name: inferred.name || resolveMetricName(customQuery, []),
+            query: customQuery,
+            unit: inferred.unit || ""
+          });
+          selectedMetrics.add(customQuery);
+          document.getElementById("customQueryInput").value = "";
+        }
+
+        if (selectedMetrics.size === 0) {
+          return;
+        }
+
+        for (const query of selectedMetrics) {
+          if (activeDashboards.has(query)) {
+            continue;
+          }
+
+          const metric = metricList.find(m => m.query === query);
+          const response = await fetch("/api/dashboard", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query,
+              metricId: metric?.id || query,
+              chartType: "line",
+              aggregation: "none"
+            })
+          });
+
+          const dashboard = await response.json();
+          await renderSavedChart(dashboard);
+          activeDashboards.add(query);
+        }
+
+        selectedMetrics.clear();
+        renderMetricOptions();
+      }
+
+      function showTab(tab) {
+        document.querySelectorAll("main section").forEach(s => s.style.display = "none");
+        document.getElementById(tab).style.display = "block";
+
+        document.querySelectorAll("[data-tab-button]").forEach(button => {
+          button.classList.toggle("active", button.dataset.tabButton === tab);
+        });
+
+        if (tab === "logs") {
+          loadAlertLogs();
+        }
+      }
+
+      async function deleteDashboard(id, btn) {
+        const card = btn.closest(".card");
+        const query = card.dataset.query;
+
+        await fetch(`/api/dashboard/${id}`, {
+          method: "DELETE"
+        });
+
+        const chart = echarts.getInstanceByDom(card.querySelector("[data-chart-id]"));
+        chart?.dispose();
+        card.remove();
+        activeDashboards.delete(query);
+        renderMetricOptions();
+      }
+
+      function beautifyMetric(name) {
+        return name
+          .replace(/node_/g, "")
+          .replace(/_seconds_total/g, "")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, l => l.toUpperCase());
+      }
+
+      function resolveMetricName(query, data) {
+        const q = query.toLowerCase();
+
+        if (q.includes("node_cpu_seconds_total") && q.includes("rate") && q.includes("idle")) {
+          return "Uso de CPU (%)";
+        }
+
+        if (q.includes("node_memory_memavailable_bytes") && q.includes("node_memory_memtotal_bytes")) {
+          return "Uso de Memoria (%)";
+        }
+
+        if (q.includes("node_filesystem_size_bytes") && q.includes("node_filesystem_avail_bytes")) {
+          return "Uso de Disco (%)";
+        }
+
+        if (q.includes("node_network_receive_bytes_total")) {
+          return "Entrada de Rede (RX)";
+        }
+
+        if (q.includes("node_network_transmit_bytes_total")) {
+          return "Saida de Rede (TX)";
+        }
+
+        if (q.includes("node_load1")) {
+          return "Load Average (1m)";
+        }
+
+        if (q.includes("node_load5")) {
+          return "Load Average (5m)";
+        }
+
+        if (data[0]?.metric?.__name__) {
+          return beautifyMetric(data[0].metric.__name__);
+        }
+
+        return beautifyMetric(query);
+      }
+
+      async function renderSavedChart(dashboard) {
+        try {
+          const res = await fetch("/api/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query: dashboard.query
+            })
+          });
+
+          const { id, query } = dashboard;
+          const payload = await res.json();
+          const data = normalizeQueryPayload(payload);
+
+          if (!Array.isArray(data.series)) {
+            console.warn("Formato invalido:", payload);
+            return;
+          }
+
+          const card = document.createElement("div");
+          const container = document.getElementById("chartsContainer");
+          const chartId = `chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+          const metricName = resolveMetricName(dashboard.query, data.series);
+          const metricId = resolveMetricId(dashboard.query, dashboard.metricId);
+
+          card.className = "card";
+          card.dataset.query = dashboard.query;
+          card.dataset.metricId = metricId;
+          card.dataset.chartId = chartId;
+          card.dataset.range = "300";
+          card.dataset.chartType = dashboard.chartType || "line";
+          card.dataset.aggregation = dashboard.aggregation || "none";
+          card.innerHTML = `
+            <div class="chart-header">
+              <div>
+                <h4>${metricName}</h4>
+                <div class="muted" style="font-size:12px; margin-top:4px;">Janela móvel de dados</div>
+              </div>
+              <div class="card-actions">
+                <button class="icon-btn" title="Configurar threshold" onclick="toggleAlertBox(this)">!</button>
+                <button class="icon-btn danger" title="Remover dashboard" onclick="deleteDashboard(${id}, this)">X</button>
+              </div>
+            </div>
+            <div class="control-grid">
+              <div class="control-field">
+                <label>Grafico</label>
+                <select onchange="updateCardMode(this)">
+                  <option value="line" ${card.dataset.chartType === "line" ? "selected" : ""}>Linha</option>
+                  <option value="bar" ${card.dataset.chartType === "bar" ? "selected" : ""}>Barras</option>
+                  <option value="area" ${card.dataset.chartType === "area" ? "selected" : ""}>Area</option>
+                  <option value="scatter" ${card.dataset.chartType === "scatter" ? "selected" : ""}>Pontos</option>
+                  <option value="gauge" ${card.dataset.chartType === "gauge" ? "selected" : ""}>Medidor</option>
+                  <option value="pie" ${card.dataset.chartType === "pie" ? "selected" : ""}>Pizza</option>
+                  <option value="stat" ${card.dataset.chartType === "stat" ? "selected" : ""}>Indicador</option>
+                </select>
+              </div>
+              <div class="control-field">
+                <label>Agregacao</label>
+                <select onchange="updateCardMode(this)">
+                  <option value="none" ${card.dataset.aggregation === "none" ? "selected" : ""}>Sem agregacao</option>
+                  <option value="avg" ${card.dataset.aggregation === "avg" ? "selected" : ""}>Media</option>
+                  <option value="sum" ${card.dataset.aggregation === "sum" ? "selected" : ""}>Soma</option>
+                  <option value="min" ${card.dataset.aggregation === "min" ? "selected" : ""}>Minimo</option>
+                  <option value="max" ${card.dataset.aggregation === "max" ? "selected" : ""}>Maximo</option>
+                  <option value="mode" ${card.dataset.aggregation === "mode" ? "selected" : ""}>Moda</option>
+                </select>
+              </div>
+              <div class="control-field">
+                <label>Inicio</label>
+                <input class="card-start-input" type="datetime-local" onchange="refreshCard(this.closest('.card'))">
+              </div>
+              <div class="control-field">
+                <label>Fim</label>
+                <input class="card-end-input" type="datetime-local" onchange="refreshCard(this.closest('.card'))">
+              </div>
+              <div class="control-field">
+                <label>Comparacao</label>
+                <select class="card-compare-input" onchange="refreshCard(this.closest('.card'))">
+                  <option value="false">Desativada</option>
+                  <option value="true">Periodo anterior</option>
+                </select>
+              </div>
+            </div>
+            <div class="range-buttons">
+              <button class="range-btn active" onclick="changeRange(this, 300)">5m</button>
+              <button class="range-btn" onclick="changeRange(this, 3600)">1h</button>
+              <button class="range-btn" onclick="changeRange(this, 10800)">3h</button>
+              <button class="range-btn" onclick="changeRange(this, 43200)">12h</button>
+              <button class="range-btn" onclick="changeRange(this, 86400)">24h</button>
+            </div>
+            <div id="${chartId}" data-chart-id="${chartId}" class="chart-box"></div>
+            <div class="alert-inline">
+              <form class="threshold-form">
+                <legend>Zona verde abaixo do limite de atencao. Entre atencao e alerta: WARNING. Acima do alerta: CRITICAL.</legend>
+                <div class="threshold-fields">
+                  <div class="threshold-field">
+                    <label class="warning-label" for="warning_${chartId}">Limite de atencao</label>
+                    <input id="warning_${chartId}" class="thresholdInput warningInput" type="number" step="0.01" placeholder="Ex: 60" required>
+                  </div>
+                  <div class="threshold-field">
+                    <label class="critical-label" for="critical_${chartId}">Limite de alerta</label>
+                    <input id="critical_${chartId}" class="thresholdInput criticalInput" type="number" step="0.01" placeholder="Ex: 80" required>
+                  </div>
+                </div>
+                <button class="primary-btn save-threshold-btn" type="button">Salvar limites</button>
+              </form>
+            </div>
+          `;
+
+          container.querySelector(".empty-state")?.remove();
+          container.appendChild(card);
+          card.querySelector(".save-threshold-btn").addEventListener("click", event => {
+            createInlineAlert(dashboard.query, event.currentTarget);
+          });
+          activeDashboards.add(dashboard.query);
+
+          const thresholdData = await getThresholdByQuery(dashboard.query);
+
+          if (thresholdData) {
+            const { warningThreshold, criticalThreshold } = resolveThresholds(thresholdData);
+            card.querySelector(".warningInput").value = warningThreshold;
+            card.querySelector(".criticalInput").value = criticalThreshold;
+          }
+
+          renderChart(chartId, data, dashboard.query, 300, thresholdData);
+        } catch (err) {
+          console.error("Erro renderSavedChart:", err);
+        }
+      }
+
+      function toggleAlertBox(btn) {
+        const box = btn.closest(".card").querySelector(".alert-inline");
+        box.style.display = box.style.display === "grid" ? "none" : "grid";
+      }
+
+      async function createInlineAlert(query, btn) {
+        const card = btn.closest(".card");
+        const warningThreshold = Number(card.querySelector(".warningInput")?.value);
+        const criticalThreshold = Number(card.querySelector(".criticalInput")?.value);
+
+        if (!Number.isFinite(warningThreshold) || !Number.isFinite(criticalThreshold)) {
+          alert("Defina os limites de atencao e alerta");
+          return;
+        }
+
+        if (warningThreshold >= criticalThreshold) {
+          alert("O limite de atencao deve ser menor que o limite de alerta");
+          return;
+        }
+
+        const response = await fetch("/api/alert", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            metricId: resolveMetricId(query, card.dataset.metricId),
+            query,
+            warningThreshold,
+            criticalThreshold,
+            metricName: card.querySelector("h4").innerText,
+            unit: "%"
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          alert(error.error || "Nao foi possivel salvar os limites");
+          return;
+        }
+
+        card.querySelector(".alert-inline").style.display = "none";
+        await loadThresholds();
+        await loadAlertFeed();
+        await refreshCharts();
+      }
+
+      function normalizeQueryPayload(payload, fallbackRange = 300) {
+        if (Array.isArray(payload)) {
+          const end = Math.floor(Date.now() / 1000);
+          return {
+            series: payload,
+            start: end - fallbackRange,
+            end
+          };
+        }
+
+        return {
+          series: payload.series || [],
+          comparisonSeries: payload.comparisonSeries || [],
+          start: payload.start,
+          end: payload.end
+        };
+      }
+
+      function aggregateValues(values, mode) {
+        if (!mode || mode === "none" || !values.length) {
+          return values;
+        }
+
+        const nums = values.map(point => Number(point[1])).filter(Number.isFinite);
+        const timestamp = values[values.length - 1][0];
+        let value = nums[nums.length - 1] || 0;
+
+        if (mode === "avg") {
+          value = nums.reduce((sum, item) => sum + item, 0) / nums.length;
+        } else if (mode === "sum") {
+          value = nums.reduce((sum, item) => sum + item, 0);
+        } else if (mode === "min") {
+          value = Math.min(...nums);
+        } else if (mode === "max") {
+          value = Math.max(...nums);
+        } else if (mode === "mode") {
+          const counts = new Map();
+          nums.forEach(item => {
+            const rounded = Number(item.toFixed(2));
+            counts.set(rounded, (counts.get(rounded) || 0) + 1);
+          });
+          value = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? value;
+        }
+
+        return [[timestamp, value]];
+      }
+
+      async function updateCardMode(select) {
+        const card = select.closest(".card");
+        const selects = card.querySelectorAll(".control-grid select");
+        card.dataset.chartType = selects[0]?.value || "line";
+        card.dataset.aggregation = selects[1]?.value || "none";
+        await refreshCard(card);
+      }
+
+      async function refreshCard(card) {
+        if (!card) {
+          return;
+        }
+
+        const query = card.dataset.query;
+        const chartId = card.dataset.chartId;
+        const range = Number(card.dataset.range) || 300;
+
+        try {
+          const res = await fetch("/api/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query,
+              range,
+              start: card.querySelector(".card-start-input")?.value,
+              end: card.querySelector(".card-end-input")?.value,
+              comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
+            })
+          });
+          const payload = await res.json();
+          const data = normalizeQueryPayload(payload, range);
+          const thresholdData = await getThresholdByQuery(query);
+          renderChart(chartId, data, query, range, thresholdData);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function changeRange(btn, range) {
+        const card = btn.closest(".card");
+        const query = card.dataset.query;
+        const chartId = card.dataset.chartId;
+
+        card.dataset.range = String(range);
+        card.querySelectorAll(".range-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        try {
+          const res = await fetch("/api/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query,
+              range,
+              start: card.querySelector(".card-start-input")?.value,
+              end: card.querySelector(".card-end-input")?.value,
+              comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
+            })
+          });
+
+          const payload = await res.json();
+          const data = normalizeQueryPayload(payload, range);
+          const thresholdData = await getThresholdByQuery(query);
+          renderChart(chartId, data, query, range, thresholdData);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function renderChart(id, prometheusPayload, query, range = 300, thresholdData = null) {
+        const el = document.getElementById(id);
+
+        if (!el) {
+          return;
+        }
+
+        const card = el.closest(".card");
+        const chartType = card?.dataset.chartType || "line";
+        const aggregation = card?.dataset.aggregation || "none";
+        let chart = echarts.getInstanceByDom(el);
+
+        if (!chart) {
+          chart = echarts.init(el);
+        }
+
+        const { series: prometheusData, start, end } = normalizeQueryPayload(prometheusPayload, range);
+        const windowStart = Number(start) * 1000;
+        const windowEnd = Number(end) * 1000;
+        const maxPoints = prometheusData.reduce(
+          (max, item) => Math.max(max, item.values?.length || 0),
+          0
+        );
+        const series = prometheusData
+          .filter(item => item.values?.length)
+          .map((item, index) => ({
+            name: resolveMetricName(query, prometheusData),
+            type: chartType === "area" ? "line" : chartType,
+            smooth: chartType !== "bar" && chartType !== "scatter",
+            showSymbol: chartType === "scatter",
+            sampling: maxPoints > 800 ? "lttb" : false,
+            progressive: maxPoints > 800 ? 200 : 0,
+            progressiveThreshold: 800,
+            animationDuration: 500,
+            animationEasing: "linear",
+            lineStyle: {
+              width: 3
+            },
+            areaStyle: chartType === "area" ? {
+              opacity: .18
+            } : undefined,
+            data: aggregateValues(item.values, aggregation).map(v => [
+              Number(v[0]) * 1000,
+              parseFloat(v[1])
+            ]),
+            markLine: buildThresholdMarkLines(thresholdData)
+          }));
+        const comparisonSeries = (prometheusPayload.comparisonSeries || [])
+          .filter(item => item.values?.length)
+          .map(item => ({
+            name: `${resolveMetricName(query, prometheusData)} periodo anterior`,
+            type: "line",
+            smooth: true,
+            showSymbol: false,
+            lineStyle: {
+              width: 2,
+              type: "dashed"
+            },
+            data: aggregateValues(item.values, aggregation).map(v => [
+              Number(v[0]) * 1000 + ((windowEnd - windowStart) || 0),
+              parseFloat(v[1])
+            ])
+          }));
+
+        const latestValues = prometheusData
+          .filter(item => item.values?.length)
+          .map((item, index) => {
+            const values = aggregateValues(item.values, aggregation);
+            const last = values[values.length - 1];
+            return {
+              name: item.metric?.instance || item.metric?.device || item.metric?.__name__ || `Serie ${index + 1}`,
+              value: Number(last?.[1] || 0)
+            };
+          });
+        const latestValue = latestValues[0]?.value || 0;
+
+        if (chartType === "stat") {
+          chart.dispose();
+          el.innerHTML = `
+            <div class="stat-card">
+              <div class="stat-value">${formatNumber(latestValue)}${thresholdData?.unit || ""}</div>
+              <div class="stat-label">${resolveMetricName(query, prometheusData)}</div>
+            </div>
+          `;
+          return;
+        }
+
+        el.innerHTML = "";
+        chart = echarts.getInstanceByDom(el) || echarts.init(el);
+
+        if (chartType === "gauge") {
+          chart.setOption({
+            color: ["#2dd4bf"],
+            backgroundColor: "transparent",
+            series: [{
+              type: "gauge",
+              min: 0,
+              max: Math.max(100, Math.ceil(latestValue * 1.2)),
+              progress: { show: true, width: 14 },
+              axisLine: { lineStyle: { width: 14 } },
+              pointer: { width: 5 },
+              detail: {
+                formatter: value => `${formatNumber(value)}${thresholdData?.unit || ""}`,
+                color: "inherit",
+                fontSize: 28,
+                fontWeight: 800
+              },
+              data: [{ value: latestValue, name: resolveMetricName(query, prometheusData) }]
+            }]
+          }, true);
+          return;
+        }
+
+        if (chartType === "pie") {
+          chart.setOption({
+            color: ["#2dd4bf", "#60a5fa", "#f59e0b", "#a78bfa", "#22c55e"],
+            backgroundColor: "transparent",
+            tooltip: {
+              trigger: "item",
+              formatter: item => `${item.name}: ${formatNumber(item.value)}${thresholdData?.unit || ""}`
+            },
+            series: [{
+              type: "pie",
+              radius: ["42%", "72%"],
+              avoidLabelOverlap: true,
+              data: latestValues.length ? latestValues : [{ name: resolveMetricName(query, prometheusData), value: 0 }]
+            }]
+          }, true);
+          return;
+        }
+
+        chart.setOption(
+          {
+            color: ["#2dd4bf", "#60a5fa", "#f59e0b", "#a78bfa", "#22c55e"],
+            backgroundColor: "transparent",
+            animation: true,
+            animationDurationUpdate: 500,
+            animationEasingUpdate: "linear",
+            tooltip: {
+              trigger: "axis",
+              backgroundColor: "#0b1220",
+              borderColor: "rgba(151,164,184,.28)",
+              textStyle: {
+                color: "#fff"
+              }
+            },
+            grid: {
+              left: 48,
+              right: 18,
+              top: 28,
+              bottom: 38
+            },
+            xAxis: {
+              type: "time",
+              min: windowStart,
+              max: windowEnd,
+              axisLine: {
+                lineStyle: {
+                  color: "#64748b"
+                }
+              },
+              axisLabel: {
+                color: "#a8b4c7",
+                formatter: value => {
+                  const d = new Date(value);
+                  return d.toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  });
+                }
+              }
+            },
+            yAxis: {
+              type: "value",
+              axisPointer: {
+                show: true
+              },
+              axisLine: {
+                lineStyle: {
+                  color: "#64748b"
+                }
+              },
+              splitLine: {
+                lineStyle: {
+                  color: "rgba(151,164,184,.1)"
+                }
+              },
+              axisLabel: {
+                color: "#a8b4c7"
+              }
+            },
+            series: [...series, ...comparisonSeries]
+          },
+          false
+        );
+
+        if (!window.__chartResizeBound) {
+          window.addEventListener("resize", () => {
+            document.querySelectorAll("[data-chart-id]").forEach(chartEl => {
+              echarts.getInstanceByDom(chartEl)?.resize();
+            });
+          });
+
+          window.__chartResizeBound = true;
+        }
+      }
+
+      async function refreshAlertsEngine() {
+        const cards = document.querySelectorAll(".card[data-query]");
+
+        for (const card of cards) {
+          try {
+            await fetch("/api/query", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                query: card.dataset.query,
+                range: 300,
+                start: card.querySelector(".card-start-input")?.value,
+                end: card.querySelector(".card-end-input")?.value,
+                comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
+              })
+            });
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      }
+
+      async function loadDashboards() {
+        try {
+          const res = await fetch("/api/dashboard");
+          const dashboards = await res.json();
+          const container = document.getElementById("chartsContainer");
+
+          container.innerHTML = "";
+          activeDashboards.clear();
+
+          if (!dashboards.length) {
+            container.innerHTML = emptyState("Nenhum dashboard criado ainda. Use o seletor acima para adicionar metricas.");
+            return;
+          }
+
+          for (const d of dashboards) {
+            await renderSavedChart(d);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function deleteAlert(id) {
+        try {
+          await fetch(`/api/alert/${id}`, {
+            method: "DELETE"
+          });
+
+          await loadThresholds();
+          await loadAlertFeed();
+          await refreshCharts();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function loadThresholds() {
+        const res = await fetch("/api/alerts");
+
+        if (!res.ok) {
+          console.error("Erro alerts:", res.status);
+          return [];
+        }
+
+        const alerts = await res.json();
+        const thresholdList = document.getElementById("thresholdList");
+        thresholdList.innerHTML = "";
+
+        if (!alerts.length) {
+          thresholdList.innerHTML = emptyState("Nenhum threshold ativo.");
+          return;
+        }
+
+        alerts.forEach(alert => {
+          const div = document.createElement("div");
+          const { warningThreshold, criticalThreshold } = resolveThresholds(alert);
+          const color = statusColor(alert.status);
+          const unit = alert.unit || "%";
+
+          div.className = `threshold-item status-${alert.status || "OK"}`;
+          div.dataset.query = alert.query;
+          div.innerHTML = `
+            <div class="item-row">
+              <div>
+                <strong style="color:${color}">${alert.metricName}</strong><br>
+                <span class="muted">Atual: ${formatNumber(alert.lastValue)}${unit}</span><br>
+                <span class="muted">Atencao: ${formatNumber(warningThreshold)}${unit} | Alerta: ${formatNumber(criticalThreshold)}${unit}</span><br>
+                <span class="status-pill status-${alert.status}">${alert.status}</span>
+              </div>
+              <button class="delete-threshold-btn" title="Remover limites">X</button>
+            </div>
+          `;
+
+          div.querySelector(".delete-threshold-btn").addEventListener("click", async () => {
+            await deleteAlert(alert.id);
+          });
+
+          thresholdList.appendChild(div);
+        });
+      }
+
+      async function loadAlertFeed() {
+        const res = await fetch("/api/alerts");
+
+        if (!res.ok) {
+          console.error("Erro alerts:", res.status);
+          return [];
+        }
+
+        const alerts = await res.json();
+        const feed = document.getElementById("alertFeed");
+        const activeAlerts = alerts.filter(a => a.status !== "OK");
+
+        feed.innerHTML = "";
+
+        if (!activeAlerts.length) {
+          feed.innerHTML = emptyState("Sem alertas ativos no momento.");
+          return;
+        }
+
+        activeAlerts.forEach(alert => {
+          const div = document.createElement("div");
+          const css = alert.status === "CRITICAL" ? "alert-critical" : "alert-warning";
+
+          div.className = `alert-live ${css}`;
+          div.innerHTML = `
+            <strong>${alert.metricName}</strong><br>
+            <span>Valor atual: ${formatNumber(alert.lastValue)}${alert.unit || ""}</span><br>
+            <span class="muted">Threshold: ${formatNumber(alert.threshold)}${alert.unit || ""}</span>
+          `;
+
+          feed.appendChild(div);
+        });
+      }
+
+      async function loadAlertLogs() {
+        const res = await fetch("/api/alert-logs");
+        const container = document.getElementById("logContainer");
+
+        if (!res.ok) {
+          container.innerHTML = emptyState("Nao foi possivel carregar os logs.");
+          return;
+        }
+
+        const logs = await res.json();
+        container.innerHTML = "";
+
+        if (!logs.length) {
+          container.innerHTML = emptyState("Nenhum alerta entrou em WARNING ou CRITICAL ainda.");
+          return;
+        }
+
+        logs.forEach(log => {
+          const div = document.createElement("div");
+          const createdAt = new Date(log.createdAt).toLocaleString("pt-BR");
+
+          div.className = "log";
+          div.innerHTML = `
+            <span class="status-pill status-${log.status}">${log.status}</span>
+            <div>
+              <strong>${log.metricName}</strong><br>
+              <span class="muted">Valor ${formatNumber(log.value)}${log.unit || ""} / limite ${formatNumber(log.threshold)}${log.unit || ""}</span>
+            </div>
+            <span class="muted">${createdAt}</span>
+          `;
+
+          container.appendChild(div);
+        });
+      }
+
+      async function getThresholdByQuery(query) {
+        try {
+          const res = await fetch("/api/alerts");
+
+          if (!res.ok) {
+            return null;
+          }
+
+          const alerts = await res.json();
+          const metricId = [...document.querySelectorAll(".card")]
+            .find(c => c.dataset.query === query)
+            ?.dataset.metricId;
+
+          return alerts.find(a => a.query === query)
+            || alerts.find(a => a.metricId === resolveMetricId(query, metricId));
+        } catch (err) {
+          console.error(err);
+          return null;
+        }
+      }
+
+      async function refreshCharts() {
+        const cards = document.querySelectorAll(".card[data-query]");
+
+        for (const card of cards) {
+          await refreshCard(card);
+        }
+      }
+
+      async function loadMetricCatalog() {
+        try {
+          const res = await fetch("/api/metrics/catalog");
+
+          if (!res.ok) {
+            return;
+          }
+
+          const catalog = await res.json();
+          metricList = catalog;
+          renderMetricOptions();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function toggleTheme() {
+        const nextTheme = document.body.dataset.theme === "light" ? "dark" : "light";
+        document.body.dataset.theme = nextTheme;
+        localStorage.setItem("temporal-series-theme", nextTheme);
+        fetch("/api/preferences", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ theme: nextTheme })
+        }).catch(console.error);
+        document.querySelectorAll("[data-chart-id]").forEach(chartEl => {
+          echarts.getInstanceByDom(chartEl)?.resize();
+        });
+      }
+
+      function updateRefreshInterval() {
+        const input = document.getElementById("refreshIntervalInput");
+        const interval = Number(input?.value) || 5000;
+        localStorage.setItem("temporal-series-refresh", String(interval));
+        fetch("/api/preferences", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            theme: document.body.dataset.theme || "dark",
+            refreshInterval: interval
+          })
+        }).catch(console.error);
+
+        if (window.__chartRefreshTimer) {
+          clearInterval(window.__chartRefreshTimer);
+        }
+
+        window.__chartRefreshTimer = setInterval(() => {
+          refreshCharts();
+        }, interval);
+      }
+
+      async function sendTestEmail() {
+        const res = await fetch("/api/alerts/test-email", { method: "POST" });
+        alert(res.ok ? "Email de teste solicitado." : "Nao foi possivel solicitar o email de teste.");
+      }
+
+      const savedTheme = localStorage.getItem("temporal-series-theme");
+
+      if (savedTheme) {
+        document.body.dataset.theme = savedTheme;
+      }
+
+      const savedRefresh = localStorage.getItem("temporal-series-refresh") || "5000";
+      const refreshInput = document.getElementById("refreshIntervalInput");
+
+      if (refreshInput) {
+        refreshInput.value = savedRefresh;
+      }
+
+      setInterval(async () => {
+        await refreshAlertsEngine();
+        await loadThresholds();
+        await loadAlertFeed();
+        await loadAlertLogs();
+      }, 3000);
+
+      updateRefreshInterval();
+
+      loadMetricCatalog();
+      loadDashboards();
+      loadThresholds();
+      loadAlertFeed();
+      loadAlertLogs();
+    </script>
+    <script src="/js/page-transition.js"></script>
+  </body>
+</html>
