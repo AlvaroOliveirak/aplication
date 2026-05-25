@@ -334,6 +334,8 @@
         <h2 id="login-title">Login</h2>
         <p>Acesse sua area de monitoramento.</p>
 
+        <div id="errorMessage" style="display: none; padding: 12px; margin-bottom: 16px; border-radius: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.34); color: #fecaca; font-size: 14px;"></div>
+
         <form id="loginForm" action="/login" method="POST">
 <script>
   const urlParams = new URLSearchParams(window.location.search);
@@ -363,6 +365,28 @@
         </div>
       </section>
     </main>
+    <script>
+      const errorMap = {
+        'google': 'Falha ao autenticar com Google. Tente novamente.',
+        'invalid-credentials': 'Email ou senha incorretos.'
+      };
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      const registered = urlParams.get('registered');
+      const errorMsg = document.getElementById('errorMessage');
+      
+      if (error && errorMap[error]) {
+        errorMsg.textContent = errorMap[error];
+        errorMsg.style.display = 'block';
+      } else if (registered === '1') {
+        errorMsg.textContent = 'Conta criada com sucesso! Faça login para continuar.';
+        errorMsg.style.background = 'rgba(34, 197, 94, 0.12)';
+        errorMsg.style.borderColor = 'rgba(34, 197, 94, 0.34)';
+        errorMsg.style.color = '#bbf7d0';
+        errorMsg.style.display = 'block';
+      }
+    </script>
     <script src="/js/page-transition.js"></script>
   </body>
 </html>
