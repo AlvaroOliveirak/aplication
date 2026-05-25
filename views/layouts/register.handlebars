@@ -336,6 +336,8 @@
         <h2 id="register-title">Registro</h2>
         <p>Crie sua conta para acessar o monitoramento.</p>
 
+        <div id="errorMessage" style="display: none; padding: 12px; margin-bottom: 16px; border-radius: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.34); color: #fecaca; font-size: 14px;"></div>
+
         <form action="/register" method="POST">
           <div class="field">
             <label for="email">Email</label>
@@ -344,7 +346,7 @@
 
           <div class="field">
             <label for="password">Senha</label>
-            <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha" required>
+            <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha (minimo 8 caracteres)" required minlength="8">
           </div>
 
           <button class="primary-btn" type="submit">Criar conta</button>
@@ -356,6 +358,23 @@
         </div>
       </section>
     </main>
+    <script>
+      const errorMap = {
+        'weak-password': 'Senha deve ter no mínimo 8 caracteres.',
+        'email-exists': 'Este email já está cadastrado. Tente fazer login.',
+        'missing-fields': 'Email e senha são obrigatórios.',
+        'registration-failed': 'Falha ao criar conta. Tente novamente.'
+      };
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      const errorMsg = document.getElementById('errorMessage');
+      
+      if (error && errorMap[error]) {
+        errorMsg.textContent = errorMap[error];
+        errorMsg.style.display = 'block';
+      }
+    </script>
     <script src="/js/page-transition.js"></script>
   </body>
 </html>

@@ -39,22 +39,22 @@
       }
 
       body[data-theme="light"] {
-        --bg: #f0f4f8;
+        --bg: #f8fafc;
         --panel: #ffffff;
-        --panel-strong: #f8fafc;
-        --line: rgba(148, 163, 184, 0.2);
+        --panel-strong: #f1f5f9;
+        --line: rgba(15, 23, 42, 0.12);
         --muted: #64748b;
-        --text: #1e293b;
-        --shadow: 0 10px 25px rgba(148, 163, 184, 0.1);
+        --text: #0f172a;
+        --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
         background: 
-          radial-gradient(circle at 18% 8%, rgba(45, 212, 191, .05), transparent 28%),
-          radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .05), transparent 28%),
-          linear-gradient(140deg, #f0f4f8 0%, #e2e8f0 100%);
+          radial-gradient(circle at 18% 8%, rgba(45, 212, 191, .06), transparent 28%),
+          radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .06), transparent 28%),
+          linear-gradient(140deg, #f8fafc 0%, #f1f5f9 100%);
       }
 
       body[data-theme="light"] .topbar,
       body[data-theme="light"] .sidebar {
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         border-color: var(--line);
       }
@@ -77,28 +77,45 @@
         border: 1px solid transparent;
       }
 
+      body[data-theme="light"] .nav a:hover,
+      body[data-theme="light"] .nav button:hover,
+      body[data-theme="light"] .ghost-btn:hover,
+      body[data-theme="light"] .metric-btn:hover,
+      body[data-theme="light"] .range-btn:hover,
+      body[data-theme="light"] .icon-btn:hover {
+        background: #e2e8f0;
+        border-color: rgba(15, 23, 42, 0.2);
+        color: #1e293b;
+      }
+
       body[data-theme="light"] .nav .active,
       body[data-theme="light"] .range-btn.active,
       body[data-theme="light"] .metric-btn.active {
-        background: #e2e8f0;
-        border-color: #cbd5e1;
-        color: #1e293b;
+        background: rgba(45, 212, 191, 0.1);
+        border-color: rgba(45, 212, 191, 0.5);
+        color: #14b8a6;
       }
 
       body[data-theme="light"] input, 
       body[data-theme="light"] select {
         background: #ffffff;
-        color: #1e293b;
+        color: #0f172a;
         border: 1px solid #cbd5e1;
       }
 
+      body[data-theme="light"] input:focus, 
+      body[data-theme="light"] select:focus {
+        border-color: rgba(45, 212, 191, 0.68);
+        box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+      }
+
       body[data-theme="light"] .brand-mark {
-        background: #334155;
+        background: linear-gradient(135deg, #14b8a6, #0284c7);
         color: #f8fafc;
       }
 
       body[data-theme="light"] .logo {
-        color: #1e293b;
+        color: #0f172a;
       }
 
       body[data-theme="light"] .subtitle,
@@ -114,28 +131,62 @@
         color: #0f172a;
       }
 
-      button,
-      input {
-        font: inherit;
+      body[data-theme="light"] .control-field label {
+        color: #0f172a;
       }
 
-      button {
-        border: 0;
+      body[data-theme="light"] .control-field input,
+      body[data-theme="light"] .control-field select,
+      body[data-theme="light"] .custom-query {
+        background: rgba(255, 255, 255, 0.96);
+        color: #0f172a;
+        border: 1px solid #cbd5e1;
       }
 
-      .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 18px;
-        min-height: 72px;
-        padding: 14px 28px;
-        background: rgba(8, 17, 31, .88);
-        border-bottom: 1px solid var(--line);
-        backdrop-filter: blur(18px);
+      body[data-theme="light"] .control-field select option {
+        background: #ffffff;
+        color: #0f172a;
+      }
+
+      body[data-theme="light"] .overview-item {
+        background: rgba(45, 212, 191, 0.05);
+        border-color: rgba(45, 212, 191, 0.2);
+      }
+
+      body[data-theme="light"] .thresholdInput {
+        background: rgba(255, 255, 255, 0.96);
+        color: #0f172a;
+        border: 1px solid #cbd5e1;
+      }
+
+      body[data-theme="light"] .thresholdInput:focus {
+        border-color: rgba(45, 212, 191, 0.68);
+        box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+      }
+
+      body[data-theme="light"] .empty-state {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #64748b;
+      }
+
+      body[data-theme="light"] .field label {
+        color: #0f172a;
+      }
+
+      body[data-theme="light"] .field input {
+        background: rgba(255, 255, 255, 0.96);
+        color: #0f172a;
+        border: 1px solid #cbd5e1;
+      }
+
+      body[data-theme="light"] .primary-btn {
+        background: linear-gradient(135deg, #14b8a6, #0284c7);
+        color: #ffffff;
+      }
+
+      body[data-theme="light"] .primary-btn:hover {
+        background: linear-gradient(135deg, #0d9488, #0369a1);
       }
 
       .brand {
@@ -1279,6 +1330,7 @@
           card.dataset.range = "300";
           card.dataset.chartType = dashboard.chartType || "line";
           card.dataset.aggregation = dashboard.aggregation || "none";
+          card.dataset.showTrend = "true";
           card.innerHTML = `
             <div class="chart-header">
               <div>
@@ -1286,6 +1338,7 @@
                 <div class="muted chart-window" style="font-size:12px; margin-top:4px;">Janela movel de dados</div>
               </div>
               <div class="card-actions">
+                <button class="icon-btn" title="Mostrar/ocultar analise de tendencia" onclick="toggleTrendAnalysis(this)" style="background: rgba(96, 165, 250, 0.12); border-color: rgba(96, 165, 250, 0.34); color: #bfdbfe;">T</button>
                 <button class="icon-btn" title="Configurar threshold" onclick="toggleAlertBox(this)">!</button>
                 <button class="icon-btn danger" title="Remover dashboard" onclick="deleteDashboard(${id}, this)">X</button>
               </div>
@@ -1513,6 +1566,8 @@
         const query = card.dataset.query;
         const chartId = card.dataset.chartId;
         const range = Number(card.dataset.range) || 300;
+        const startInput = card.querySelector(".card-start-input")?.value;
+        const endInput = card.querySelector(".card-end-input")?.value;
 
         try {
           const res = await fetch("/api/query", {
@@ -1522,18 +1577,33 @@
             },
             body: JSON.stringify({
               query,
-              range,
-              start: card.querySelector(".card-start-input")?.value,
-              end: card.querySelector(".card-end-input")?.value,
+              range: (!startInput && !endInput) ? range : undefined,
+              start: startInput || undefined,
+              end: endInput || undefined,
               comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
             })
           });
+
+          if (!res.ok) {
+            const error = await res.json();
+            console.error("Erro ao buscar dados:", error);
+            const el = document.getElementById(chartId);
+            if (el) {
+              el.innerHTML = `<div class="empty-state">Erro ao carregar dados: ${error.error || 'Erro desconhecido'}</div>`;
+            }
+            return;
+          }
+
           const payload = await res.json();
           const data = normalizeQueryPayload(payload, range);
           const thresholdData = await getThresholdByQuery(query);
           renderChart(chartId, data, query, range, thresholdData);
         } catch (err) {
-          console.error(err);
+          console.error("Erro em refreshCard:", err);
+          const el = document.getElementById(chartId);
+          if (el) {
+            el.innerHTML = `<div class="empty-state">Erro ao processar dados</div>`;
+          }
         }
       }
 
@@ -2027,6 +2097,11 @@
 
         let trendsHtml = "";
         for (const card of cards) {
+          const showTrend = card.dataset.showTrend !== "false";
+          if (!showTrend) {
+            continue;
+          }
+
           const query = card.dataset.query;
           const name = card.querySelector("h4").textContent;
           
@@ -2034,7 +2109,7 @@
             const res = await fetch("/api/query", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ query, range: 3600 }) // Analisa última hora
+              body: JSON.stringify({ query, range: 3600 })
             });
             const payload = await res.json();
             const series = payload.series || [];
@@ -2078,8 +2153,19 @@
         if (trendsHtml) {
           trendContainer.innerHTML = trendsHtml;
         } else {
-          trendContainer.innerHTML = emptyState("Dados insuficientes para análise de tendências.");
+          trendContainer.innerHTML = emptyState("Nenhum dashboard com análise de tendência habilitada ou dados insuficientes.");
         }
+      }
+
+      function toggleTrendAnalysis(btn) {
+        const card = btn.closest(".card");
+        const isShown = card.dataset.showTrend !== "false";
+        card.dataset.showTrend = isShown ? "false" : "true";
+        
+        btn.style.opacity = isShown ? "0.5" : "1";
+        btn.title = isShown ? "Análise de tendência desativada (clique para ativar)" : "Análise de tendência ativada (clique para desativar)";
+        
+        updateTrends();
       }
 
       async function loadMetricCatalog() {

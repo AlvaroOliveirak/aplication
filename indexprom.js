@@ -414,7 +414,11 @@ app.post('/register', async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
 
-  if (!email || password.length < 8) {
+  if (!email || !password) {
+    return res.redirect('/register?error=missing-fields');
+  }
+
+  if (password.length < 8) {
     return res.redirect('/register?error=weak-password');
   }
 
@@ -422,13 +426,14 @@ app.post('/register', async (req, res) => {
     const existingUser = await Post.findOne({ where: { email } });
 
     if (existingUser) {
-      return res.redirect('/login?registered=1');
+      return res.redirect('/register?error=email-exists');
     }
 
     await Post.create({ email, password, authProvider: 'local' });
-    res.redirect('/login');
+    res.redirect('/login?registered=1');
   } catch (err) {
-    res.status(500).send('Houve um erro: ' + err.message);
+    console.error('Erro no registro:', err);
+    res.redirect('/register?error=registration-failed');
   }
 });
 
@@ -528,9 +533,11 @@ app.post('/login', async (req, res) => {
   const password = String(req.body.password || '');
   const redirectTo = safeRedirect(req.query.redirectTo);
 
-  Post.findOne({ where: { email } }).then(async (post) => {
+  try {
+    const post = await Post.findOne({ where: { email } });
+
     if (!post || !post.password) {
-      return res.redirect(`/login?redirectTo=${redirectTo}`);
+      return res.redirect(`/login?error=invalid-credentials&redirectTo=${encodeURIComponent(redirectTo)}`);
     }
 
     const match = await bcrypt.compare(password, post.password);
@@ -539,9 +546,12 @@ app.post('/login', async (req, res) => {
       req.session.user = { id: post.id, email: post.email, name: post.name, theme: post.theme };
       res.redirect(redirectTo);
     } else {
-      res.redirect(`/login?redirectTo=${redirectTo}`);
+      res.redirect(`/login?error=invalid-credentials&redirectTo=${encodeURIComponent(redirectTo)}`);
     }
-  });
+  } catch (err) {
+    console.error('Erro no login:', err);
+    res.redirect(`/login?error=login-failed&redirectTo=${encodeURIComponent(redirectTo)}`);
+  }
 });
 
 app.get('/logout', (req, res) => {
