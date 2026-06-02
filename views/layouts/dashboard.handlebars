@@ -42,26 +42,26 @@
         --bg: #f8fafc;
         --panel: #ffffff;
         --panel-strong: #f1f5f9;
-        --line: rgba(15, 23, 42, 0.12);
+        --line: rgba(0, 0, 0, 0.473);
         --muted: #64748b;
-        --text: #0f172a;
+        --text: #0b101a;
         --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
         background: 
           radial-gradient(circle at 18% 8%, rgba(45, 212, 191, .06), transparent 28%),
           radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .06), transparent 28%),
-          linear-gradient(140deg, #f8fafc 0%, #f1f5f9 100%);
+          linear-gradient(-45deg, #368df196, #06999985, #b8c9c83b);
       }
 
       body[data-theme="light"] .topbar,
       body[data-theme="light"] .sidebar {
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(52, 161, 189, 0.747);
         backdrop-filter: blur(10px);
         border-color: var(--line);
       }
 
       body[data-theme="light"] .panel,
       body[data-theme="light"] .card {
-        background: #ffffff;
+        background: #000000;
         border-color: var(--line);
         box-shadow: var(--shadow);
       }
@@ -72,8 +72,8 @@
       body[data-theme="light"] .metric-btn,
       body[data-theme="light"] .range-btn,
       body[data-theme="light"] .icon-btn {
-        background: #f1f5f9;
-        color: #475569;
+        background: #03275e8f;
+        color: #000000;
         border: 1px solid transparent;
       }
 
@@ -83,23 +83,23 @@
       body[data-theme="light"] .metric-btn:hover,
       body[data-theme="light"] .range-btn:hover,
       body[data-theme="light"] .icon-btn:hover {
-        background: #e2e8f0;
+        background: #010c1a;
         border-color: rgba(15, 23, 42, 0.2);
-        color: #1e293b;
+        color: #898c92;
       }
 
       body[data-theme="light"] .nav .active,
       body[data-theme="light"] .range-btn.active,
       body[data-theme="light"] .metric-btn.active {
-        background: rgba(45, 212, 191, 0.1);
+        background: rgb(0, 0, 0);
         border-color: rgba(45, 212, 191, 0.5);
-        color: #14b8a6;
+        color: #e2d9d9e8;
       }
 
       body[data-theme="light"] input, 
       body[data-theme="light"] select {
-        background: #ffffff;
-        color: #0f172a;
+        background: #350505;
+        color: #878b94;
         border: 1px solid #cbd5e1;
       }
 
@@ -110,18 +110,19 @@
       }
 
       body[data-theme="light"] .brand-mark {
-        background: linear-gradient(135deg, #14b8a6, #0284c7);
+        background: linear-gradient(135deg, #000c0b, #000b47);
         color: #f8fafc;
       }
 
       body[data-theme="light"] .logo {
-        color: #0f172a;
+        color: #080d18;
+        text-shadow: 0 0 1px rgba(26, 28, 128, 0.781);
       }
 
       body[data-theme="light"] .subtitle,
       body[data-theme="light"] .muted,
       body[data-theme="light"] .eyebrow {
-        color: #64748b;
+        color: #c4b9b9e7;
       }
 
       body[data-theme="light"] h1, 
@@ -139,12 +140,12 @@
       body[data-theme="light"] .control-field select,
       body[data-theme="light"] .custom-query {
         background: rgba(255, 255, 255, 0.96);
-        color: #0f172a;
+        color: #f7f7f786;
         border: 1px solid #cbd5e1;
       }
 
       body[data-theme="light"] .control-field select option {
-        background: #ffffff;
+        background: #cecccc;
         color: #0f172a;
       }
 
@@ -181,12 +182,12 @@
       }
 
       body[data-theme="light"] .primary-btn {
-        background: linear-gradient(135deg, #14b8a6, #0284c7);
+        background: linear-gradient(135deg, #b82714, #200402);
         color: #ffffff;
       }
 
       body[data-theme="light"] .primary-btn:hover {
-        background: linear-gradient(135deg, #0d9488, #0369a1);
+        background: linear-gradient(135deg, #ff0f0f, #6e0101);
       }
 
       .brand {
