@@ -943,41 +943,51 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script>
+      const systemQueries = {
+        cpu: '(100 - (avg by(instance)(rate(windows_cpu_time_total{mode="idle"}[5m])) * 100)) or ((100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) unless on() windows_cpu_time_total{mode="idle"})',
+        ram: '(100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)) or ((100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))) unless on() windows_memory_physical_total_bytes)',
+        disco: '(100 * (1 - (windows_logical_disk_free_bytes{volume!~"HarddiskVolume.+"} / windows_logical_disk_size_bytes{volume!~"HarddiskVolume.+"}))) or ((100 * (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"}))) unless on() windows_logical_disk_size_bytes)',
+        redeRx: 'rate(windows_net_bytes_received_total[5m]) or (rate(node_network_receive_bytes_total[5m]) unless on() windows_net_bytes_received_total)',
+        redeTx: 'rate(windows_net_bytes_sent_total[5m]) or (rate(node_network_transmit_bytes_total[5m]) unless on() windows_net_bytes_sent_total)',
+        load1m: 'node_load1',
+        load5m: 'node_load5'
+      };
+
       let metricList = [
         {
           id: "ram",
           name: "RAM",
-          query: "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))"
+          query: systemQueries.ram
         },
         {
           id: "cpu",
           name: "CPU",
-          query: "100 * (1 - avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))"
+          query: systemQueries.cpu
         },
         {
           id: "disco",
           name: "Disco (%)",
-          query: "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))"
+          query: systemQueries.disco
         },
         {
           id: "rede_rx",
           name: "Rede RX",
-          query: "rate(node_network_receive_bytes_total[5m])"
+          query: systemQueries.redeRx
         },
         {
           id: "rede_tx",
           name: "Rede TX",
-          query: "rate(node_network_transmit_bytes_total[5m])"
+          query: systemQueries.redeTx
         },
         {
           id: "load_1m",
           name: "Load 1m",
-          query: "node_load1"
+          query: systemQueries.load1m
         },
         {
           id: "load_5m",
           name: "Load 5m",
-          query: "node_load5"
+          query: systemQueries.load5m
         }
       ];
 
@@ -1155,12 +1165,13 @@
 
           // Mapeamento de nomes amigáveis para queries reais
           const nameToQueryMap = {
-            "uso de cpu": "100 - (avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
-            "cpu": "100 - (avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
-            "memoria": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
-            "ram": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
-            "disco": "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))",
-            "rede": "rate(node_network_receive_bytes_total[5m])"
+            "uso de cpu": systemQueries.cpu,
+            "cpu": systemQueries.cpu,
+            "memoria": systemQueries.ram,
+            "memória": systemQueries.ram,
+            "ram": systemQueries.ram,
+            "disco": systemQueries.disco,
+            "rede": systemQueries.redeRx
           };
 
           const lowerInput = customInput.toLowerCase();
@@ -1254,6 +1265,7 @@
       function beautifyMetric(name) {
         return name
           .replace(/node_/g, "")
+          .replace(/windows_/g, "")
           .replace(/_seconds_total/g, "")
           .replace(/_/g, " ")
           .replace(/\b\w/g, l => l.toUpperCase());
@@ -1262,23 +1274,23 @@
       function resolveMetricName(query, data) {
         const q = query.toLowerCase();
 
-        if (q.includes("node_cpu_seconds_total") && q.includes("rate") && q.includes("idle")) {
+        if ((q.includes("node_cpu_seconds_total") || q.includes("windows_cpu_time_total")) && q.includes("rate") && q.includes("idle")) {
           return "Uso de CPU (%)";
         }
 
-        if (q.includes("node_memory_memavailable_bytes") && q.includes("node_memory_memtotal_bytes")) {
+        if ((q.includes("node_memory_memavailable_bytes") && q.includes("node_memory_memtotal_bytes")) || q.includes("windows_memory_physical")) {
           return "Uso de Memoria (%)";
         }
 
-        if (q.includes("node_filesystem_size_bytes") && q.includes("node_filesystem_avail_bytes")) {
+        if ((q.includes("node_filesystem_size_bytes") && q.includes("node_filesystem_avail_bytes")) || q.includes("windows_logical_disk")) {
           return "Uso de Disco (%)";
         }
 
-        if (q.includes("node_network_receive_bytes_total")) {
+        if (q.includes("node_network_receive_bytes_total") || q.includes("windows_net_bytes_received_total")) {
           return "Entrada de Rede (RX)";
         }
 
-        if (q.includes("node_network_transmit_bytes_total")) {
+        if (q.includes("node_network_transmit_bytes_total") || q.includes("windows_net_bytes_sent_total")) {
           return "Saida de Rede (TX)";
         }
 

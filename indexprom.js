@@ -105,76 +105,105 @@ function safeRedirect(value) {
   return redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
 }
 
+const SYSTEM_QUERIES = {
+  cpu: '(100 - (avg by(instance)(rate(windows_cpu_time_total{mode="idle"}[5m])) * 100)) or ((100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) unless on() windows_cpu_time_total{mode="idle"})',
+  ram: '(100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)) or ((100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))) unless on() windows_memory_physical_total_bytes)',
+  disco: '(100 * (1 - (windows_logical_disk_free_bytes{volume!~"HarddiskVolume.+"} / windows_logical_disk_size_bytes{volume!~"HarddiskVolume.+"}))) or ((100 * (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"}))) unless on() windows_logical_disk_size_bytes)',
+  redeRx: 'rate(windows_net_bytes_received_total[5m]) or (rate(node_network_receive_bytes_total[5m]) unless on() windows_net_bytes_received_total)',
+  redeTx: 'rate(windows_net_bytes_sent_total[5m]) or (rate(node_network_transmit_bytes_total[5m]) unless on() windows_net_bytes_sent_total)',
+  load1m: 'node_load1',
+  load5m: 'node_load5'
+};
+
+function compactQuery(query) {
+  return String(query || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+const legacySystemQueries = new Map([
+  ['100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)', SYSTEM_QUERIES.cpu],
+  ['100 * (1 - avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])))', SYSTEM_QUERIES.cpu],
+  ['100 * (1 - (node_memory_memavailable_bytes / node_memory_memtotal_bytes))', SYSTEM_QUERIES.ram],
+  ['100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))', SYSTEM_QUERIES.disco],
+  ['rate(node_network_receive_bytes_total[5m])', SYSTEM_QUERIES.redeRx],
+  ['rate(node_network_transmit_bytes_total[5m])', SYSTEM_QUERIES.redeTx]
+]);
+
+function normalizeSystemQuery(query) {
+  const normalized = compactQuery(query);
+  return legacySystemQueries.get(normalized) || query;
+}
+
 const metricCatalog = [
   {
     id: "cpu",
     name: "Uso de CPU (%)",
     unit: "%",
-    query: "100 - (avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+    query: SYSTEM_QUERIES.cpu
   },
   {
     id: "ram",
     name: "Uso de Memoria (%)",
     unit: "%",
-    query: "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))"
+    query: SYSTEM_QUERIES.ram
   },
   {
     id: "disco",
     name: "Uso de Disco (%)",
     unit: "%",
-    query: "100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))"
+    query: SYSTEM_QUERIES.disco
   },
   {
     id: "rede_rx",
     name: "Entrada de Rede (RX)",
     unit: "B/s",
-    query: "rate(node_network_receive_bytes_total[5m])"
+    query: SYSTEM_QUERIES.redeRx
   },
   {
     id: "rede_tx",
     name: "Saida de Rede (TX)",
     unit: "B/s",
-    query: "rate(node_network_transmit_bytes_total[5m])"
+    query: SYSTEM_QUERIES.redeTx
   },
   {
     id: "load_1m",
     name: "Load Average (1m)",
     unit: "",
-    query: "node_load1"
+    query: SYSTEM_QUERIES.load1m
   },
   {
     id: "load_5m",
     name: "Load Average (5m)",
     unit: "",
-    query: "node_load5"
+    query: SYSTEM_QUERIES.load5m
   }
 ];
 
 function inferMetric(query, series = []) {
-  const normalized = String(query || '').toLowerCase();
-  const exact = metricCatalog.find(metric => metric.query.toLowerCase() === normalized);
+  const resolvedQuery = normalizeSystemQuery(query);
+  const normalized = compactQuery(resolvedQuery);
+  const exact = metricCatalog.find(metric => compactQuery(metric.query) === normalized);
 
   if (exact) {
     return exact;
   }
 
-  if (normalized.includes('node_cpu_seconds_total') && normalized.includes('idle')) {
+  if ((normalized.includes('node_cpu_seconds_total') || normalized.includes('windows_cpu_time_total')) && normalized.includes('idle')) {
     return metricCatalog[0];
   }
 
-  if (normalized.includes('node_memory_memavailable_bytes')) {
+  if (normalized.includes('node_memory_memavailable_bytes') || normalized.includes('windows_memory_physical')) {
     return metricCatalog[1];
   }
 
-  if (normalized.includes('node_filesystem')) {
+  if (normalized.includes('node_filesystem') || normalized.includes('windows_logical_disk')) {
     return metricCatalog[2];
   }
 
-  if (normalized.includes('node_network_receive_bytes_total')) {
+  if (normalized.includes('node_network_receive_bytes_total') || normalized.includes('windows_net_bytes_received_total')) {
     return metricCatalog[3];
   }
 
-  if (normalized.includes('node_network_transmit_bytes_total')) {
+  if (normalized.includes('node_network_transmit_bytes_total') || normalized.includes('windows_net_bytes_sent_total')) {
     return metricCatalog[4];
   }
 
@@ -192,13 +221,14 @@ function inferMetric(query, series = []) {
     id: crypto.createHash('sha1').update(String(query)).digest('hex').slice(0, 12),
     name: metricName ? beautifyMetric(metricName) : beautifyMetric(query),
     unit: '',
-    query
+    query: resolvedQuery
   };
 }
 
 function beautifyMetric(name) {
   return String(name || 'Metrica personalizada')
     .replace(/node_/g, '')
+    .replace(/windows_/g, '')
     .replace(/_seconds_total/g, '')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, letter => letter.toUpperCase());
@@ -655,9 +685,10 @@ app.post('/api/alerts/test-email', isApiAuthenticated, async (req, res) => {
 });
 
 app.post('/api/metrics/infer', isApiAuthenticated, async (req, res) => {
-  const query = String(req.body.query || '').trim();
+  const rawQuery = String(req.body.query || '').trim();
+  const query = normalizeSystemQuery(rawQuery);
 
-  if (!query) {
+  if (!rawQuery) {
     return res.status(400).json({ error: 'Informe uma query Prometheus.' });
   }
 
@@ -680,7 +711,8 @@ app.post('/api/metrics/infer', isApiAuthenticated, async (req, res) => {
 
 app.post('/api/query', isApiAuthenticated, async (req, res) => {
   try {
-    const { query, range: rangeInput = 300, start, end: endInput } = req.body;
+    const { query: rawQuery, range: rangeInput = 300, start, end: endInput } = req.body;
+    const query = normalizeSystemQuery(rawQuery);
     const { range, end, displayStart, alignedStart, step } = buildQueryRangeParams(rangeInput, start, endInput);
 
     const url =
@@ -723,7 +755,7 @@ app.post('/api/query', isApiAuthenticated, async (req, res) => {
     const userAlerts = await Alert.findAll({ where: { userId: req.session.user.id } });
 
     for (const alert of userAlerts) {
-      if (alert.query !== query) {
+      if (normalizeSystemQuery(alert.query) !== query) {
         continue;
       }
 
@@ -804,7 +836,8 @@ app.get("/api/dashboard", isApiAuthenticated, async (req, res) => {
 });
 
 app.post("/api/dashboard", isApiAuthenticated, async (req, res) => {
- const { query, metricId, chartType = 'line', aggregation = 'none' } = req.body;
+ const { query: rawQuery, metricId, chartType = 'line', aggregation = 'none' } = req.body;
+  const query = normalizeSystemQuery(rawQuery);
 
   const metric = inferMetric(query);
   const resolvedMetricId = metricId || metric.id;
@@ -860,6 +893,7 @@ app.get("/api/alerts", isApiAuthenticated, async (req, res) => {
 app.post("/api/alert", isApiAuthenticated, async (req, res) => {
   const warningThreshold = Number(req.body.warningThreshold);
   const criticalThreshold = Number(req.body.criticalThreshold ?? req.body.threshold);
+  const query = normalizeSystemQuery(req.body.query);
 
   if (!Number.isFinite(warningThreshold) || !Number.isFinite(criticalThreshold)) {
     return res.status(400).json({
@@ -873,12 +907,17 @@ app.post("/api/alert", isApiAuthenticated, async (req, res) => {
     });
   }
 
-  const metricId = req.body.metricId || req.body.query;
-  const metric = inferMetric(req.body.query);
+  const metric = inferMetric(query);
+  const metricId = req.body.metricId || metric.id || query;
   const exists = await Alert.findOne({
     where: {
       userId: req.session.user.id,
       metricId
+    }
+  }) || await Alert.findOne({
+    where: {
+      userId: req.session.user.id,
+      query
     }
   }) || await Alert.findOne({
     where: {
@@ -889,7 +928,7 @@ app.post("/api/alert", isApiAuthenticated, async (req, res) => {
 
   if (exists) {
     exists.metricName = req.body.metricName || metric.name;
-    exists.query = req.body.query;
+    exists.query = query;
     exists.metricId = metricId;
     exists.warningThreshold = warningThreshold;
     exists.criticalThreshold = criticalThreshold;
@@ -907,7 +946,7 @@ app.post("/api/alert", isApiAuthenticated, async (req, res) => {
     userId: req.session.user.id,
     metricId,
     metricName: req.body.metricName || metric.name,
-    query: req.body.query,
+    query,
     warningThreshold,
     criticalThreshold,
     threshold: criticalThreshold,
