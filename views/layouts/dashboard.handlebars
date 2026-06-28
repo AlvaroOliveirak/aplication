@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8">
@@ -1397,11 +1397,11 @@
               </div>
             </div>
             <div class="range-buttons">
-              <button class="range-btn active" onclick="changeRange(this, 300)">5m</button>
-              <button class="range-btn" onclick="changeRange(this, 3600)">1h</button>
-              <button class="range-btn" onclick="changeRange(this, 10800)">3h</button>
-              <button class="range-btn" onclick="changeRange(this, 43200)">12h</button>
-              <button class="range-btn" onclick="changeRange(this, 86400)">24h</button>
+              <button class="range-btn active" data-range="300" onclick="changeRange(this, 300)">5m</button>
+              <button class="range-btn" data-range="3600" onclick="changeRange(this, 3600)">1h</button>
+              <button class="range-btn" data-range="10800" onclick="changeRange(this, 10800)">3h</button>
+              <button class="range-btn" data-range="43200" onclick="changeRange(this, 43200)">12h</button>
+              <button class="range-btn" data-range="86400" onclick="changeRange(this, 86400)">24h</button>
             </div>
             <div id="${chartId}" data-chart-id="${chartId}" class="chart-box"></div>
             <div class="alert-inline">
@@ -1571,6 +1571,12 @@
         await refreshCard(card);
       }
 
+      function toSafeISOString(dateStr) {
+        if (!dateStr) return undefined;
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? undefined : d.toISOString();
+      }
+
       async function refreshCard(card) {
         if (!card) {
           return;
@@ -1579,8 +1585,25 @@
         const query = card.dataset.query;
         const chartId = card.dataset.chartId;
         const range = Number(card.dataset.range) || 300;
-        const startInput = card.querySelector(".card-start-input")?.value;
-        const endInput = card.querySelector(".card-end-input")?.value;
+        const startInputEl = card.querySelector(".card-start-input");
+        const endInputEl = card.querySelector(".card-end-input");
+        
+        const startInput = startInputEl?.value;
+        const endInput = endInputEl?.value;
+
+        // Toggle active states of range buttons
+        const rangeBtns = card.querySelectorAll(".range-btn");
+        if (startInput || endInput) {
+          rangeBtns.forEach(btn => btn.classList.remove("active"));
+        } else {
+          rangeBtns.forEach(btn => {
+            const btnRange = Number(btn.dataset.range);
+            btn.classList.toggle("active", btnRange === range);
+          });
+        }
+
+        const startISO = toSafeISOString(startInput);
+        const endISO = toSafeISOString(endInput);
 
         try {
           const res = await fetch("/api/query", {
@@ -1590,9 +1613,9 @@
             },
             body: JSON.stringify({
               query,
-              range: (!startInput && !endInput) ? range : undefined,
-              start: startInput || undefined,
-              end: endInput || undefined,
+              range: (!startISO && !endISO) ? range : undefined,
+              start: startISO || undefined,
+              end: endISO || undefined,
               comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
             })
           });
@@ -1622,35 +1645,15 @@
 
       async function changeRange(btn, range) {
         const card = btn.closest(".card");
-        const query = card.dataset.query;
-        const chartId = card.dataset.chartId;
+        
+        // Clear manual inputs
+        const startInputEl = card.querySelector(".card-start-input");
+        const endInputEl = card.querySelector(".card-end-input");
+        if (startInputEl) startInputEl.value = "";
+        if (endInputEl) endInputEl.value = "";
 
         card.dataset.range = String(range);
-        card.querySelectorAll(".range-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        try {
-          const res = await fetch("/api/query", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              query,
-              range,
-              start: card.querySelector(".card-start-input")?.value,
-              end: card.querySelector(".card-end-input")?.value,
-              comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
-            })
-          });
-
-          const payload = await res.json();
-          const data = normalizeQueryPayload(payload, range);
-          const thresholdData = await getThresholdByQuery(query);
-          renderChart(chartId, data, query, range, thresholdData);
-        } catch (err) {
-          console.error(err);
-        }
+        await refreshCard(card);
       }
 
       function renderChart(id, prometheusPayload, query, range = 300, thresholdData = null) {
@@ -1905,8 +1908,6 @@
               body: JSON.stringify({
                 query: card.dataset.query,
                 range: 300,
-                start: card.querySelector(".card-start-input")?.value,
-                end: card.querySelector(".card-end-input")?.value,
                 comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
               })
             });
@@ -2095,6 +2096,11 @@
         const cards = document.querySelectorAll(".card[data-query]");
 
         for (const card of cards) {
+          const endInput = card.querySelector(".card-end-input")?.value;
+          // Se tiver fim selecionado manualmente, não atualiza automaticamente
+          if (endInput) {
+            continue;
+          }
           await refreshCard(card);
         }
         await updateTrends();

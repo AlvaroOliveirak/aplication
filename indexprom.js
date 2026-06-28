@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import path from "path";
 import handlebars from "express-handlebars";
 import { fileURLToPath } from 'url';
@@ -606,11 +606,20 @@ function buildQueryRangeParams(rangeSec, startInput, endInput) {
   const now = Math.floor(Date.now() / 1000);
   
   // Se tivermos endInput, usamos ele, senão usamos o agora
-  const end = endInput ? Math.floor(new Date(endInput).getTime() / 1000) : now;
+  let end = endInput ? Math.floor(new Date(endInput).getTime() / 1000) : now;
   
   // Se tivermos startInput, usamos ele. Senão, calculamos baseado no rangeSec retrocedendo a partir do end
-  const start = startInput ? Math.floor(new Date(startInput).getTime() / 1000) : (end - (Number(rangeSec) || 300));
+  let start = startInput ? Math.floor(new Date(startInput).getTime() / 1000) : (end - (Number(rangeSec) || 300));
   
+  if (startInput && endInput && start >= end) {
+    const temp = start;
+    start = end;
+    end = temp;
+    if (start === end) {
+      end = start + 300;
+    }
+  }
+
   const range = Math.max(end - start, 60);
   const displayStart = start;
   
@@ -752,64 +761,66 @@ app.post('/api/query', isApiAuthenticated, async (req, res) => {
       comparisonSeries = filterSeriesToWindow(previousJson.data?.result || [], previousStart);
     }
 
-    const userAlerts = await Alert.findAll({ where: { userId: req.session.user.id } });
+    if (!start && !endInput) {
+      const userAlerts = await Alert.findAll({ where: { userId: req.session.user.id } });
 
-    for (const alert of userAlerts) {
-      if (normalizeSystemQuery(alert.query) !== query) {
-        continue;
-      }
-
-      const series = json.data.result || [];
-      let currentValue = 0;
-
-      for (const s of series) {
-        const last = s.values?.[s.values.length - 1];
-
-        if (!last) {
+      for (const alert of userAlerts) {
+        if (normalizeSystemQuery(alert.query) !== query) {
           continue;
         }
 
-        const value = Number(last[1]);
+        const series = json.data.result || [];
+        let currentValue = 0;
 
-        if (value > currentValue) {
-          currentValue = value;
+        for (const s of series) {
+          const last = s.values?.[s.values.length - 1];
+
+          if (!last) {
+            continue;
+          }
+
+          const value = Number(last[1]);
+
+          if (value > currentValue) {
+            currentValue = value;
+          }
         }
-      }
 
-      const previousStatus = alert.status;
-      const anomaly = calculateAnomaly(series);
-      let nextStatus = evaluateAlertStatus(currentValue, alert);
+        const previousStatus = alert.status;
+        const anomaly = calculateAnomaly(series);
+        let nextStatus = evaluateAlertStatus(currentValue, alert);
 
-      if (nextStatus === "OK" && alert.anomalyEnabled && anomaly.isAnomaly) {
-        nextStatus = anomaly.trend > 0 ? "WARNING" : "WARNING";
-      }
+        if (nextStatus === "OK" && alert.anomalyEnabled && anomaly.isAnomaly) {
+          nextStatus = anomaly.trend > 0 ? "WARNING" : "WARNING";
+        }
 
-      alert.lastValue = currentValue;
-      alert.status = nextStatus;
-      await alert.save();
+        alert.lastValue = currentValue;
+        alert.status = nextStatus;
+        await alert.save();
 
-      if (nextStatus !== "OK" && nextStatus !== previousStatus) {
-        const report = buildAlertReport(alert, currentValue, anomaly);
-        const log = await AlertLog.create({
-          userId: req.session.user.id,
-          alertId: alert.id,
-          metricId: alert.metricId,
-          metricName: alert.metricName,
-          query: alert.query,
-          warningThreshold: alert.warningThreshold,
-          criticalThreshold: alert.criticalThreshold,
-          threshold: alert.criticalThreshold,
-          value: currentValue,
-          zScore: anomaly.zScore,
-          movingAverage: anomaly.movingAverage,
-          trend: anomaly.trend,
-          status: nextStatus,
-          unit: alert.unit || "%",
-          report
-        });
-        io.to(`user:${req.session.user.id}`).emit('alert:created', log.toJSON());
-        await sendAlertEmail(req.session.user, alert, log);
-        console.log(`ALERTA ${nextStatus}: ${alert.metricName} = ${currentValue.toFixed(2)}`);
+        if (nextStatus !== "OK" && nextStatus !== previousStatus) {
+          const report = buildAlertReport(alert, currentValue, anomaly);
+          const log = await AlertLog.create({
+            userId: req.session.user.id,
+            alertId: alert.id,
+            metricId: alert.metricId,
+            metricName: alert.metricName,
+            query: alert.query,
+            warningThreshold: alert.warningThreshold,
+            criticalThreshold: alert.criticalThreshold,
+            threshold: alert.criticalThreshold,
+            value: currentValue,
+            zScore: anomaly.zScore,
+            movingAverage: anomaly.movingAverage,
+            trend: anomaly.trend,
+            status: nextStatus,
+            unit: alert.unit || "%",
+            report
+          });
+          io.to(`user:${req.session.user.id}`).emit('alert:created', log.toJSON());
+          await sendAlertEmail(req.session.user, alert, log);
+          console.log(`ALERTA ${nextStatus}: ${alert.metricName} = ${currentValue.toFixed(2)}`);
+        }
       }
     }
 
