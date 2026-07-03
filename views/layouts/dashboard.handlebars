@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8">
@@ -10,10 +10,14 @@
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Dots&display=swap");
 
       :root {
-        --bg: #08111f;
+        --bg: radial-gradient(circle at 12% 8%, rgba(45, 212, 191, .12), transparent 26%),
+              radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .1), transparent 26%),
+              linear-gradient(140deg, #08111f 0%, #0c1728 52%, #101827 100%);
         --panel: #101b2b;
+        --panel-bg: linear-gradient(180deg, rgba(20, 34, 54, .92), rgba(13, 24, 39, .92));
         --panel-strong: #142236;
         --line: rgba(151, 164, 184, .18);
+        --line-strong: rgba(45, 212, 191, .25);
         --muted: #91a0b8;
         --text: #f7fbff;
         --teal: #2dd4bf;
@@ -22,6 +26,68 @@
         --red: #ef4444;
         --blue: #60a5fa;
         --shadow: 0 18px 45px rgba(0, 0, 0, .28);
+
+        /* Interactive elements variables */
+        --btn-bg: rgba(255, 255, 255, .04);
+        --btn-hover-bg: rgba(255, 255, 255, .08);
+        --btn-border: transparent;
+        --btn-text: #f7fbff;
+
+        --input-bg: rgba(255, 255, 255, .07);
+        --input-text: #f7fbff;
+        --input-border: rgba(151, 164, 184, .18);
+
+        --option-bg: #101b2b;
+        --option-text: #f7fbff;
+
+        --primary-bg: linear-gradient(135deg, #14b8a6, #60a5fa);
+        --primary-text: #05101d;
+        --primary-hover: linear-gradient(135deg, #2dd4bf, #93c5fd);
+
+        --active-bg: rgba(45, 212, 191, .15);
+        --active-border: var(--teal);
+        --active-text: #bffaf2;
+
+        --topbar-bg: rgba(7, 16, 29, .68);
+        --sidebar-bg: rgba(8, 17, 31, .42);
+      }
+
+      body[data-theme="light"] {
+        --bg: radial-gradient(circle at 18% 8%, rgba(20, 184, 166, .05), transparent 30%),
+              radial-gradient(circle at 88% 0%, rgba(59, 130, 246, .05), transparent 30%),
+              #f1f5f9;
+        --panel: #ffffff;
+        --panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+        --panel-strong: #f8fafc;
+        --line: rgba(15, 23, 42, 0.08);
+        --line-strong: rgba(13, 148, 136, 0.25);
+        --muted: #64748b;
+        --text: #0f172a;
+        --shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05), 
+                  0 8px 15px -8px rgba(15, 23, 42, 0.05);
+
+        --btn-bg: rgba(15, 23, 42, 0.035);
+        --btn-hover-bg: rgba(15, 23, 42, 0.06);
+        --btn-border: rgba(15, 23, 42, 0.06);
+        --btn-text: #0f172a;
+
+        --input-bg: #ffffff;
+        --input-text: #0f172a;
+        --input-border: #cbd5e1;
+
+        --option-bg: #ffffff;
+        --option-text: #0f172a;
+
+        --primary-bg: linear-gradient(135deg, #0d9488, #2563eb);
+        --primary-text: #ffffff;
+        --primary-hover: linear-gradient(135deg, #0f766e, #1d4ed8);
+
+        --active-bg: rgba(13, 148, 136, 0.1);
+        --active-border: #0d9488;
+        --active-text: #0f766e;
+
+        --topbar-bg: rgba(255, 255, 255, 0.8);
+        --sidebar-bg: rgba(241, 245, 249, 0.8);
       }
 
       * {
@@ -31,163 +97,10 @@
       body {
         margin: 0;
         min-height: 100vh;
-        background:
-          radial-gradient(circle at 12% 8%, rgba(45, 212, 191, .12), transparent 26%),
-          linear-gradient(140deg, #08111f 0%, #0c1728 52%, #101827 100%);
+        background: var(--bg);
         color: var(--text);
         font-family: Inter, Arial, Helvetica, sans-serif;
-      }
-
-      body[data-theme="light"] {
-        --bg: #f8fafc;
-        --panel: #ffffff;
-        --panel-strong: #f1f5f9;
-        --line: rgba(0, 0, 0, 0.473);
-        --muted: #64748b;
-        --text: #0b101a;
-        --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-        background: 
-          radial-gradient(circle at 18% 8%, rgba(45, 212, 191, .06), transparent 28%),
-          radial-gradient(circle at 88% 0%, rgba(96, 165, 250, .06), transparent 28%),
-          linear-gradient(-45deg, #368df196, #06999985, #b8c9c83b);
-      }
-
-      body[data-theme="light"] .topbar,
-      body[data-theme="light"] .sidebar {
-        background: rgba(52, 161, 189, 0.747);
-        backdrop-filter: blur(10px);
-        border-color: var(--line);
-      }
-
-      body[data-theme="light"] .panel,
-      body[data-theme="light"] .card {
-        background: #000000;
-        border-color: var(--line);
-        box-shadow: var(--shadow);
-      }
-
-      body[data-theme="light"] .nav a,
-      body[data-theme="light"] .nav button,
-      body[data-theme="light"] .ghost-btn,
-      body[data-theme="light"] .metric-btn,
-      body[data-theme="light"] .range-btn,
-      body[data-theme="light"] .icon-btn {
-        background: #03275e8f;
-        color: #000000;
-        border: 1px solid transparent;
-      }
-
-      body[data-theme="light"] .nav a:hover,
-      body[data-theme="light"] .nav button:hover,
-      body[data-theme="light"] .ghost-btn:hover,
-      body[data-theme="light"] .metric-btn:hover,
-      body[data-theme="light"] .range-btn:hover,
-      body[data-theme="light"] .icon-btn:hover {
-        background: #010c1a;
-        border-color: rgba(15, 23, 42, 0.2);
-        color: #898c92;
-      }
-
-      body[data-theme="light"] .nav .active,
-      body[data-theme="light"] .range-btn.active,
-      body[data-theme="light"] .metric-btn.active {
-        background: rgb(0, 0, 0);
-        border-color: rgba(45, 212, 191, 0.5);
-        color: #e2d9d9e8;
-      }
-
-      body[data-theme="light"] input, 
-      body[data-theme="light"] select {
-        background: #350505;
-        color: #878b94;
-        border: 1px solid #cbd5e1;
-      }
-
-      body[data-theme="light"] input:focus, 
-      body[data-theme="light"] select:focus {
-        border-color: rgba(45, 212, 191, 0.68);
-        box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
-      }
-
-      body[data-theme="light"] .brand-mark {
-        background: linear-gradient(135deg, #000c0b, #000b47);
-        color: #f8fafc;
-      }
-
-      body[data-theme="light"] .logo {
-        color: #080d18;
-        text-shadow: 0 0 1px rgba(26, 28, 128, 0.781);
-      }
-
-      body[data-theme="light"] .subtitle,
-      body[data-theme="light"] .muted,
-      body[data-theme="light"] .eyebrow {
-        color: #c4b9b9e7;
-      }
-
-      body[data-theme="light"] h1, 
-      body[data-theme="light"] h2, 
-      body[data-theme="light"] h3, 
-      body[data-theme="light"] h4 {
-        color: #0f172a;
-      }
-
-      body[data-theme="light"] .control-field label {
-        color: #0f172a;
-      }
-
-      body[data-theme="light"] .control-field input,
-      body[data-theme="light"] .control-field select,
-      body[data-theme="light"] .custom-query {
-        background: rgba(255, 255, 255, 0.96);
-        color: #f7f7f786;
-        border: 1px solid #cbd5e1;
-      }
-
-      body[data-theme="light"] .control-field select option {
-        background: #cecccc;
-        color: #0f172a;
-      }
-
-      body[data-theme="light"] .overview-item {
-        background: rgba(45, 212, 191, 0.05);
-        border-color: rgba(45, 212, 191, 0.2);
-      }
-
-      body[data-theme="light"] .thresholdInput {
-        background: rgba(255, 255, 255, 0.96);
-        color: #0f172a;
-        border: 1px solid #cbd5e1;
-      }
-
-      body[data-theme="light"] .thresholdInput:focus {
-        border-color: rgba(45, 212, 191, 0.68);
-        box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
-      }
-
-      body[data-theme="light"] .empty-state {
-        background: #f1f5f9;
-        border-color: #cbd5e1;
-        color: #64748b;
-      }
-
-      body[data-theme="light"] .field label {
-        color: #0f172a;
-      }
-
-      body[data-theme="light"] .field input {
-        background: rgba(255, 255, 255, 0.96);
-        color: #0f172a;
-        border: 1px solid #cbd5e1;
-      }
-
-      body[data-theme="light"] .primary-btn {
-        background: linear-gradient(135deg, #b82714, #200402);
-        color: #ffffff;
-      }
-
-      body[data-theme="light"] .primary-btn:hover {
-        background: linear-gradient(135deg, #ff0f0f, #6e0101);
+        transition: background-color .3s ease, color .3s ease;
       }
 
       .brand {
@@ -254,21 +167,23 @@
         justify-content: center;
         gap: 8px;
         padding: 0 13px;
-        background: rgba(255, 255, 255, .04);
-        border: 1px solid transparent;
+        background: var(--btn-bg);
+        border: 1px solid var(--btn-border);
+        color: var(--btn-text);
       }
 
       .nav a:hover,
       .nav button:hover,
       .ghost-btn:hover {
-        background: rgba(255, 255, 255, .08);
+        background: var(--btn-hover-bg);
         border-color: var(--line);
+        color: var(--btn-text);
       }
 
       .nav .active {
-        background: rgba(45, 212, 191, .12);
-        border-color: rgba(45, 212, 191, .35);
-        color: #bffaf2;
+        background: var(--active-bg);
+        border-color: var(--active-border);
+        color: var(--active-text);
       }
 
       .dashboard {
@@ -280,7 +195,7 @@
       .sidebar {
         padding: 22px;
         border-right: 1px solid var(--line);
-        background: rgba(8, 17, 31, .42);
+        background: var(--sidebar-bg);
       }
 
       .main {
@@ -301,7 +216,7 @@
         padding: 16px;
         border: 1px solid var(--line);
         border-radius: 8px;
-        background: rgba(255, 255, 255, .045);
+        background: var(--overview-bg, rgba(255, 255, 255, .045));
       }
 
       .overview-item span {
@@ -365,8 +280,8 @@
       .panel,
       .card {
         border: 1px solid var(--line);
-        border-radius: 8px;
-        background: linear-gradient(180deg, rgba(20, 34, 54, .92), rgba(13, 24, 39, .92));
+        border-radius: 12px;
+        background: var(--panel-bg);
         box-shadow: var(--shadow);
       }
 
@@ -403,9 +318,10 @@
         justify-content: center;
         gap: 8px;
         padding: 0 16px;
-        background: linear-gradient(135deg, #14b8a6, #60a5fa);
-        color: #05101d;
+        background: var(--primary-bg);
+        color: var(--primary-text);
         font-weight: 800;
+        border: none;
       }
 
       .primary-btn:hover,
@@ -585,13 +501,10 @@
       }
 
       .control-field label {
-        color: #dce7f8;
+        color: var(--text);
+        opacity: 0.85;
         font-size: 12px;
         font-weight: 800;
-      }
-
-      body[data-theme="light"] .control-field label {
-        color: #25344a;
       }
 
       .control-field input,
@@ -601,27 +514,15 @@
         min-height: 40px;
         padding: 0 11px;
         border-radius: 8px;
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, .07);
-        color: var(--text);
+        border: 1px solid var(--input-border);
+        background: var(--input-bg);
+        color: var(--input-text);
         outline: none;
       }
 
       .control-field select option {
-        background: #101b2b;
-        color: #f7fbff;
-      }
-
-      body[data-theme="light"] .control-field input,
-      body[data-theme="light"] .control-field select,
-      body[data-theme="light"] .custom-query {
-        background: rgba(255, 255, 255, .84);
-        color: #132033;
-      }
-
-      body[data-theme="light"] .control-field select option {
-        background: #f8fbfc;
-        color: #132033;
+        background: var(--option-bg);
+        color: var(--option-text);
       }
 
       .custom-query {
@@ -944,7 +845,7 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script>
       const systemQueries = {
-        cpu: '(100 - (avg by(instance)(rate(windows_cpu_time_total{mode="idle"}[5m])) * 100)) or ((100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) unless on() windows_cpu_time_total{mode="idle"})',
+        cpu: '(100 -avg by(instance)(irate(windows_cpu_time_total{mode="idle"}[30s])) * 100) or ((100 -avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[30s])) * 100)unless on() windows_cpu_time_total{mode="idle"}))',
         ram: '(100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)) or ((100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))) unless on() windows_memory_physical_total_bytes)',
         disco: '(100 * (1 - (windows_logical_disk_free_bytes{volume!~"HarddiskVolume.+"} / windows_logical_disk_size_bytes{volume!~"HarddiskVolume.+"}))) or ((100 * (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"}))) unless on() windows_logical_disk_size_bytes)',
         redeRx: 'rate(windows_net_bytes_received_total[5m]) or (rate(node_network_receive_bytes_total[5m]) unless on() windows_net_bytes_received_total)',
@@ -1388,13 +1289,7 @@
                 <label>Fim</label>
                 <input class="card-end-input" type="datetime-local" onchange="refreshCard(this.closest('.card'))">
               </div>
-              <div class="control-field">
-                <label>Comparacao</label>
-                <select class="card-compare-input" onchange="refreshCard(this.closest('.card'))">
-                  <option value="false">Desativada</option>
-                  <option value="true">Periodo anterior</option>
-                </select>
-              </div>
+
             </div>
             <div class="range-buttons">
               <button class="range-btn active" data-range="300" onclick="changeRange(this, 300)">5m</button>
@@ -1577,7 +1472,7 @@
         return isNaN(d.getTime()) ? undefined : d.toISOString();
       }
 
-      async function refreshCard(card) {
+      async function refreshCard(card, forceFetch = true) {
         if (!card) {
           return;
         }
@@ -1585,6 +1480,14 @@
         const query = card.dataset.query;
         const chartId = card.dataset.chartId;
         const range = Number(card.dataset.range) || 300;
+
+        // Render from cache if not forcing fetch (e.g. during theme toggle)
+        if (!forceFetch && card.__latestData) {
+          const { data, thresholdData } = card.__latestData;
+          renderChart(chartId, data, query, range, thresholdData);
+          return;
+        }
+
         const startInputEl = card.querySelector(".card-start-input");
         const endInputEl = card.querySelector(".card-end-input");
         
@@ -1616,7 +1519,7 @@
               range: (!startISO && !endISO) ? range : undefined,
               start: startISO || undefined,
               end: endISO || undefined,
-              comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
+              comparePrevious: false
             })
           });
 
@@ -1633,6 +1536,10 @@
           const payload = await res.json();
           const data = normalizeQueryPayload(payload, range);
           const thresholdData = await getThresholdByQuery(query);
+
+          // Cache data on DOM element for fast theme switching
+          card.__latestData = { data, thresholdData };
+
           renderChart(chartId, data, query, range, thresholdData);
         } catch (err) {
           console.error("Erro em refreshCard:", err);
@@ -1908,7 +1815,7 @@
               body: JSON.stringify({
                 query: card.dataset.query,
                 range: 300,
-                comparePrevious: card.querySelector(".card-compare-input")?.value === "true"
+                comparePrevious: false
               })
             });
           } catch (err) {
@@ -2214,10 +2121,19 @@
           },
           body: JSON.stringify({ theme: nextTheme })
         }).catch(console.error);
-        document.querySelectorAll("[data-chart-id]").forEach(chartEl => {
-          echarts.getInstanceByDom(chartEl)?.resize();
+
+        // Dispose of ECharts instances so they are cleanly re-initialized with new colors
+        document.querySelectorAll(".chart-box").forEach(chartEl => {
+          const chart = echarts.getInstanceByDom(chartEl);
+          if (chart) {
+            chart.dispose();
+          }
         });
-        refreshCharts();
+
+        // Fast re-render of existing charts from cached data
+        document.querySelectorAll(".card[data-query]").forEach(card => {
+          refreshCard(card, false); // forceFetch = false
+        });
       }
 
       function updateRefreshInterval() {

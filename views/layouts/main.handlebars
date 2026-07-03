@@ -243,22 +243,85 @@
         margin: 0 auto;
       }
 
+      .page {
+        width: min(1080px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      /* Floating Background Orbs */
+      .ambient-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.12;
+        z-index: 0;
+        pointer-events: none;
+        animation: floatOrb 25s ease-in-out infinite;
+      }
+
+      .ambient-orb-1 {
+        top: 15%;
+        left: 10%;
+        width: 380px;
+        height: 380px;
+        background: radial-gradient(circle, var(--teal) 0%, transparent 80%);
+        animation-duration: 22s;
+      }
+
+      .ambient-orb-2 {
+        bottom: 20%;
+        right: 15%;
+        width: 420px;
+        height: 420px;
+        background: radial-gradient(circle, var(--blue) 0%, transparent 80%);
+        animation-duration: 28s;
+        animation-delay: -5s;
+      }
+
+      .ambient-orb-3 {
+        top: 45%;
+        left: 45%;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, #8b5cf6 0%, transparent 80%); /* purple */
+        animation-duration: 18s;
+        animation-delay: -9s;
+      }
+
+      @keyframes floatOrb {
+        0%, 100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(40px, -60px) scale(1.1);
+        }
+        66% {
+          transform: translate(-30px, 30px) scale(0.95);
+        }
+      }
+
       .hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 360px;
-        gap: 72px;
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        min-height: calc(100vh - 72px);
-        padding: 76px 0 46px;
+        justify-content: center;
+        min-height: calc(100vh - 120px);
+        padding: 70px 0 60px;
+        text-align: center;
+        gap: 48px;
       }
 
       .hero-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         animation: fadeUp .65s ease both;
       }
 
       .eyebrow {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 10px;
         margin-bottom: 22px;
         color: #bffaf2;
@@ -285,38 +348,55 @@
       }
 
       .hero h1 {
-        max-width: 680px;
-        margin-bottom: 18px;
-        font-size: clamp(42px, 7vw, 82px);
-        line-height: .96;
-        letter-spacing: 0;
+        max-width: 840px;
+        margin-bottom: 20px;
+        font-size: clamp(42px, 6.5vw, 76px);
+        line-height: 1.15;
+        letter-spacing: -0.01em;
       }
 
       .hero h1 span {
-        color: #02b16e;
+        color: var(--teal);
+        text-shadow: 0 0 30px rgba(45, 212, 191, 0.25);
       }
 
       .hero p {
-        max-width: 590px;
+        max-width: 680px;
         color: var(--muted);
-        font-size: 18px;
-        line-height: 1.75;
+        font-size: 19px;
+        line-height: 1.7;
+        margin: 0 auto;
       }
 
       .hero-actions {
         display: flex;
         align-items: center;
-        gap: 12px;
+        justify-content: center;
+        gap: 16px;
         flex-wrap: wrap;
-        margin-top: 30px;
+        margin-top: 32px;
       }
 
       .mini-console {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(7, 16, 29, .68);
-        backdrop-filter: blur(12px);
+        width: 100%;
+        max-width: 580px;
+        margin: 0 auto;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        background: rgba(10, 20, 35, 0.45);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
         animation: fadeUp .65s ease .12s both;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .mini-console:hover {
+        border-color: rgba(45, 212, 191, 0.25);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 
+                    0 0 30px rgba(45, 212, 191, 0.12),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
       }
 
       .console-header {
@@ -324,8 +404,8 @@
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: 14px;
-        border-bottom: 1px solid var(--line);
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
 
       .console-title {
@@ -342,14 +422,14 @@
       }
 
       .console-body {
-        padding: 16px;
+        padding: 20px;
       }
 
       .metric-tabs {
         display: flex;
-        gap: 8px;
+        gap: 10px;
         flex-wrap: wrap;
-        margin-bottom: 18px;
+        margin-bottom: 20px;
       }
 
       .metric-tab {
@@ -369,17 +449,19 @@
       .series-preview {
         width: 100%;
         height: 170px;
+        cursor: crosshair;
       }
 
       .series-preview .grid-line {
-        stroke: rgba(151, 164, 184, .13);
+        stroke: rgba(151, 164, 184, 0.1);
         stroke-width: 1;
       }
 
       .series-preview .threshold {
         stroke: var(--amber);
-        stroke-width: 2;
-        stroke-dasharray: 8 8;
+        stroke-width: 1.5;
+        stroke-dasharray: 6 6;
+        opacity: 0.8;
       }
 
       .series-preview .glow,
@@ -405,43 +487,59 @@
       .console-meta {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 8px;
-        margin-top: 14px;
+        gap: 12px;
+        margin-top: 20px;
       }
 
       .console-meta div {
-        min-height: 68px;
-        padding: 11px;
-        border: 1px solid rgba(151, 164, 184, .12);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, .025);
+        min-height: 72px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        transition: all 0.3s ease;
+      }
+
+      .console-meta div:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
       }
 
       .console-meta span {
         display: block;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
 
       .console-meta strong {
         display: block;
-        margin-top: 8px;
-        font-size: 20px;
+        margin-top: 4px;
+        font-size: 18px;
       }
 
       .quiet-strip {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-        padding: 0 0 72px;
+        gap: 24px;
+        padding: 40px 0 80px;
       }
 
       .quiet-item {
-        min-height: 112px;
-        padding: 18px;
-        border-top: 1px solid var(--line);
+        min-height: 140px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.05);
         animation: fadeUp .65s ease both;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .quiet-item:nth-child(2) {
@@ -452,19 +550,31 @@
         animation-delay: .16s;
       }
 
+      .quiet-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(45, 212, 191, 0.25);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35),
+                    0 0 20px rgba(45, 212, 191, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+
       .quiet-item small {
         color: var(--teal);
         font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.05em;
       }
 
       .quiet-item h3 {
         margin: 14px 0 8px;
-        font-size: 16px;
+        font-size: 17px;
+        color: var(--text);
       }
 
       .quiet-item p {
         margin-bottom: 0;
         color: var(--muted);
+        font-size: 14px;
         line-height: 1.6;
       }
 
@@ -614,6 +724,11 @@
   </head>
   <body>
     <div class="ambient" aria-hidden="true">
+      <!-- Orbs flutuantes dinâmicos de fundo -->
+      <div class="ambient-orb ambient-orb-1"></div>
+      <div class="ambient-orb ambient-orb-2"></div>
+      <div class="ambient-orb ambient-orb-3"></div>
+
       <svg class="ambient-field" viewBox="0 0 980 680">
         <rect class="ambient-panel" x="520" y="86" width="300" height="146" rx="8"></rect>
         <rect class="ambient-panel" x="620" y="292" width="250" height="124" rx="8"></rect>
@@ -637,7 +752,7 @@
         </div>
       </a>
 
-<nav class="nav" aria-label="Navegacao principal">
+      <nav class="nav" aria-label="Navegacao principal">
         <a class="active" href="/">Inicio</a>
         {{#if user}}
           <a href="/dashboard">Dashboard</a>
@@ -654,8 +769,8 @@
       <section class="hero">
         <div class="hero-copy">
           <div class="eyebrow"><span class="status-dot"></span> Temporal Series</div>
-          <h1>Monitoramento de <span>Series Temporais</span> em tempo real.</h1>
-          <p>Temporal Series organiza dados do Prometheus em dashboards diretos para suas métricas com alertas configuraveis e historico de eventos.</p>
+          <h1>Monitoramento de <span>Séries Temporais</span> em tempo real.</h1>
+          <p>Temporal Series organiza dados do Prometheus em dashboards diretos para suas métricas com alertas configuráveis e histórico de eventos.</p>
 
           <div class="hero-actions">
             <a class="primary-btn" href="/dashboard">Abrir dashboard</a>
@@ -665,27 +780,37 @@
           </div>
         </div>
 
-        <aside class="mini-console" aria-label="Previa interativa de series temporais">
+        <aside class="mini-console" aria-label="Prévia interativa de séries temporais">
           <div class="console-header">
             <div class="console-title" id="metricTitle">node_cpu_seconds_total</div>
             <div class="console-value" id="metricValue">42%</div>
           </div>
 
-          <div class="console-body">
-            <div class="metric-tabs" role="group" aria-label="Selecionar metrica da previa">
+          <div class="console-body" style="position: relative;">
+            <div class="metric-tabs" role="group" aria-label="Selecionar métrica da prévia">
               <button class="metric-tab active" type="button" data-metric="cpu">CPU</button>
-              <button class="metric-tab" type="button" data-metric="mem">Memoria</button>
+              <button class="metric-tab" type="button" data-metric="mem">Memória</button>
               <button class="metric-tab" type="button" data-metric="net">Rede</button>
             </div>
 
-            <svg class="series-preview" viewBox="0 0 420 170" role="img" aria-label="Grafico interativo de serie temporal">
+            <svg class="series-preview" viewBox="0 0 420 170" role="img" aria-label="Gráfico interativo de série temporal">
               <line class="grid-line" x1="0" y1="36" x2="420" y2="36"></line>
               <line class="grid-line" x1="0" y1="84" x2="420" y2="84"></line>
               <line class="grid-line" x1="0" y1="132" x2="420" y2="132"></line>
               <line class="threshold" x1="0" y1="52" x2="420" y2="52"></line>
               <polyline class="glow" id="seriesGlow" points="0,128 46,120 92,132 138,92 184,106 230,68 276,82 322,48 368,66 420,58"></polyline>
               <polyline class="line" id="seriesLine" points="0,128 46,120 92,132 138,92 184,106 230,68 276,82 322,48 368,66 420,58"></polyline>
+
+              <!-- Elementos dinâmicos do cursor/tooltip no SVG -->
+              <line id="chartCursor" x1="-10" y1="0" x2="-10" y2="170" style="stroke: rgba(45, 212, 191, 0.4); stroke-width: 1.5; stroke-dasharray: 4 4; display: none; pointer-events: none;"></line>
+              <circle id="chartTracker" cx="-10" cy="-10" r="6" style="fill: var(--teal); stroke: #07101d; stroke-width: 2.5; filter: drop-shadow(0 0 8px var(--teal)); display: none; pointer-events: none;"></circle>
             </svg>
+
+            <!-- Tooltip flutuante de dados -->
+            <div id="chartTooltip" class="chart-tooltip" style="position: absolute; display: none; pointer-events: none; background: rgba(7, 16, 29, 0.85); border: 1px solid rgba(45, 212, 191, 0.35); padding: 8px 12px; border-radius: 8px; font-size: 11px; color: #f7fbff; z-index: 10; backdrop-filter: blur(8px); font-family: monospace; box-shadow: 0 8px 24px rgba(0,0,0,0.6);">
+              <span id="tooltipTime" style="color: var(--muted); display: block; margin-bottom: 2px;">-3m</span>
+              <strong id="tooltipValue" style="color: var(--teal); font-size: 13px;">42%</strong>
+            </div>
 
             <div class="console-meta">
               <div>
@@ -709,7 +834,7 @@
         <article class="quiet-item">
           <small>01</small>
           <h3>Dashboards sob demanda</h3>
-          <p>Adicione apenas as metricas que fazem sentido para a analise atual.</p>
+          <p>Adicione apenas as métricas que fazem sentido para a análise atual.</p>
         </article>
 
         <article class="quiet-item">
@@ -720,8 +845,8 @@
 
         <article class="quiet-item">
           <small>03</small>
-          <h3>Historico consultavel</h3>
-          <p>Veja quando uma serie saiu do comportamento esperado e volte ao grafico.</p>
+          <h3>Histórico consultável</h3>
+          <p>Veja quando uma série saiu do comportamento esperado e volte ao gráfico.</p>
         </article>
       </section>
     </main>
@@ -771,9 +896,15 @@
           status.textContent = data.status;
           line.setAttribute("points", data.points);
           glow.setAttribute("points", data.points);
+
+          // Reset chart cursor and tooltip on tab change
+          if (cursorLine) cursorLine.style.display = "none";
+          if (trackerCircle) trackerCircle.style.display = "none";
+          if (tooltip) tooltip.style.display = "none";
         });
       });
 
+      // Pointermove custom interactive properties
       window.addEventListener("pointermove", event => {
         const x = event.clientX / window.innerWidth;
         const y = event.clientY / window.innerHeight;
@@ -783,6 +914,119 @@
         root.style.setProperty("--px", `${(x - .5) * 18}px`);
         root.style.setProperty("--py", `${(y - .5) * 18}px`);
       }, { passive: true });
+
+      // Interactive Chart Tooltip Logic
+      const svg = document.querySelector(".series-preview");
+      const cursorLine = document.getElementById("chartCursor");
+      const trackerCircle = document.getElementById("chartTracker");
+      const tooltip = document.getElementById("chartTooltip");
+      const tooltipTime = document.getElementById("tooltipTime");
+      const tooltipValue = document.getElementById("tooltipValue");
+
+      if (svg && cursorLine && trackerCircle && tooltip) {
+        svg.addEventListener("pointermove", event => {
+          const rect = svg.getBoundingClientRect();
+          // Scale mouse X from client coordinates to SVG viewBox width 420
+          const mouseX = (event.clientX - rect.left) * (420 / rect.width);
+          
+          const activeTabElement = document.querySelector(".metric-tab.active");
+          if (!activeTabElement) return;
+          const activeTab = activeTabElement.dataset.metric;
+          const currentPointsStr = metricData[activeTab].points;
+          
+          // Parse coordinates from space-separated "x,y" string
+          const points = currentPointsStr.split(" ").map(pt => {
+            const [x, y] = pt.split(",").map(Number);
+            return { x, y };
+          });
+
+          // Find closest coordinate based on X distance
+          let closestPt = points[0];
+          let minDist = Math.abs(mouseX - points[0].x);
+          let closestIndex = 0;
+          
+          for (let i = 1; i < points.length; i++) {
+            const dist = Math.abs(mouseX - points[i].x);
+            if (dist < minDist) {
+              minDist = dist;
+              closestPt = points[i];
+              closestIndex = i;
+            }
+          }
+
+          // Show vertical cursor and marker
+          cursorLine.setAttribute("x1", closestPt.x);
+          cursorLine.setAttribute("x2", closestPt.x);
+          cursorLine.setAttribute("y1", 0);
+          cursorLine.setAttribute("y2", 170);
+          cursorLine.style.display = "block";
+
+          trackerCircle.setAttribute("cx", closestPt.x);
+          trackerCircle.setAttribute("cy", closestPt.y);
+          trackerCircle.style.display = "block";
+
+          // Calculate interactive value to show on tooltip
+          const minutesAgo = 9 - closestIndex;
+          const timeLabel = minutesAgo === 0 ? "Agora" : `há ${minutesAgo} min`;
+          
+          let displayVal = "";
+          if (activeTab === "cpu") {
+            const calculatedVal = Math.round(((170 - closestPt.y) / 170) * 100);
+            displayVal = `${calculatedVal}%`;
+          } else if (activeTab === "mem") {
+            const calculatedVal = Math.round(((170 - closestPt.y) / 170) * 100);
+            displayVal = `${calculatedVal}%`;
+          } else if (activeTab === "net") {
+            const calculatedVal = (((170 - closestPt.y) / 170) * 4).toFixed(1);
+            displayVal = `${calculatedVal} MB/s`;
+          }
+
+          tooltipTime.textContent = timeLabel;
+          tooltipValue.textContent = displayVal;
+
+          // Position tooltip relative to container (.console-body)
+          const consoleBody = document.querySelector(".console-body");
+          const consoleBodyRect = consoleBody.getBoundingClientRect();
+          
+          // Calculate coordinates relative to console body
+          const tooltipX = (rect.left - consoleBodyRect.left) + (closestPt.x * (rect.width / 420)) - 60;
+          const tooltipY = (rect.top - consoleBodyRect.top) + (closestPt.y * (rect.height / 170)) - 60;
+          
+          tooltip.style.left = `${tooltipX}px`;
+          tooltip.style.top = `${tooltipY}px`;
+          tooltip.style.display = "block";
+        });
+
+        svg.addEventListener("pointerleave", () => {
+          cursorLine.style.display = "none";
+          trackerCircle.style.display = "none";
+          tooltip.style.display = "none";
+        });
+      }
+
+      // Immersive 3D tilt effects on card elements
+      const tiltCards = document.querySelectorAll(".mini-console, .quiet-item");
+      tiltCards.forEach(card => {
+        card.addEventListener("pointermove", event => {
+          const rect = card.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+          
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          
+          const rotateX = ((centerY - y) / centerY) * 5;
+          const rotateY = -((centerX - x) / centerX) * 5;
+          
+          card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+          card.style.transition = 'transform 0.08s ease';
+        });
+
+        card.addEventListener("pointerleave", () => {
+          card.style.transform = '';
+          card.style.transition = 'transform 0.5s ease';
+        });
+      });
     </script>
     <script src="/js/page-transition.js"></script>
   </body>
