@@ -106,13 +106,13 @@ function safeRedirect(value) {
 }
 
 const SYSTEM_QUERIES = {
-  cpu: '(100 - (avg by(instance)(rate(windows_cpu_time_total{mode="idle"}[5m])) * 100)) or ((100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) unless on() windows_cpu_time_total{mode="idle"})',
-  ram: '(100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)) or ((100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))) unless on() windows_memory_physical_total_bytes)',
-  disco: '(100 * (1 - (windows_logical_disk_free_bytes{volume!~"HarddiskVolume.+"} / windows_logical_disk_size_bytes{volume!~"HarddiskVolume.+"}))) or ((100 * (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"}))) unless on() windows_logical_disk_size_bytes)',
-  redeRx: 'rate(windows_net_bytes_received_total[5m]) or (rate(node_network_receive_bytes_total[5m]) unless on() windows_net_bytes_received_total)',
-  redeTx: 'rate(windows_net_bytes_sent_total[5m]) or (rate(node_network_transmit_bytes_total[5m]) unless on() windows_net_bytes_sent_total)',
-  load1m: 'node_load1',
-  load5m: 'node_load5'
+  cpu: '100 - (avg by(instance)(rate(windows_cpu_time_total{mode="idle"}[5m])) * 100)',
+  ram: '100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)',
+  disco: '100 * (1 - (windows_logical_disk_free_bytes{volume!~"HarddiskVolume.+"} / windows_logical_disk_size_bytes{volume!~"HarddiskVolume.+"}))',
+  redeRx: 'rate(windows_net_bytes_received_total[5m])',
+  redeTx: 'rate(windows_net_bytes_sent_total[5m])',
+  load1m: 'windows_system_processor_queue_length',
+  load5m: 'windows_system_processor_queue_length'
 };
 
 function compactQuery(query) {
@@ -125,7 +125,14 @@ const legacySystemQueries = new Map([
   ['100 * (1 - (node_memory_memavailable_bytes / node_memory_memtotal_bytes))', SYSTEM_QUERIES.ram],
   ['100 * (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes))', SYSTEM_QUERIES.disco],
   ['rate(node_network_receive_bytes_total[5m])', SYSTEM_QUERIES.redeRx],
-  ['rate(node_network_transmit_bytes_total[5m])', SYSTEM_QUERIES.redeTx]
+  ['rate(node_network_transmit_bytes_total[5m])', SYSTEM_QUERIES.redeTx],
+  ['node_load1', SYSTEM_QUERIES.load1m],
+  ['node_load5', SYSTEM_QUERIES.load5m],
+  ['(100 - (avg by(instance)(rate(windows_cpu_time_total{mode="idle"}[5m])) * 100)) or ((100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) unless on() windows_cpu_time_total{mode="idle"})', SYSTEM_QUERIES.cpu],
+  ['(100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)) or ((100 * (1 - (node_memory_memavailable_bytes / node_memory_memtotal_bytes))) unless on() windows_memory_physical_total_bytes)', SYSTEM_QUERIES.ram],
+  ['(100 * (1 - (windows_logical_disk_free_bytes{volume!~"harddiskvolume.+"} / windows_logical_disk_size_bytes{volume!~"harddiskvolume.+"}))) or ((100 * (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"}))) unless on() windows_logical_disk_size_bytes)', SYSTEM_QUERIES.disco],
+  ['rate(windows_net_bytes_received_total[5m]) or (rate(node_network_receive_bytes_total[5m]) unless on() windows_net_bytes_received_total)', SYSTEM_QUERIES.redeRx],
+  ['rate(windows_net_bytes_sent_total[5m]) or (rate(node_network_transmit_bytes_total[5m]) unless on() windows_net_bytes_sent_total)', SYSTEM_QUERIES.redeTx]
 ]);
 
 function normalizeSystemQuery(query) {
@@ -207,7 +214,7 @@ function inferMetric(query, series = []) {
     return metricCatalog[4];
   }
 
-  if (normalized.includes('node_load1')) {
+  if (normalized.includes('node_load1') || normalized.includes('windows_system_processor_queue')) {
     return metricCatalog[5];
   }
 

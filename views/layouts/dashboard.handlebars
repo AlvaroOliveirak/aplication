@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8">
@@ -845,13 +845,13 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script>
       const systemQueries = {
-        cpu: '(100 -avg by(instance)(irate(windows_cpu_time_total{mode="idle"}[30s])) * 100) or ((100 -avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[30s])) * 100)unless on() windows_cpu_time_total{mode="idle"}))',
-        ram: '(100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)) or ((100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))) unless on() windows_memory_physical_total_bytes)',
-        disco: '(100 * (1 - (windows_logical_disk_free_bytes{volume!~"HarddiskVolume.+"} / windows_logical_disk_size_bytes{volume!~"HarddiskVolume.+"}))) or ((100 * (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs"}))) unless on() windows_logical_disk_size_bytes)',
-        redeRx: 'rate(windows_net_bytes_received_total[5m]) or (rate(node_network_receive_bytes_total[5m]) unless on() windows_net_bytes_received_total)',
-        redeTx: 'rate(windows_net_bytes_sent_total[5m]) or (rate(node_network_transmit_bytes_total[5m]) unless on() windows_net_bytes_sent_total)',
-        load1m: 'node_load1',
-        load5m: 'node_load5'
+        cpu: '100 - (avg by(instance)(irate(windows_cpu_time_total{mode="idle"}[30s])) * 100)',
+        ram: '100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)',
+        disco: '100 * (1 - (windows_logical_disk_free_bytes{volume!~"HarddiskVolume.+"} / windows_logical_disk_size_bytes{volume!~"HarddiskVolume.+"}))',
+        redeRx: 'rate(windows_net_bytes_received_total[5m])',
+        redeTx: 'rate(windows_net_bytes_sent_total[5m])',
+        load1m: 'windows_system_processor_queue_length',
+        load5m: 'windows_system_processor_queue_length'
       };
 
       let metricList = [
@@ -882,12 +882,12 @@
         },
         {
           id: "load_1m",
-          name: "Load 1m",
+          name: "Fila do Processador (1m)",
           query: systemQueries.load1m
         },
         {
           id: "load_5m",
-          name: "Load 5m",
+          name: "Fila do Processador (5m)",
           query: systemQueries.load5m
         }
       ];
@@ -1195,12 +1195,8 @@
           return "Saida de Rede (TX)";
         }
 
-        if (q.includes("node_load1")) {
-          return "Load Average (1m)";
-        }
-
-        if (q.includes("node_load5")) {
-          return "Load Average (5m)";
+        if (q.includes("node_load1") || q.includes("node_load5") || q.includes("windows_system_processor_queue_length") || q.includes("windows_system_processor_queue")) {
+          return "Fila do Processador";
         }
 
         if (data[0]?.metric?.__name__) {
