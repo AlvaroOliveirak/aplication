@@ -1,0 +1,11 @@
+node_modules
+.git
+.dockerignore
+.env
+.env*
+npm-debug.log
+aplication/aplication
+backend
+server.js
+db.sqlite
+docker-compose.override.yml
