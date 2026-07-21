@@ -353,13 +353,13 @@
         </form>
 
         <div class="auth-switch">
-          <span>Ja tem conta?</span>
-          <a class="secondary-link" href="/login">Entrar</a>
+          <a class="secondary-link" href="/login"> <span>Ja tem conta?</span></a>
         </div>
       </section>
     </main>
     <script>
       const errorMap = {
+        'invalid-email-format': 'Estrutura de e-mail incorreta. Digite um e-mail válido no formato usuario@dominio.com.',
         'weak-password': 'Senha deve ter no mínimo 8 caracteres.',
         'email-exists': 'Este email já está cadastrado. Tente fazer login.',
         'missing-fields': 'Email e senha são obrigatórios.',

@@ -368,7 +368,12 @@
     <script>
       const errorMap = {
         'google': 'Falha ao autenticar com Google. Tente novamente.',
-        'invalid-credentials': 'Email ou senha incorretos.'
+        'invalid-email-format': 'Estrutura de e-mail incorreta. Digite um e-mail válido no formato usuario@dominio.com.',
+        'email-not-found': 'Este e-mail não está cadastrado no sistema. Verifique o endereço digitado ou crie uma conta.',
+        'incorrect-password': 'Senha incorreta para este e-mail. Verifique a senha e tente novamente.',
+        'social-account-only': 'Esta conta foi criada via Google. Clique em "Entrar com Google" abaixo.',
+        'invalid-credentials': 'E-mail ou senha incorretos.',
+        'login-failed': 'Erro interno ao realizar login. Tente novamente.'
       };
       
       const urlParams = new URLSearchParams(window.location.search);

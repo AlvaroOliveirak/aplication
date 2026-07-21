@@ -54,6 +54,10 @@ const Alert = db.sequelize.define('alerts', {
     type: db.Sequelize.FLOAT,
     allowNull: false,
     defaultValue: 2.5
+  },
+  notificationEmails: {
+    type: db.Sequelize.TEXT,
+    allowNull: true
   }
 });
 

@@ -112,7 +112,7 @@ const SYSTEM_QUERIES = {
   redeRx: 'rate(windows_net_bytes_received_total[5m])',
   redeTx: 'rate(windows_net_bytes_sent_total[5m])',
   load1m: 'windows_system_processor_queue_length',
-  load5m: 'windows_system_processor_queue_length'
+  load5m: 'avg_over_time(windows_system_processor_queue_length[5m])'
 };
 
 function compactQuery(query) {
@@ -173,14 +173,14 @@ const metricCatalog = [
   },
   {
     id: "load_1m",
-    name: "Load Average (1m)",
-    unit: "",
+    name: "Fila do Processador (Inst.)",
+    unit: "threads",
     query: SYSTEM_QUERIES.load1m
   },
   {
     id: "load_5m",
-    name: "Load Average (5m)",
-    unit: "",
+    name: "Fila do Processador (Média 5m)",
+    unit: "threads",
     query: SYSTEM_QUERIES.load5m
   }
 ];
@@ -212,6 +212,10 @@ function inferMetric(query, series = []) {
 
   if (normalized.includes('node_network_transmit_bytes_total') || normalized.includes('windows_net_bytes_sent_total')) {
     return metricCatalog[4];
+  }
+
+  if (normalized.includes('avg_over_time') && normalized.includes('windows_system_processor_queue')) {
+    return metricCatalog[6];
   }
 
   if (normalized.includes('node_load1') || normalized.includes('windows_system_processor_queue')) {
@@ -294,25 +298,46 @@ function buildAlertReport(alert, value, anomaly) {
   return parts.join(' ');
 }
 
-async function sendAlertEmail(user, alert, log) {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS || !user?.email) {
+async function sendAlertEmail(alert, log) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn("[SMTP] SMTP nao configurado. Ignorando envio de e-mail.");
+    return false;
+  }
+
+  let recipients = [];
+  if (alert.notificationEmails && alert.notificationEmails.trim()) {
+    recipients = alert.notificationEmails
+      .split(',')
+      .map(e => e.trim())
+      .filter(e => e && e.includes('@'));
+  }
+
+  if (!recipients.length && alert.post?.email) {
+    recipients = [alert.post.email.trim()];
+  }
+
+  if (!recipients.length) {
+    console.warn(`[SMTP] Alerta '${alert.metricName}' (ID: ${alert.id}) nao possui e-mails de destino definidos.`);
     return false;
   }
 
   const port = Number(process.env.SMTP_PORT || 587);
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
   const from = process.env.ALERT_FROM || process.env.SMTP_USER;
-  const subject = `[Temporal Series] ${log.status}: ${alert.metricName}`;
+  const subject = `[Temporal Series] Alerta ${log.status}: ${alert.metricName}`;
   const body = [
     log.report,
     '',
     `Status: ${log.status}`,
     `Metrica: ${alert.metricName}`,
+    `Valor Observado: ${log.value}${log.unit || ''}`,
     `Query Prometheus: ${alert.query}`,
+    `Destinatarios: ${recipients.join(', ')}`,
     '',
     'Recomendacao:',
     buildAlertRecommendation(alert.metricName)
   ].join('\n');
+
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port,
@@ -330,26 +355,112 @@ async function sendAlertEmail(user, alert, log) {
     await transporter.verify();
     await transporter.sendMail({
       from,
-      to: user.email,
+      to: recipients.join(', '),
       subject,
       text: body,
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.55;color:#132033">
-          <h2 style="margin:0 0 12px">Temporal Series - ${log.status}</h2>
+          <h2 style="margin:0 0 12px;color:${log.status === 'CRITICAL' ? '#ef4444' : '#f59e0b'}">Temporal Series - Alerta ${log.status}</h2>
           <p>${escapeHtml(log.report)}</p>
           <p><strong>Metrica:</strong> ${escapeHtml(alert.metricName)}</p>
+          <p><strong>Valor Observado:</strong> ${log.value}${log.unit || ''}</p>
           <p><strong>Query Prometheus:</strong><br><code>${escapeHtml(alert.query)}</code></p>
+          <p><strong>Destinatarios:</strong> ${escapeHtml(recipients.join(', '))}</p>
           <h3>Recomendacao</h3>
           <p>${escapeHtml(buildAlertRecommendation(alert.metricName))}</p>
         </div>
       `
     });
+    console.log(`[SMTP] Email de alerta enviado com sucesso para: ${recipients.join(', ')}`);
     return true;
   } catch (err) {
-    console.error('Falha ao enviar email de alerta:', err.message);
+    console.error('[SMTP] Falha ao enviar email de alerta:', err.message);
     return false;
   }
 }
+
+async function monitorAlerts() {
+  try {
+    const alerts = await Alert.findAll({
+      include: [{ model: Post }]
+    });
+
+    if (!alerts || !alerts.length) return;
+
+    for (const alert of alerts) {
+      try {
+        const query = normalizeSystemQuery(alert.query);
+        const { range, end, alignedStart, step } = buildQueryRangeParams(300);
+        const url = `http://prometheus:9090/api/v1/query_range?query=${encodeURIComponent(query)}&start=${alignedStart}&end=${end}&step=${step}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) continue;
+
+        const json = await response.json();
+        if (!json.data || !json.data.result) continue;
+
+        const series = json.data.result;
+        let currentValue = 0;
+
+        for (const s of series) {
+          const last = s.values?.[s.values.length - 1];
+          if (!last) continue;
+          const val = Number(last[1]);
+          if (val > currentValue) {
+            currentValue = val;
+          }
+        }
+
+        const anomaly = calculateAnomaly(series);
+        let nextStatus = evaluateAlertStatus(currentValue, alert);
+
+        if (nextStatus === "OK" && alert.anomalyEnabled && anomaly.isAnomaly) {
+          nextStatus = "WARNING";
+        }
+
+        const previousStatus = alert.status;
+        alert.lastValue = currentValue;
+        alert.status = nextStatus;
+        await alert.save();
+
+        if (nextStatus !== "OK" && nextStatus !== previousStatus) {
+          const report = buildAlertReport(alert, currentValue, anomaly);
+          const log = await AlertLog.create({
+            userId: alert.userId,
+            alertId: alert.id,
+            metricId: alert.metricId,
+            metricName: alert.metricName,
+            query: alert.query,
+            warningThreshold: alert.warningThreshold,
+            criticalThreshold: alert.criticalThreshold,
+            threshold: alert.criticalThreshold,
+            value: currentValue,
+            zScore: anomaly.zScore,
+            movingAverage: anomaly.movingAverage,
+            trend: anomaly.trend,
+            status: nextStatus,
+            unit: alert.unit || "%",
+            report
+          });
+
+          io.emit('alert:created', log.toJSON());
+          if (alert.userId) {
+            io.to(`user:${alert.userId}`).emit('alert:created', log.toJSON());
+          }
+
+          await sendAlertEmail(alert, log);
+
+          console.log(`[MONITORAMENTO ATIVO] ALERTA ${nextStatus}: ${alert.metricName} = ${currentValue.toFixed(2)}`);
+        }
+      } catch (alertErr) {
+        console.error(`Erro no monitoramento do alerta ID ${alert?.id}:`, alertErr.message);
+      }
+    }
+  } catch (err) {
+    console.error("Erro geral no servico monitorAlerts:", err.message);
+  }
+}
+
 
 function buildAlertRecommendation(metricName) {
   const name = String(metricName || '').toLowerCase();
@@ -450,12 +561,13 @@ app.get('/register', (req, res) => {
 app.post('/register', async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!email || !password) {
-    return res.redirect('/register?error=missing-fields');
+  if (!email || !emailRegex.test(email)) {
+    return res.redirect('/register?error=invalid-email-format');
   }
 
-  if (password.length < 8) {
+  if (!password || password.length < 8) {
     return res.redirect('/register?error=weak-password');
   }
 
@@ -466,7 +578,8 @@ app.post('/register', async (req, res) => {
       return res.redirect('/register?error=email-exists');
     }
 
-    await Post.create({ email, password, authProvider: 'local' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await Post.create({ email, password: hashedPassword, authProvider: 'local' });
     res.redirect('/login?registered=1');
   } catch (err) {
     console.error('Erro no registro:', err);
@@ -569,25 +682,34 @@ app.post('/login', async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
   const redirectTo = safeRedirect(req.query.redirectTo);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!email || !emailRegex.test(email)) {
+    return res.redirect(`/login?error=invalid-email-format&redirectTo=${encodeURIComponent(redirectTo)}`);
+  }
 
   try {
     const post = await Post.findOne({ where: { email } });
 
-    if (!post || !post.password) {
-      return res.redirect(`/login?error=invalid-credentials&redirectTo=${encodeURIComponent(redirectTo)}`);
+    if (!post) {
+      return res.redirect(`/login?error=email-not-found&redirectTo=${encodeURIComponent(redirectTo)}`);
+    }
+
+    if (!post.password) {
+      return res.redirect(`/login?error=social-account-only&redirectTo=${encodeURIComponent(redirectTo)}`);
     }
 
     const match = await bcrypt.compare(password, post.password);
 
     if (match) {
       req.session.user = { id: post.id, email: post.email, name: post.name, theme: post.theme };
-      res.redirect(redirectTo);
+      return res.redirect(redirectTo);
     } else {
-      res.redirect(`/login?error=invalid-credentials&redirectTo=${encodeURIComponent(redirectTo)}`);
+      return res.redirect(`/login?error=incorrect-password&redirectTo=${encodeURIComponent(redirectTo)}`);
     }
   } catch (err) {
     console.error('Erro no login:', err);
-    res.redirect(`/login?error=login-failed&redirectTo=${encodeURIComponent(redirectTo)}`);
+    return res.redirect(`/login?error=login-failed&redirectTo=${encodeURIComponent(redirectTo)}`);
   }
 });
 
@@ -768,69 +890,6 @@ app.post('/api/query', isApiAuthenticated, async (req, res) => {
       comparisonSeries = filterSeriesToWindow(previousJson.data?.result || [], previousStart);
     }
 
-    if (!start && !endInput) {
-      const userAlerts = await Alert.findAll({ where: { userId: req.session.user.id } });
-
-      for (const alert of userAlerts) {
-        if (normalizeSystemQuery(alert.query) !== query) {
-          continue;
-        }
-
-        const series = json.data.result || [];
-        let currentValue = 0;
-
-        for (const s of series) {
-          const last = s.values?.[s.values.length - 1];
-
-          if (!last) {
-            continue;
-          }
-
-          const value = Number(last[1]);
-
-          if (value > currentValue) {
-            currentValue = value;
-          }
-        }
-
-        const previousStatus = alert.status;
-        const anomaly = calculateAnomaly(series);
-        let nextStatus = evaluateAlertStatus(currentValue, alert);
-
-        if (nextStatus === "OK" && alert.anomalyEnabled && anomaly.isAnomaly) {
-          nextStatus = anomaly.trend > 0 ? "WARNING" : "WARNING";
-        }
-
-        alert.lastValue = currentValue;
-        alert.status = nextStatus;
-        await alert.save();
-
-        if (nextStatus !== "OK" && nextStatus !== previousStatus) {
-          const report = buildAlertReport(alert, currentValue, anomaly);
-          const log = await AlertLog.create({
-            userId: req.session.user.id,
-            alertId: alert.id,
-            metricId: alert.metricId,
-            metricName: alert.metricName,
-            query: alert.query,
-            warningThreshold: alert.warningThreshold,
-            criticalThreshold: alert.criticalThreshold,
-            threshold: alert.criticalThreshold,
-            value: currentValue,
-            zScore: anomaly.zScore,
-            movingAverage: anomaly.movingAverage,
-            trend: anomaly.trend,
-            status: nextStatus,
-            unit: alert.unit || "%",
-            report
-          });
-          io.to(`user:${req.session.user.id}`).emit('alert:created', log.toJSON());
-          await sendAlertEmail(req.session.user, alert, log);
-          console.log(`ALERTA ${nextStatus}: ${alert.metricName} = ${currentValue.toFixed(2)}`);
-        }
-      }
-    }
-
     res.json({
       series,
       comparisonSeries,
@@ -889,12 +948,23 @@ app.post("/api/dashboard", isApiAuthenticated, async (req, res) => {
 });
 
 app.delete("/api/dashboard/:id", isApiAuthenticated, async (req, res) => {
-  await Dashboard.destroy({
+  const dashboard = await Dashboard.findOne({
     where: {
       id: Number(req.params.id),
       userId: req.session.user.id
     }
   });
+
+  if (dashboard) {
+    await Alert.destroy({
+      where: {
+        userId: req.session.user.id,
+        query: dashboard.query
+      }
+    });
+
+    await dashboard.destroy();
+  }
 
   res.json({ ok: true });
 });
@@ -912,6 +982,9 @@ app.post("/api/alert", isApiAuthenticated, async (req, res) => {
   const warningThreshold = Number(req.body.warningThreshold);
   const criticalThreshold = Number(req.body.criticalThreshold ?? req.body.threshold);
   const query = normalizeSystemQuery(req.body.query);
+  const userEmail = req.session?.user?.email || '';
+  const rawEmails = String(req.body.notificationEmails || req.body.notifyEmails || '').trim();
+  const notificationEmails = rawEmails || userEmail;
 
   if (!Number.isFinite(warningThreshold) || !Number.isFinite(criticalThreshold)) {
     return res.status(400).json({
@@ -955,6 +1028,7 @@ app.post("/api/alert", isApiAuthenticated, async (req, res) => {
     exists.status = "OK";
     exists.lastValue = 0;
     exists.anomalyEnabled = req.body.anomalyEnabled !== false;
+    exists.notificationEmails = notificationEmails;
     await exists.save();
 
     return res.json(exists);
@@ -971,7 +1045,8 @@ app.post("/api/alert", isApiAuthenticated, async (req, res) => {
     status: "OK",
     lastValue: 0,
     unit: req.body.unit || metric.unit || "%",
-    anomalyEnabled: req.body.anomalyEnabled !== false
+    anomalyEnabled: req.body.anomalyEnabled !== false,
+    notificationEmails
   });
 
   res.json(alert);
@@ -1002,10 +1077,6 @@ app.delete("/api/alert/:id", isApiAuthenticated, async (req, res) => {
 
 });
 
-/*app.get('/teste', (req, res) => {
-  res.send('<iframe src="http://192.168.1.8:3002/d-solo/gndc46/new-dashboard?orgId=1&timezone=browser&editIndex=0&panelId=panel-1" width="800" height="400"></iframe>');
-});*/
-
 async function iniciar() {
   try {
     await db.sequelize.authenticate();
@@ -1014,8 +1085,12 @@ async function iniciar() {
     await db.sequelize.sync({ alter: true });
     console.log("Tabelas sincronizadas");
 
+    // Serviço automático de monitoramento desacoplado de sessões
+    setInterval(monitorAlerts, 10000);
+    monitorAlerts();
+
     server.listen(3000, '0.0.0.0', () => {
-      console.log("Servidor rodando com Socket.IO");
+      console.log("Servidor rodando com Socket.IO e Servico de Monitoramento Ativo");
     });
   } catch (err) {
     console.error(err);

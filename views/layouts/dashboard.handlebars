@@ -25,7 +25,7 @@
         --amber: #f59e0b;
         --red: #ef4444;
         --blue: #60a5fa;
-        --shadow: 0 18px 45px rgba(0, 0, 0, .28);
+        --shadow: 0 12px 30px rgba(0, 0, 0, .24);
 
         /* Interactive elements variables */
         --btn-bg: rgba(255, 255, 255, .04);
@@ -53,41 +53,123 @@
       }
 
       body[data-theme="light"] {
-        --bg: radial-gradient(circle at 18% 8%, rgba(20, 184, 166, .05), transparent 30%),
-              radial-gradient(circle at 88% 0%, rgba(59, 130, 246, .05), transparent 30%),
-              #f1f5f9;
+        --bg: #e2e8f0;
         --panel: #ffffff;
-        --panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
-        --panel-strong: #f8fafc;
-        --line: rgba(15, 23, 42, 0.08);
-        --line-strong: rgba(13, 148, 136, 0.25);
-        --muted: #64748b;
+        --panel-bg: #ffffff;
+        --panel-strong: #ffffff;
+        --line: #cbd5e1;
+        --line-strong: #0d9488;
+        --muted: #475569;
         --text: #0f172a;
-        --shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05), 
-                  0 8px 15px -8px rgba(15, 23, 42, 0.05);
+        --shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
 
-        --btn-bg: rgba(15, 23, 42, 0.035);
-        --btn-hover-bg: rgba(15, 23, 42, 0.06);
-        --btn-border: rgba(15, 23, 42, 0.06);
+        --btn-bg: #e2e8f0;
+        --btn-hover-bg: #cbd5e1;
+        --btn-border: #94a3b8;
         --btn-text: #0f172a;
 
         --input-bg: #ffffff;
         --input-text: #0f172a;
-        --input-border: #cbd5e1;
+        --input-border: #94a3b8;
 
         --option-bg: #ffffff;
         --option-text: #0f172a;
 
-        --primary-bg: linear-gradient(135deg, #0d9488, #2563eb);
+        --primary-bg: linear-gradient(135deg, #0d9488, #1d4ed8);
         --primary-text: #ffffff;
-        --primary-hover: linear-gradient(135deg, #0f766e, #1d4ed8);
+        --primary-hover: linear-gradient(135deg, #0f766e, #1e40af);
 
-        --active-bg: rgba(13, 148, 136, 0.1);
+        --active-bg: #ccfbf1;
         --active-border: #0d9488;
-        --active-text: #0f766e;
+        --active-text: #042f2e;
 
-        --topbar-bg: rgba(255, 255, 255, 0.8);
-        --sidebar-bg: rgba(241, 245, 249, 0.8);
+        --topbar-bg: #ffffff;
+        --sidebar-bg: #f8fafc;
+      }
+
+      /* High Contrast Light Theme Specific Rules */
+      body[data-theme="light"] .panel,
+      body[data-theme="light"] .card,
+      body[data-theme="light"] .topbar,
+      body[data-theme="light"] .overview-item {
+        border-color: #cbd5e1;
+        background: #ffffff;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+      }
+
+      body[data-theme="light"] .metric-btn {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+
+      body[data-theme="light"] .metric-btn.active {
+        background: #ccfbf1;
+        border-color: #0d9488;
+        color: #042f2e;
+      }
+
+      body[data-theme="light"] .range-btn {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+
+      body[data-theme="light"] .range-btn.active {
+        background: #dbeafe;
+        border-color: #2563eb;
+        color: #1e40af;
+      }
+
+      body[data-theme="light"] .icon-btn {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+
+      body[data-theme="light"] .icon-btn.danger {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #991b1b;
+      }
+
+      body[data-theme="light"] select,
+      body[data-theme="light"] input {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #94a3b8 !important;
+      }
+
+      body[data-theme="light"] select option {
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+
+      body[data-theme="light"] label,
+      body[data-theme="light"] .threshold-field label,
+      body[data-theme="light"] .control-field label {
+        color: #1e293b;
+      }
+
+      body[data-theme="light"] .threshold-item,
+      body[data-theme="light"] .alert-item,
+      body[data-theme="light"] .log-item {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+
+      body[data-theme="light"] .empty-state,
+      body[data-theme="light"] .muted {
+        color: #475569;
+      }
+
+      body[data-theme="light"] h1,
+      body[data-theme="light"] h2,
+      body[data-theme="light"] h3,
+      body[data-theme="light"] h4,
+      body[data-theme="light"] strong {
+        color: #0f172a;
       }
 
       * {
@@ -103,10 +185,20 @@
         transition: background-color .3s ease, color .3s ease;
       }
 
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background: var(--topbar-bg);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(8px);
+      }
+
       .brand {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         min-width: 0;
         color: var(--text);
         text-decoration: none;
@@ -115,31 +207,32 @@
       .brand-mark {
         display: grid;
         place-items: center;
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
         background: linear-gradient(135deg, var(--teal), var(--blue));
         color: #06111f;
         font-weight: 800;
+        font-size: 13px;
       }
 
       .logo {
         font-family: "Zen Dots", Inter, sans-serif;
-        font-size: 18px;
+        font-size: 16px;
         letter-spacing: 0;
         white-space: nowrap;
       }
 
       .subtitle {
-        margin-top: 3px;
+        margin-top: 1px;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11px;
       }
 
       .nav {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         flex-wrap: wrap;
         justify-content: flex-end;
       }
@@ -151,10 +244,11 @@
       .icon-btn,
       .range-btn,
       .metric-btn {
-        min-height: 38px;
-        border-radius: 8px;
+        min-height: 32px;
+        border-radius: 6px;
         color: var(--text);
         cursor: pointer;
+        font-size: 12px;
         text-decoration: none;
         transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
       }
@@ -165,8 +259,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        padding: 0 13px;
+        gap: 6px;
+        padding: 0 10px;
         background: var(--btn-bg);
         border: 1px solid var(--btn-border);
         color: var(--btn-text);
@@ -187,63 +281,94 @@
       }
 
       .dashboard {
-        display: grid;
-        grid-template-columns: 300px minmax(0, 1fr);
-        min-height: calc(100vh - 72px);
-      }
-
-      .sidebar {
-        padding: 22px;
-        border-right: 1px solid var(--line);
-        background: var(--sidebar-bg);
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 1600px;
+        margin: 0 auto;
+        min-height: calc(100vh - 56px);
       }
 
       .main {
         min-width: 0;
-        padding: 26px;
+        padding: 16px 20px;
         overflow: auto;
+        width: 100%;
+      }
+
+      /* Horizontal Top Status Bar for Thresholds and Alerts */
+      .top-status-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .top-status-bar .panel {
+        margin-bottom: 0;
+        padding: 10px 14px;
+      }
+
+      .top-status-bar h3 {
+        font-size: 12px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: var(--teal);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      #thresholdList,
+      #alertFeed {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        max-height: 140px;
+        overflow-y: auto;
       }
 
       .overview {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-        margin-bottom: 18px;
+        gap: 10px;
+        margin-bottom: 14px;
       }
 
       .overview-item {
-        min-height: 92px;
-        padding: 16px;
+        min-height: 64px;
+        padding: 8px 12px;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 6px;
         background: var(--overview-bg, rgba(255, 255, 255, .045));
       }
 
       .overview-item span {
         color: var(--muted);
-        font-size: 12px;
+        font-size: 10px;
         font-weight: 800;
         text-transform: uppercase;
       }
 
       .overview-item strong {
         display: block;
-        margin-top: 8px;
-        font-size: 28px;
+        margin-top: 2px;
+        font-size: 20px;
       }
 
       .section-head {
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
-        gap: 18px;
-        margin-bottom: 18px;
+        gap: 12px;
+        margin-bottom: 12px;
       }
 
       .eyebrow {
-        margin: 0 0 6px;
+        margin: 0 0 2px;
         color: var(--teal);
-        font-size: 12px;
+        font-size: 10px;
         font-weight: 800;
         letter-spacing: .08em;
         text-transform: uppercase;
@@ -259,18 +384,18 @@
 
       h1 {
         margin-bottom: 0;
-        font-size: clamp(26px, 3vw, 38px);
+        font-size: 22px;
         letter-spacing: 0;
       }
 
       h3 {
-        margin-bottom: 12px;
-        font-size: 15px;
+        margin-bottom: 8px;
+        font-size: 13px;
       }
 
       h4 {
         margin: 0;
-        font-size: 16px;
+        font-size: 13px;
       }
 
       .muted {
@@ -280,44 +405,45 @@
       .panel,
       .card {
         border: 1px solid var(--line);
-        border-radius: 12px;
+        border-radius: 8px;
         background: var(--panel-bg);
         box-shadow: var(--shadow);
       }
 
       .panel {
-        padding: 16px;
-        margin-bottom: 16px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
       }
 
       .card {
-        padding: 18px;
+        padding: 12px 14px;
         overflow: hidden;
       }
 
+      /* Compact Grid for Dashboards */
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-        gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 14px;
       }
 
       .builder {
-        margin-bottom: 18px;
+        margin-bottom: 14px;
       }
 
       .builder-bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 14px;
+        gap: 12px;
       }
 
       .primary-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        padding: 0 16px;
+        gap: 6px;
+        padding: 0 14px;
         background: var(--primary-bg);
         color: var(--primary-text);
         font-weight: 800;
@@ -333,12 +459,12 @@
 
       #metricMenu {
         display: none;
-        margin-top: 14px;
-        padding: 14px;
+        margin-top: 10px;
+        padding-top: 10px;
         border-top: 1px solid var(--line);
         opacity: 0;
-        transform: translateY(-8px);
-        transition: .24s ease;
+        transform: translateY(-6px);
+        transition: .2s ease;
       }
 
       #metricMenu.show {
@@ -348,9 +474,9 @@
 
       #metricOptions {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-        gap: 10px;
-        margin-bottom: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 8px;
+        margin-bottom: 10px;
       }
 
       .metric-btn,
@@ -363,8 +489,9 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 11px;
+        padding: 6px 9px;
         color: #dce7f7;
+        font-size: 11px;
         font-weight: 700;
         text-align: left;
       }
@@ -377,17 +504,18 @@
 
       .range-buttons {
         display: flex;
-        gap: 8px;
-        margin: 14px 0 10px;
+        gap: 5px;
+        margin: 8px 0 6px;
         flex-wrap: wrap;
       }
 
       .range-btn {
-        min-height: 32px;
-        padding: 0 11px;
+        min-height: 24px;
+        padding: 0 7px;
         color: #cdd8ea;
-        font-size: 12px;
+        font-size: 10px;
         font-weight: 800;
+        border-radius: 5px;
       }
 
       .range-btn.active {
@@ -401,24 +529,26 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 12px;
+        gap: 8px;
       }
 
       .card-actions {
         display: flex;
-        gap: 7px;
+        gap: 5px;
         flex-shrink: 0;
       }
 
       .icon-btn {
         display: grid;
         place-items: center;
-        width: 34px;
-        height: 34px;
+        width: 26px;
+        height: 26px;
         background: rgba(255, 255, 255, .06);
         border: 1px solid var(--line);
         color: #e9f2ff;
+        font-size: 11px;
         font-weight: 800;
+        border-radius: 6px;
       }
 
       .icon-btn.danger {
@@ -427,41 +557,42 @@
         color: #fecaca;
       }
 
+      /* Slightly Increased Chart Box Height */
       .chart-box {
-        height: 320px;
+        height: 260px;
         min-width: 0;
       }
 
       .alert-inline {
         display: none;
-        gap: 12px;
-        margin-top: 10px;
-        padding-top: 12px;
+        gap: 8px;
+        margin-top: 8px;
+        padding-top: 8px;
         border-top: 1px solid var(--line);
       }
 
       .threshold-form {
         display: grid;
-        gap: 10px;
+        gap: 8px;
       }
 
       .threshold-form legend {
         color: var(--muted);
-        font-size: 12px;
-        line-height: 1.5;
+        font-size: 11px;
+        line-height: 1.4;
       }
 
       .threshold-fields {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+        gap: 8px;
       }
 
       .threshold-field label {
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         color: #dce7f8;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
       }
 
@@ -475,12 +606,13 @@
 
       .thresholdInput {
         width: 100%;
-        min-height: 40px;
-        padding: 0 12px;
-        border-radius: 8px;
+        min-height: 28px;
+        padding: 0 8px;
+        border-radius: 6px;
         border: 1px solid var(--line);
         background: rgba(255, 255, 255, .07);
         color: var(--text);
+        font-size: 11px;
         outline: none;
       }
 
@@ -490,20 +622,20 @@
 
       .control-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 10px;
-        margin-top: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+        gap: 6px;
+        margin-top: 8px;
       }
 
       .control-field {
         display: grid;
-        gap: 6px;
+        gap: 3px;
       }
 
       .control-field label {
         color: var(--text);
         opacity: 0.85;
-        font-size: 12px;
+        font-size: 10px;
         font-weight: 800;
       }
 
@@ -511,12 +643,13 @@
       .control-field select,
       .custom-query {
         width: 100%;
-        min-height: 40px;
-        padding: 0 11px;
-        border-radius: 8px;
+        min-height: 28px;
+        padding: 0 6px;
+        border-radius: 6px;
         border: 1px solid var(--input-border);
         background: var(--input-bg);
         color: var(--input-text);
+        font-size: 11px;
         outline: none;
       }
 
@@ -526,39 +659,44 @@
       }
 
       .custom-query {
-        margin-top: 12px;
+        margin-top: 8px;
         font-family: Consolas, monospace;
       }
 
       .stat-card {
         display: grid;
         align-content: center;
-        min-height: 300px;
-        padding: 18px;
+        min-height: 200px;
+        padding: 14px;
+        text-align: center;
       }
 
       .stat-value {
-        font-size: clamp(42px, 7vw, 76px);
+        font-size: clamp(32px, 5vw, 54px);
         line-height: 1;
         font-weight: 800;
       }
 
       .stat-label {
-        margin-top: 10px;
+        margin-top: 8px;
         color: var(--muted);
+        font-size: 12px;
         font-weight: 700;
       }
 
+      /* Horizontal & Compact Threshold and Alert Items */
       .threshold-item,
       .alert-live,
       .log {
-        padding: 12px;
-        margin-bottom: 10px;
-        border-radius: 8px;
+        flex: 1 1 200px;
+        min-width: 180px;
+        padding: 6px 10px;
+        margin-bottom: 0;
+        border-radius: 6px;
         background: rgba(255, 255, 255, .055);
         border: 1px solid var(--line);
-        border-left-width: 4px;
-        font-size: 13px;
+        border-left-width: 3px;
+        font-size: 11px;
         transition: border-color .2s ease, background .2s ease;
       }
 
@@ -578,12 +716,14 @@
       }
 
       .delete-threshold-btn {
-        width: 28px;
-        height: 28px;
-        border-radius: 7px;
+        width: 22px;
+        height: 22px;
+        border-radius: 5px;
         background: rgba(239, 68, 68, .12);
         color: #fecaca;
+        font-size: 10px;
         cursor: pointer;
+        border: none;
       }
 
       .alert-live {
@@ -606,15 +746,15 @@
 
       .logs {
         display: grid;
-        gap: 10px;
+        gap: 8px;
         max-height: none;
         overflow: visible;
       }
 
       .log {
         display: grid;
-        grid-template-columns: 110px minmax(0, 1fr) auto;
-        gap: 14px;
+        grid-template-columns: 90px minmax(0, 1fr) auto;
+        gap: 10px;
         align-items: center;
         margin: 0;
       }
@@ -623,10 +763,10 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 26px;
-        padding: 0 9px;
+        min-height: 20px;
+        padding: 0 7px;
         border-radius: 999px;
-        font-size: 12px;
+        font-size: 10px;
         font-weight: 800;
       }
 
@@ -648,21 +788,22 @@
       .empty-state {
         display: grid;
         place-items: center;
-        min-height: 160px;
+        min-height: 80px;
+        width: 100%;
         border: 1px dashed var(--line);
-        border-radius: 8px;
+        border-radius: 6px;
         color: var(--muted);
+        font-size: 11px;
         text-align: center;
-        padding: 18px;
+        padding: 10px;
       }
 
       @keyframes pulse {
         0%, 100% {
           transform: scale(1);
         }
-
         50% {
-          transform: scale(1.015);
+          transform: scale(1.012);
         }
       }
 
@@ -678,17 +819,8 @@
           justify-content: flex-start;
         }
 
-        .dashboard {
-          grid-template-columns: 1fr;
-        }
-
-        .sidebar {
-          border-right: 0;
-          border-bottom: 1px solid var(--line);
-        }
-
         .main {
-          padding: 18px;
+          padding: 12px;
         }
 
         .grid {
@@ -700,6 +832,10 @@
         }
 
         .log {
+          grid-template-columns: 1fr;
+        }
+
+        .top-status-bar {
           grid-template-columns: 1fr;
         }
       }
@@ -715,7 +851,7 @@
         </div>
       </a>
 
-<nav class="nav" aria-label="Navegacao principal">
+      <nav class="nav" aria-label="Navegacao principal">
         <a href="/">Inicio</a>
         <button class="active" data-tab-button="dashboards" onclick="showTab('dashboards')">Dashboard</button>
         <button data-tab-button="logs" onclick="showTab('logs')">Logs</button>
@@ -727,26 +863,27 @@
     </header>
 
     <div class="dashboard">
-      <aside class="sidebar">
-        <div class="panel">
-          <h3>Thresholds ativos</h3>
-          <div id="thresholdList"></div>
-        </div>
-
-        <div class="panel">
-          <h3>Alertas em aberto</h3>
-          <div id="alertFeed"></div>
-        </div>
-      </aside>
-
       <main class="main">
         <section id="dashboards">
+          <!-- Horizontal Top Status Bar for Thresholds and Alerts -->
+          <div class="top-status-bar">
+            <div class="panel">
+              <h3>Thresholds Ativos</h3>
+              <div id="thresholdList"></div>
+            </div>
+
+            <div class="panel">
+              <h3>Alertas em Aberto</h3>
+              <div id="alertFeed"></div>
+            </div>
+          </div>
+
           <div class="section-head">
             <div>
               <p class="eyebrow">Metricas</p>
               <h1>Dashboards</h1>
             </div>
-            <div class="muted" id="refreshStatus">Atualizacao automatica ativa.</div>
+            <div class="muted" id="refreshStatus" style="font-size: 11px;">Atualizacao automatica ativa.</div>
           </div>
 
           <div class="overview" aria-label="Resumo dos dashboards">
@@ -768,7 +905,7 @@
             <div class="builder-bar">
               <div>
                 <h3>Selecionar dashboards</h3>
-                <div class="muted">Escolha as métricas que voce quer acompanhar.</div>
+                <div class="muted" style="font-size: 11px;">Escolha as métricas que você quer acompanhar.</div>
               </div>
               <button class="primary-btn" onclick="toggleMetricMenu()">Selecionar</button>
             </div>
@@ -776,16 +913,16 @@
             <div id="metricMenu">
               <div id="metricOptions"></div>
               <input id="customQueryInput" class="custom-query" type="text" placeholder="Cole uma query Prometheus personalizada">
-              <button class="primary-btn" onclick="createSelectedCharts()">Criar dashboards</button>
+              <button class="primary-btn" style="margin-top: 8px;" onclick="createSelectedCharts()">Criar dashboards</button>
             </div>
           </div>
 
           <div class="grid" id="chartsContainer"></div>
 
-          <div class="panel" style="margin-top: 24px;">
+          <div class="panel" style="margin-top: 18px;">
             <h3>Análise de Tendências</h3>
-            <div class="muted" style="margin-bottom: 16px;">Insights baseados no comportamento recente das métricas.</div>
-            <div class="grid" id="trendContainer" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+            <div class="muted" style="margin-bottom: 12px; font-size: 11px;">Insights baseados no comportamento recente das métricas.</div>
+            <div class="grid" id="trendContainer" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));">
               <div class="empty-state">Carregando análise de tendências...</div>
             </div>
           </div>
@@ -815,7 +952,7 @@
 
           <div class="panel">
             <h3>Visualizacao</h3>
-            <p class="muted">Os graficos usam janelas independentes por card, refresh automatico, anomalias por z-score e media movel.</p>
+            <p class="muted" style="font-size: 11px;">Os graficos usam janelas independentes por card, refresh automatico, anomalias por z-score e media movel.</p>
             <div class="control-grid">
               <div class="control-field">
                 <label for="refreshIntervalInput">Atualizar dashboards a cada</label>
@@ -844,50 +981,59 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script>
+      const currentUserEmail = "{{user.email}}";
+
       const systemQueries = {
-        cpu: '100 - (avg by(instance)(irate(windows_cpu_time_total{mode="idle"}[30s])) * 100)',
+        cpu: '100 - (avg by(instance)(rate(windows_cpu_time_total{mode="idle"}[1m])) * 100)',
         ram: '100 - (100 * windows_memory_physical_free_bytes / windows_memory_physical_total_bytes)',
         disco: '100 * (1 - (windows_logical_disk_free_bytes{volume!~"HarddiskVolume.+"} / windows_logical_disk_size_bytes{volume!~"HarddiskVolume.+"}))',
-        redeRx: 'rate(windows_net_bytes_received_total[5m])',
-        redeTx: 'rate(windows_net_bytes_sent_total[5m])',
+        redeRx: 'irate(windows_net_bytes_received_total[5s])',
+        redeTx: 'irate(windows_net_bytes_sent_total[15s])',
         load1m: 'windows_system_processor_queue_length',
-        load5m: 'windows_system_processor_queue_length'
+        load5m: 'avg_over_time(windows_system_processor_queue_length[5m])'
       };
 
       let metricList = [
         {
           id: "ram",
-          name: "RAM",
+          name: "RAM (%)",
+          unit: "%",
           query: systemQueries.ram
         },
         {
           id: "cpu",
-          name: "CPU",
+          name: "CPU (%)",
+          unit: "%",
           query: systemQueries.cpu
         },
         {
           id: "disco",
           name: "Disco (%)",
+          unit: "%",
           query: systemQueries.disco
         },
         {
           id: "rede_rx",
-          name: "Rede RX",
+          name: "Rede RX (B/s)",
+          unit: "B/s",
           query: systemQueries.redeRx
         },
         {
           id: "rede_tx",
-          name: "Rede TX",
+          name: "Rede TX (B/s)",
+          unit: "B/s",
           query: systemQueries.redeTx
         },
         {
           id: "load_1m",
-          name: "Fila do Processador (1m)",
+          name: "Fila Processador (Inst.)",
+          unit: "threads",
           query: systemQueries.load1m
         },
         {
           id: "load_5m",
-          name: "Fila do Processador (5m)",
+          name: "Fila Processador (Média 5m)",
+          unit: "threads",
           query: systemQueries.load5m
         }
       ];
@@ -915,12 +1061,50 @@
         if (status === "CRITICAL") {
           return "#fca5a5";
         }
-
         if (status === "WARNING") {
           return "#fcd34d";
         }
-
         return "#86efac";
+      }
+
+      function getMetricUnit(query, fallback = "") {
+        const metric = metricList.find(m => m.query === query);
+        if (metric?.unit) return metric.unit;
+        const q = (query || "").toLowerCase();
+        if (q.includes("cpu") || q.includes("memory") || q.includes("disco") || q.includes("ram") || q.includes("logical_disk")) return "%";
+        if (q.includes("bytes_received") || q.includes("bytes_sent") || q.includes("network_receive") || q.includes("network_transmit")) return "B/s";
+        if (q.includes("processor_queue")) return "threads";
+        return fallback;
+      }
+
+      function formatValueWithUnit(value, unit, seriesName = "", query = "") {
+        const val = Number(value);
+        if (!Number.isFinite(val)) return "-";
+        
+        const resolvedUnit = unit || getMetricUnit(query);
+
+        if (resolvedUnit === "%") {
+          return `${val.toFixed(1)}%`;
+        }
+        if (resolvedUnit === "B/s" || (query && (query.includes("net") || query.includes("network")))) {
+          if (val >= 1024 * 1024 * 1024) return `${(val / (1024 * 1024 * 1024)).toFixed(2)} GB/s`;
+          if (val >= 1024 * 1024) return `${(val / (1024 * 1024)).toFixed(2)} MB/s`;
+          if (val >= 1024) return `${(val / 1024).toFixed(2)} KB/s`;
+          return `${val.toFixed(0)} B/s`;
+        }
+        if (resolvedUnit === "threads") {
+          return `${val.toFixed(1)} threads`;
+        }
+        return resolvedUnit ? `${val.toFixed(2)} ${resolvedUnit}` : val.toFixed(2);
+      }
+
+      function formatShortBytesRate(val) {
+        const n = Number(val);
+        if (!Number.isFinite(n) || n === 0) return "0";
+        if (n >= 1024 * 1024 * 1024) return `${(n / (1024 * 1024 * 1024)).toFixed(1)} GB/s`;
+        if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB/s`;
+        if (n >= 1024) return `${(n / 1024).toFixed(1)} KB/s`;
+        return `${n.toFixed(0)} B/s`;
       }
 
       function buildThresholdMarkLines(thresholdData) {
@@ -929,7 +1113,7 @@
         }
 
         const { warningThreshold, criticalThreshold } = resolveThresholds(thresholdData);
-        const unit = thresholdData.unit || "%";
+        const unit = thresholdData.unit || getMetricUnit(thresholdData.query, "%");
 
         return {
           silent: true,
@@ -939,26 +1123,26 @@
               yAxis: warningThreshold,
               lineStyle: {
                 color: "#f59e0b",
-                width: 2,
+                width: 1.5,
                 type: "dashed"
               },
               label: {
                 show: true,
                 position: "end",
-                formatter: `Atencao ${warningThreshold}${unit}`,
+                formatter: `Atenção ${warningThreshold}${unit}`,
                 color: "#fff",
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: "bold",
                 backgroundColor: "rgba(245,158,11,.9)",
-                padding: [4, 7],
-                borderRadius: 6
+                padding: [2, 5],
+                borderRadius: 4
               }
             },
             {
               yAxis: criticalThreshold,
               lineStyle: {
                 color: "#ef4444",
-                width: 2,
+                width: 1.5,
                 type: "dashed"
               },
               label: {
@@ -966,11 +1150,11 @@
                 position: "end",
                 formatter: `Alerta ${criticalThreshold}${unit}`,
                 color: "#fff",
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: "bold",
                 backgroundColor: "rgba(239,68,68,.9)",
-                padding: [4, 7],
-                borderRadius: 6
+                padding: [2, 5],
+                borderRadius: 4
               }
             }
           ]
@@ -1064,7 +1248,6 @@
           let queryToUse = customInput;
           let nameToUse = customInput;
 
-          // Mapeamento de nomes amigáveis para queries reais
           const nameToQueryMap = {
             "uso de cpu": systemQueries.cpu,
             "cpu": systemQueries.cpu,
@@ -1090,7 +1273,6 @@
           });
           const inferred = await inferredResponse.json();
           
-          // Evitar duplicatas na lista de métricas
           metricList = metricList.filter(metric => metric.query !== queryToUse);
           metricList.push({
             id: inferred.id || queryToUse,
@@ -1159,7 +1341,26 @@
         chart?.dispose();
         card.remove();
         activeDashboards.delete(query);
+
+        // Remove imediatamente os thresholds e alertas associados da UI
+        document.querySelectorAll(`#thresholdList .threshold-item[data-query="${CSS.escape(query)}"]`).forEach(el => el.remove());
+        document.querySelectorAll(`#alertFeed .alert-item[data-query="${CSS.escape(query)}"]`).forEach(el => el.remove());
+
+        // Limpa o contêiner de tendências caso estivesse exibindo a análise deste card
+        const trendContainer = document.getElementById("trendContainer");
+        if (trendContainer) {
+          const trendTitle = trendContainer.querySelector("h4")?.textContent || "";
+          const cardTitle = card.querySelector("h4")?.textContent || "";
+          if (trendTitle && cardTitle && trendTitle.includes(cardTitle)) {
+            trendContainer.innerHTML = emptyState("Selecione a análise de tendência em um card ativo.");
+          }
+        }
+
         document.getElementById("dashboardCount").textContent = String(document.querySelectorAll(".card[data-query]").length);
+
+        await loadThresholds();
+        await loadAlertFeed();
+        await loadAlertLogs();
         renderMetricOptions();
       }
 
@@ -1173,14 +1374,14 @@
       }
 
       function resolveMetricName(query, data) {
-        const q = query.toLowerCase();
+        const q = (query || "").toLowerCase();
 
         if ((q.includes("node_cpu_seconds_total") || q.includes("windows_cpu_time_total")) && q.includes("rate") && q.includes("idle")) {
           return "Uso de CPU (%)";
         }
 
         if ((q.includes("node_memory_memavailable_bytes") && q.includes("node_memory_memtotal_bytes")) || q.includes("windows_memory_physical")) {
-          return "Uso de Memoria (%)";
+          return "Uso de Memória (%)";
         }
 
         if ((q.includes("node_filesystem_size_bytes") && q.includes("node_filesystem_avail_bytes")) || q.includes("windows_logical_disk")) {
@@ -1188,15 +1389,19 @@
         }
 
         if (q.includes("node_network_receive_bytes_total") || q.includes("windows_net_bytes_received_total")) {
-          return "Entrada de Rede (RX)";
+          return "Entrada de Rede RX (B/s)";
         }
 
         if (q.includes("node_network_transmit_bytes_total") || q.includes("windows_net_bytes_sent_total")) {
-          return "Saida de Rede (TX)";
+          return "Saída de Rede TX (B/s)";
         }
 
-        if (q.includes("node_load1") || q.includes("node_load5") || q.includes("windows_system_processor_queue_length") || q.includes("windows_system_processor_queue")) {
-          return "Fila do Processador";
+        if (q.includes("avg_over_time") && q.includes("windows_system_processor_queue")) {
+          return "Fila do Processador (Média 5m)";
+        }
+
+        if (q.includes("node_load1") || q.includes("windows_system_processor_queue_length") || q.includes("windows_system_processor_queue")) {
+          return "Fila do Processador (Inst.)";
         }
 
         if (data[0]?.metric?.__name__) {
@@ -1245,7 +1450,7 @@
             <div class="chart-header">
               <div>
                 <h4>${metricName}</h4>
-                <div class="muted chart-window" style="font-size:12px; margin-top:4px;">Janela movel de dados</div>
+                <div class="muted chart-window" style="font-size:11px; margin-top:2px;">Janela movel de dados</div>
               </div>
               <div class="card-actions">
                 <button class="icon-btn" title="Mostrar/ocultar analise de tendencia" onclick="toggleTrendAnalysis(this)" style="background: rgba(96, 165, 250, 0.12); border-color: rgba(96, 165, 250, 0.34); color: #bfdbfe;">T</button>
@@ -1285,7 +1490,6 @@
                 <label>Fim</label>
                 <input class="card-end-input" type="datetime-local" onchange="refreshCard(this.closest('.card'))">
               </div>
-
             </div>
             <div class="range-buttons">
               <button class="range-btn active" data-range="300" onclick="changeRange(this, 300)">5m</button>
@@ -1297,18 +1501,22 @@
             <div id="${chartId}" data-chart-id="${chartId}" class="chart-box"></div>
             <div class="alert-inline">
               <form class="threshold-form">
-                <legend>Zona verde abaixo do limite de atencao. Entre atencao e alerta: WARNING. Acima do alerta: CRITICAL.</legend>
+                <legend>Zona verde abaixo do limite de atenção. Entre atenção e alerta: WARNING. Acima: CRITICAL.</legend>
                 <div class="threshold-fields">
                   <div class="threshold-field">
-                    <label class="warning-label" for="warning_${chartId}">Limite de atencao</label>
+                    <label class="warning-label" for="warning_${chartId}">Limite de atenção</label>
                     <input id="warning_${chartId}" class="thresholdInput warningInput" type="number" step="0.01" placeholder="Ex: 60" required>
                   </div>
                   <div class="threshold-field">
                     <label class="critical-label" for="critical_${chartId}">Limite de alerta</label>
                     <input id="critical_${chartId}" class="thresholdInput criticalInput" type="number" step="0.01" placeholder="Ex: 80" required>
                   </div>
+                  <div class="threshold-field" style="grid-column: span 2;">
+                    <label for="emails_${chartId}" style="color: var(--teal);">E-mails para notificação (separados por vírgula)</label>
+                    <input id="emails_${chartId}" class="thresholdInput emailsInput" type="text" value="${currentUserEmail}" placeholder="ex: dev@empresa.com, admin@empresa.com">
+                  </div>
                 </div>
-                <button class="primary-btn save-threshold-btn" type="button">Salvar limites</button>
+                <button class="primary-btn save-threshold-btn" type="button" style="min-height: 28px; font-size: 11px;">Salvar limites e e-mails</button>
               </form>
             </div>
           `;
@@ -1327,6 +1535,9 @@
             const { warningThreshold, criticalThreshold } = resolveThresholds(thresholdData);
             card.querySelector(".warningInput").value = warningThreshold;
             card.querySelector(".criticalInput").value = criticalThreshold;
+            card.querySelector(".emailsInput").value = thresholdData.notificationEmails || currentUserEmail;
+          } else {
+            card.querySelector(".emailsInput").value = currentUserEmail;
           }
 
           renderChart(chartId, data, dashboard.query, 300, thresholdData);
@@ -1344,6 +1555,7 @@
         const card = btn.closest(".card");
         const warningThreshold = Number(card.querySelector(".warningInput")?.value);
         const criticalThreshold = Number(card.querySelector(".criticalInput")?.value);
+        const notificationEmails = card.querySelector(".emailsInput")?.value?.trim() || currentUserEmail;
 
         if (!Number.isFinite(warningThreshold) || !Number.isFinite(criticalThreshold)) {
           alert("Defina os limites de atencao e alerta");
@@ -1365,8 +1577,9 @@
             query,
             warningThreshold,
             criticalThreshold,
+            notificationEmails,
             metricName: card.querySelector("h4").innerText,
-            unit: "%"
+            unit: getMetricUnit(query, "%")
           })
         });
 
@@ -1403,7 +1616,6 @@
       function aggregateValues(values, mode, chartType) {
         if (!values || !values.length) return [];
         
-        // Se for gráfico de linha/área/barra/scatter e não tiver agregação, retorna tudo
         if ((!mode || mode === "none") && ["line", "area", "bar", "scatter"].includes(chartType)) {
           return values;
         }
@@ -1431,10 +1643,6 @@
           value = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? value;
         }
 
-        // Para tipos que esperam série temporal (linha, etc), se houver agregação,
-        // repetimos o valor agregado para manter a janela visual ou retornamos ponto único.
-        // Aqui, para simplificar e corrigir o bug, se houver agregação em gráfico de linha,
-        // mostramos uma linha constante.
         if (["line", "area", "bar", "scatter"].includes(chartType)) {
           return values.map(v => [v[0], value]);
         }
@@ -1477,7 +1685,6 @@
         const chartId = card.dataset.chartId;
         const range = Number(card.dataset.range) || 300;
 
-        // Render from cache if not forcing fetch (e.g. during theme toggle)
         if (!forceFetch && card.__latestData) {
           const { data, thresholdData } = card.__latestData;
           renderChart(chartId, data, query, range, thresholdData);
@@ -1490,7 +1697,6 @@
         const startInput = startInputEl?.value;
         const endInput = endInputEl?.value;
 
-        // Toggle active states of range buttons
         const rangeBtns = card.querySelectorAll(".range-btn");
         if (startInput || endInput) {
           rangeBtns.forEach(btn => btn.classList.remove("active"));
@@ -1533,7 +1739,6 @@
           const data = normalizeQueryPayload(payload, range);
           const thresholdData = await getThresholdByQuery(query);
 
-          // Cache data on DOM element for fast theme switching
           card.__latestData = { data, thresholdData };
 
           renderChart(chartId, data, query, range, thresholdData);
@@ -1549,7 +1754,6 @@
       async function changeRange(btn, range) {
         const card = btn.closest(".card");
         
-        // Clear manual inputs
         const startInputEl = card.querySelector(".card-start-input");
         const endInputEl = card.querySelector(".card-end-input");
         if (startInputEl) startInputEl.value = "";
@@ -1603,6 +1807,7 @@
           (max, item) => Math.max(max, item.values?.length || 0),
           0
         );
+        const unit = thresholdData?.unit || getMetricUnit(query);
         const series = prometheusData
           .filter(item => item.values?.length)
           .map((item, index) => ({
@@ -1613,10 +1818,10 @@
             sampling: maxPoints > 800 ? "lttb" : false,
             progressive: maxPoints > 800 ? 200 : 0,
             progressiveThreshold: 800,
-            animationDuration: 500,
+            animationDuration: 400,
             animationEasing: "linear",
             lineStyle: {
-              width: 3
+              width: 2.5
             },
             areaStyle: chartType === "area" ? {
               opacity: .18
@@ -1635,7 +1840,7 @@
             smooth: true,
             showSymbol: false,
             lineStyle: {
-              width: 2,
+              width: 1.5,
               type: "dashed"
             },
             data: aggregateValues(item.values, aggregation, chartType).map(v => [
@@ -1660,7 +1865,7 @@
           chart?.dispose();
           el.innerHTML = `
             <div class="stat-card">
-              <div class="stat-value">${formatNumber(latestValue)}${thresholdData?.unit || ""}</div>
+              <div class="stat-value">${formatValueWithUnit(latestValue, unit, "", query)}</div>
               <div class="stat-label">${resolveMetricName(query, prometheusData)}</div>
             </div>
           `;
@@ -1675,8 +1880,8 @@
         const light = document.body.dataset.theme === "light";
         const axisColor = light ? "#5d6f82" : "#a8b4c7";
         const splitColor = light ? "rgba(55,74,96,.13)" : "rgba(151,164,184,.1)";
-        const tooltipBg = light ? "#f7fafb" : "#0b1220";
-        const tooltipText = light ? "#172235" : "#fff";
+        const tooltipBg = light ? "#ffffff" : "#0b1220";
+        const tooltipText = light ? "#0f172a" : "#f7fbff";
 
         if (chartType === "gauge") {
           chart.setOption({
@@ -1686,13 +1891,13 @@
               type: "gauge",
               min: 0,
               max: Math.max(100, Math.ceil(latestValue * 1.2)),
-              progress: { show: true, width: 14 },
-              axisLine: { lineStyle: { width: 14 } },
-              pointer: { width: 5 },
+              progress: { show: true, width: 10 },
+              axisLine: { lineStyle: { width: 10 } },
+              pointer: { width: 4 },
               detail: {
-                formatter: value => `${formatNumber(value)}${thresholdData?.unit || ""}`,
+                formatter: value => formatValueWithUnit(value, unit, "", query),
                 color: axisColor,
-                fontSize: 28,
+                fontSize: 20,
                 fontWeight: 800
               },
               data: [{ value: latestValue, name: resolveMetricName(query, prometheusData) }]
@@ -1709,12 +1914,14 @@
               trigger: "item",
               backgroundColor: tooltipBg,
               borderColor: splitColor,
-              textStyle: { color: tooltipText },
-              formatter: item => `${item.name}: ${formatNumber(item.value)}${thresholdData?.unit || ""}`
+              borderWidth: 1,
+              padding: [6, 10],
+              textStyle: { color: tooltipText, fontSize: 11, fontFamily: "Inter, sans-serif" },
+              formatter: item => `${item.name}: <strong>${formatValueWithUnit(item.value, unit, "", query)}</strong>`
             },
             series: [{
               type: "pie",
-              radius: ["42%", "72%"],
+              radius: ["40%", "70%"],
               avoidLabelOverlap: true,
               data: latestValues.length ? latestValues : [{ name: resolveMetricName(query, prometheusData), value: 0 }]
             }]
@@ -1722,26 +1929,49 @@
           return;
         }
 
+        // Clean & Simplified ECharts configuration with explicit units and minimal tooltip
         chart.setOption(
           {
             color: ["#2dd4bf", "#60a5fa", "#f59e0b", "#a78bfa", "#22c55e"],
             backgroundColor: "transparent",
             animation: true,
-            animationDurationUpdate: 500,
+            animationDurationUpdate: 400,
             animationEasingUpdate: "linear",
             tooltip: {
               trigger: "axis",
               backgroundColor: tooltipBg,
               borderColor: splitColor,
+              borderWidth: 1,
+              padding: [6, 10],
               textStyle: {
-                color: tooltipText
+                color: tooltipText,
+                fontSize: 11,
+                fontFamily: "Inter, sans-serif"
+              },
+              formatter: params => {
+                if (!params || !params.length) return "";
+                const d = new Date(params[0].value[0]);
+                const timeStr = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                let html = `<div style="font-weight:700;margin-bottom:4px;color:${tooltipText};font-size:11px;">${timeStr}</div>`;
+                params.forEach(p => {
+                  if (p.value && p.value[1] !== undefined) {
+                    const val = Number(p.value[1]);
+                    const formatted = formatValueWithUnit(val, unit, p.seriesName, query);
+                    html += `<div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                      <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${p.color}"></span>
+                      <span style="opacity:0.85">${p.seriesName || 'Valor'}:</span>
+                      <strong style="color:${tooltipText}">${formatted}</strong>
+                    </div>`;
+                  }
+                });
+                return html;
               }
             },
             grid: {
-              left: 48,
-              right: 18,
-              top: 28,
-              bottom: 38
+              left: 42,
+              right: 14,
+              top: 24,
+              bottom: 30
             },
             xAxis: {
               type: "time",
@@ -1754,6 +1984,7 @@
               },
               axisLabel: {
                 color: axisColor,
+                fontSize: 10,
                 formatter: value => {
                   const d = new Date(value);
                   return d.toLocaleTimeString("pt-BR", {
@@ -1765,6 +1996,14 @@
             },
             yAxis: {
               type: "value",
+              name: unit ? `(${unit})` : "",
+              nameTextStyle: {
+                color: axisColor,
+                fontSize: 10,
+                fontWeight: "bold",
+                align: "right",
+                padding: [0, 6, 0, 0]
+              },
               axisPointer: {
                 show: true
               },
@@ -1779,7 +2018,13 @@
                 }
               },
               axisLabel: {
-                color: axisColor
+                color: axisColor,
+                fontSize: 10,
+                formatter: val => {
+                  if (unit === "%") return `${val}%`;
+                  if (unit === "B/s") return formatShortBytesRate(val);
+                  return val;
+                }
               }
             },
             series: [...series, ...comparisonSeries]
@@ -1880,7 +2125,8 @@
           const div = document.createElement("div");
           const { warningThreshold, criticalThreshold } = resolveThresholds(alert);
           const color = statusColor(alert.status);
-          const unit = alert.unit || "%";
+          const unit = alert.unit || getMetricUnit(alert.query, "%");
+          const emailsText = alert.notificationEmails ? `<br><span class="muted" style="font-size:10px;">E-mails: ${alert.notificationEmails}</span>` : '';
 
           div.className = `threshold-item status-${alert.status || "OK"}`;
           div.dataset.query = alert.query;
@@ -1888,8 +2134,8 @@
             <div class="item-row">
               <div>
                 <strong style="color:${color}">${alert.metricName}</strong><br>
-                <span class="muted">Atual: ${formatNumber(alert.lastValue)}${unit}</span><br>
-                <span class="muted">Atencao: ${formatNumber(warningThreshold)}${unit} | Alerta: ${formatNumber(criticalThreshold)}${unit}</span><br>
+                <span class="muted">Atual: ${formatValueWithUnit(alert.lastValue, unit, "", alert.query)}</span><br>
+                <span class="muted">Atenção: ${formatNumber(warningThreshold)}${unit} | Alerta: ${formatNumber(criticalThreshold)}${unit}</span>${emailsText}<br>
                 <span class="status-pill status-${alert.status}">${alert.status}</span>
               </div>
               <button class="delete-threshold-btn" title="Remover limites">X</button>
@@ -1927,12 +2173,13 @@
         activeAlerts.forEach(alert => {
           const div = document.createElement("div");
           const css = alert.status === "CRITICAL" ? "alert-critical" : "alert-warning";
+          const unit = alert.unit || getMetricUnit(alert.query, "%");
 
           div.className = `alert-live ${css}`;
           div.innerHTML = `
             <strong>${alert.metricName}</strong><br>
-            <span>Valor atual: ${formatNumber(alert.lastValue)}${alert.unit || ""}</span><br>
-            <span class="muted">Threshold: ${formatNumber(alert.threshold)}${alert.unit || ""}</span>
+            <span>Valor atual: ${formatValueWithUnit(alert.lastValue, unit, "", alert.query)}</span><br>
+            <span class="muted">Threshold: ${formatNumber(alert.threshold)}${unit}</span>
           `;
 
           feed.appendChild(div);
@@ -1959,13 +2206,14 @@
         logs.forEach(log => {
           const div = document.createElement("div");
           const createdAt = new Date(log.createdAt).toLocaleString("pt-BR");
+          const unit = log.unit || getMetricUnit(log.query, "%");
 
           div.className = "log";
           div.innerHTML = `
             <span class="status-pill status-${log.status}">${log.status}</span>
             <div>
               <strong>${log.metricName}</strong><br>
-              <span class="muted">Valor ${formatNumber(log.value)}${log.unit || ""} / limite ${formatNumber(log.threshold)}${log.unit || ""}</span>
+              <span class="muted">Valor ${formatValueWithUnit(log.value, unit, "", log.query)} / limite ${formatNumber(log.threshold)}${unit}</span>
             </div>
             <span class="muted">${createdAt}</span>
           `;
@@ -2000,7 +2248,6 @@
 
         for (const card of cards) {
           const endInput = card.querySelector(".card-end-input")?.value;
-          // Se tiver fim selecionado manualmente, não atualiza automaticamente
           if (endInput) {
             continue;
           }
@@ -2049,21 +2296,21 @@
               const trendText = isUp ? "Tendência de Alta" : "Tendência de Queda";
               
               trendsHtml += `
-                <div class="card" style="padding: 16px; border-left: 4px solid ${color}">
+                <div class="card" style="padding: 12px; border-left: 3px solid ${color}">
                   <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div>
-                      <h4 style="margin: 0;">${name}</h4>
-                      <div class="muted" style="font-size: 12px;">Última 1 hora</div>
+                      <h4 style="margin: 0; font-size: 12px;">${name}</h4>
+                      <div class="muted" style="font-size: 10px;">Última 1 hora</div>
                     </div>
-                    <div style="font-size: 24px; color: ${color}; font-weight: bold;">${icon}</div>
+                    <div style="font-size: 18px; color: ${color}; font-weight: bold;">${icon}</div>
                   </div>
-                  <div style="margin-top: 12px;">
-                    <span style="font-size: 18px; font-weight: 800; color: ${color};">
+                  <div style="margin-top: 8px;">
+                    <span style="font-size: 15px; font-weight: 800; color: ${color};">
                       ${percentChange > 0 ? "+" : ""}${percentChange.toFixed(1)}%
                     </span>
-                    <span class="muted" style="margin-left: 8px;">${trendText}</span>
+                    <span class="muted" style="margin-left: 6px; font-size: 11px;">${trendText}</span>
                   </div>
-                  <div class="muted" style="font-size: 12px; margin-top: 8px;">
+                  <div class="muted" style="font-size: 10px; margin-top: 6px;">
                     Variação de ${first.toFixed(2)} para ${last.toFixed(2)}
                   </div>
                 </div>
@@ -2118,7 +2365,6 @@
           body: JSON.stringify({ theme: nextTheme })
         }).catch(console.error);
 
-        // Dispose of ECharts instances so they are cleanly re-initialized with new colors
         document.querySelectorAll(".chart-box").forEach(chartEl => {
           const chart = echarts.getInstanceByDom(chartEl);
           if (chart) {
@@ -2126,9 +2372,8 @@
           }
         });
 
-        // Fast re-render of existing charts from cached data
         document.querySelectorAll(".card[data-query]").forEach(card => {
-          refreshCard(card, false); // forceFetch = false
+          refreshCard(card, false);
         });
       }
 
@@ -2177,11 +2422,10 @@
       }
 
       setInterval(async () => {
-        await refreshAlertsEngine();
         await loadThresholds();
         await loadAlertFeed();
         await loadAlertLogs();
-      }, 3000);
+      }, 5000);
 
       updateRefreshInterval();
 

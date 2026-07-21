@@ -13,9 +13,10 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
+    restart: unless-stopped
 
   postgres:
-    image: postgres
+    image: postgres:16
     container_name: postgres
     environment:
       POSTGRES_DB: userdb
@@ -23,11 +24,14 @@ services:
       POSTGRES_PASSWORD: alvarooliver18
     ports:
       - "5433:5432"
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL","pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus
@@ -40,6 +44,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=30d'
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana
@@ -57,7 +62,9 @@ services:
       GF_SERVER_ROOT_URL: http://localhost:3002
       GF_SERVER_DOMAIN: localhost
       GF_SERVER_ENABLE_CORS: "true"
+    restart: unless-stopped
 
 volumes:
+  postgres_data:
   prometheus_data:
   grafana_data:
