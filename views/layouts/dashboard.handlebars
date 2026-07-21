@@ -1903,6 +1903,7 @@
               data: [{ value: latestValue, name: resolveMetricName(query, prometheusData) }]
             }]
           }, true);
+          setTimeout(() => chart.resize(), 0);
           return;
         }
 
@@ -1926,6 +1927,7 @@
               data: latestValues.length ? latestValues : [{ name: resolveMetricName(query, prometheusData), value: 0 }]
             }]
           }, true);
+          setTimeout(() => chart.resize(), 0);
           return;
         }
 
@@ -2031,6 +2033,10 @@
           },
           true
         );
+
+        setTimeout(() => {
+          chart.resize();
+        }, 0);
 
         if (!window.__chartResizeBound) {
           window.addEventListener("resize", () => {
@@ -2357,6 +2363,7 @@
         const nextTheme = document.body.dataset.theme === "light" ? "dark" : "light";
         document.body.dataset.theme = nextTheme;
         localStorage.setItem("temporal-series-theme", nextTheme);
+
         fetch("/api/preferences", {
           method: "POST",
           headers: {
@@ -2365,16 +2372,19 @@
           body: JSON.stringify({ theme: nextTheme })
         }).catch(console.error);
 
-        document.querySelectorAll(".chart-box").forEach(chartEl => {
-          const chart = echarts.getInstanceByDom(chartEl);
-          if (chart) {
-            chart.dispose();
-          }
-        });
-
+        // Atualiza as cores do tema nos gráficos de forma fluida sem sumir com os dados
         document.querySelectorAll(".card[data-query]").forEach(card => {
           refreshCard(card, false);
         });
+
+        setTimeout(() => {
+          document.querySelectorAll("[data-chart-id]").forEach(chartEl => {
+            const chart = echarts.getInstanceByDom(chartEl);
+            if (chart) {
+              chart.resize();
+            }
+          });
+        }, 50);
       }
 
       function updateRefreshInterval() {
