@@ -1,1 +1,8 @@
-*.env
+node_modules/
+.env
+
+postgres_data/
+prometheus_data/
+grafana_data/
+
+npm-debug.log
