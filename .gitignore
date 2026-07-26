@@ -3,6 +3,5 @@ node_modules/
 
 postgres_data/
 prometheus_data/
-grafana_data/
 
 npm-debug.log
