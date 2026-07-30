@@ -16,6 +16,10 @@ import Dashboard from './models/dashboard.js';
 import Alert from './models/alert.js';
 import AlertLog from './models/alertLog.js';
 
+import Machine from './models/machine.js';
+import Metric from './models/metrics.js';
+import MachineToken from './models/machinetoken.js';
+
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -139,6 +143,28 @@ function normalizeSystemQuery(query) {
   const normalized = compactQuery(query);
   return legacySystemQueries.get(normalized) || query;
 }
+
+function detectDbMetricType(query) {
+  const normalized = String(query || '').toLowerCase();
+  
+  if ((normalized.includes('node_cpu_seconds_total') || normalized.includes('windows_cpu_time_total')) && normalized.includes('idle')) {
+    return 'cpu';
+  }
+  if (normalized.includes('node_memory_memavailable_bytes') || normalized.includes('windows_memory_physical')) {
+    return 'ram';
+  }
+  if (normalized.includes('node_filesystem') || normalized.includes('windows_logical_disk')) {
+    return 'disk';
+  }
+  if (normalized.includes('node_network_receive_bytes_total') || normalized.includes('windows_net_bytes_received_total')) {
+    return 'networkRx';
+  }
+  if (normalized.includes('node_network_transmit_bytes_total') || normalized.includes('windows_net_bytes_sent_total')) {
+    return 'networkTx';
+  }
+  return null;
+}
+
 
 const metricCatalog = [
   {
@@ -277,10 +303,11 @@ function calculateAnomaly(series) {
   };
 }
 
-function buildAlertReport(alert, value, anomaly) {
+function buildAlertReport(alert, value, anomaly, hostname) {
   const trendDirection = anomaly.trend > 0 ? 'alta' : anomaly.trend < 0 ? 'queda' : 'estavel';
+  const machineStr = hostname ? ` na máquina ${hostname}` : '';
   const parts = [
-    `Alerta ${alert.status} em ${alert.metricName}.`,
+    `Alerta ${alert.status} em ${alert.metricName}${machineStr}.`,
     `Valor observado: ${Number(value).toFixed(2)}${alert.unit || ''}.`,
     `Media movel: ${Number(anomaly.movingAverage || 0).toFixed(2)}; z-score: ${Number(anomaly.zScore || 0).toFixed(2)}; tendencia recente: ${trendDirection}.`
   ];
@@ -378,7 +405,6 @@ async function sendAlertEmail(alert, log) {
     return false;
   }
 }
-
 async function monitorAlerts() {
   try {
     const alerts = await Alert.findAll({
@@ -390,32 +416,103 @@ async function monitorAlerts() {
     for (const alert of alerts) {
       try {
         const query = normalizeSystemQuery(alert.query);
-        const { range, end, alignedStart, step } = buildQueryRangeParams(300);
-        const url = `http://prometheus:9090/api/v1/query_range?query=${encodeURIComponent(query)}&start=${alignedStart}&end=${end}&step=${step}`;
         
-        const response = await fetch(url);
-        if (!response.ok) continue;
-
-        const json = await response.json();
-        if (!json.data || !json.data.result) continue;
-
-        const series = json.data.result;
+        // Detect if DB-backed metric
+        const dbColumn = detectDbMetricType(query);
+        
         let currentValue = 0;
-
-        for (const s of series) {
-          const last = s.values?.[s.values.length - 1];
-          if (!last) continue;
-          const val = Number(last[1]);
-          if (val > currentValue) {
-            currentValue = val;
+        let anomaly = { isAnomaly: false, zScore: 0, movingAverage: null, trend: 0 };
+        let nextStatus = "OK";
+        let targetHostname = "";
+        
+        if (dbColumn && alert.userId) {
+          // Fetch all machines belonging to this user
+          const machines = await Machine.findAll({
+            where: { userId: alert.userId }
+          });
+          
+          if (!machines || !machines.length) continue;
+          
+          let worstStatus = "OK";
+          let worstValue = 0;
+          let worstAnomaly = { isAnomaly: false, zScore: 0, movingAverage: null, trend: 0 };
+          let worstMachine = null;
+          
+          for (const machine of machines) {
+            const { Op } = db.Sequelize;
+            const recentMetrics = await Metric.findAll({
+              where: { machineId: machine.id },
+              order: [['createdAt', 'DESC']],
+              limit: 30
+            });
+            recentMetrics.reverse();
+            if (!recentMetrics.length) continue;
+            
+            const lastMetric = recentMetrics[recentMetrics.length - 1];
+            const val = lastMetric[dbColumn];
+            
+            const series = [{
+              metric: { instance: machine.hostname, job: 'agent' },
+              values: recentMetrics.map(m => [
+                Math.floor(new Date(m.createdAt).getTime() / 1000),
+                String(m[dbColumn])
+              ])
+            }];
+            
+            const mAnomaly = calculateAnomaly(series);
+            let mStatus = evaluateAlertStatus(val, alert);
+            if (mStatus === "OK" && alert.anomalyEnabled && mAnomaly.isAnomaly) {
+              mStatus = "WARNING";
+            }
+            
+            const severity = { 'CRITICAL': 2, 'WARNING': 1, 'OK': 0 };
+            if (severity[mStatus] > severity[worstStatus]) {
+              worstStatus = mStatus;
+              worstValue = val;
+              worstAnomaly = mAnomaly;
+              worstMachine = machine;
+            } else if (severity[mStatus] === severity[worstStatus] && val > worstValue) {
+              worstValue = val;
+              worstAnomaly = mAnomaly;
+              worstMachine = machine;
+            }
           }
-        }
+          
+          if (!worstMachine) continue; // No metrics for any machine
+          
+          currentValue = worstValue;
+          anomaly = worstAnomaly;
+          nextStatus = worstStatus;
+          targetHostname = worstMachine.hostname;
+          
+        } else {
+          // Fallback to Prometheus
+          const { range, end, alignedStart, step } = buildQueryRangeParams(300);
+          const url = `http://prometheus:9090/api/v1/query_range?query=${encodeURIComponent(query)}&start=${alignedStart}&end=${end}&step=${step}`;
+          
+          const response = await fetch(url);
+          if (!response.ok) continue;
 
-        const anomaly = calculateAnomaly(series);
-        let nextStatus = evaluateAlertStatus(currentValue, alert);
+          const json = await response.json();
+          if (!json.data || !json.data.result) continue;
 
-        if (nextStatus === "OK" && alert.anomalyEnabled && anomaly.isAnomaly) {
-          nextStatus = "WARNING";
+          const series = json.data.result;
+          
+          for (const s of series) {
+            const last = s.values?.[s.values.length - 1];
+            if (!last) continue;
+            const val = Number(last[1]);
+            if (val > currentValue) {
+              currentValue = val;
+            }
+          }
+
+          anomaly = calculateAnomaly(series);
+          nextStatus = evaluateAlertStatus(currentValue, alert);
+
+          if (nextStatus === "OK" && alert.anomalyEnabled && anomaly.isAnomaly) {
+            nextStatus = "WARNING";
+          }
         }
 
         const previousStatus = alert.status;
@@ -424,7 +521,7 @@ async function monitorAlerts() {
         await alert.save();
 
         if (nextStatus !== "OK" && nextStatus !== previousStatus) {
-          const report = buildAlertReport(alert, currentValue, anomaly);
+          const report = buildAlertReport(alert, currentValue, anomaly, targetHostname);
           const log = await AlertLog.create({
             userId: alert.userId,
             alertId: alert.id,
@@ -450,7 +547,7 @@ async function monitorAlerts() {
 
           await sendAlertEmail(alert, log);
 
-          console.log(`[MONITORAMENTO ATIVO] ALERTA ${nextStatus}: ${alert.metricName} = ${currentValue.toFixed(2)}`);
+          console.log(`[MONITORAMENTO ATIVO] ALERTA ${nextStatus}: ${alert.metricName} = ${currentValue.toFixed(2)}${targetHostname ? ' em ' + targetHostname : ''}`);
         }
       } catch (alertErr) {
         console.error(`Erro no monitoramento do alerta ID ${alert?.id}:`, alertErr.message);
@@ -460,8 +557,6 @@ async function monitorAlerts() {
     console.error("Erro geral no servico monitorAlerts:", err.message);
   }
 }
-
-
 function buildAlertRecommendation(metricName) {
   const name = String(metricName || '').toLowerCase();
 
@@ -519,6 +614,147 @@ function evaluateAlertStatus(value, alert) {
 
   return "OK";
 }
+
+app.post('/api/agent/register', async (req, res) => {
+    try {
+        const {
+            token,
+            uuid,
+            hostname,
+            os
+        } = req.body;
+
+        const machineToken = await MachineToken.findOne({
+            where: {
+                token
+            }
+        });
+
+        if (!machineToken) {
+            return res.status(404).json({
+                error: 'Token inválido.'
+            });
+        }
+
+        let machine = await Machine.findOne({ where: { uuid } });
+        if (machine) {
+            await machine.update({
+                userId: machineToken.userId,
+                hostname,
+                os,
+                lastSeen: new Date(),
+                status: 'ONLINE'
+            });
+        } else {
+            machine = await Machine.create({
+                userId: machineToken.userId,
+                uuid,
+                hostname,
+                os,
+                lastSeen: new Date(),
+                status: 'ONLINE'
+            });
+        }
+
+        res.json({
+            machineId: machine.id
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/agent/metrics', async (req, res) => {
+    try {
+        const {
+            machineId,
+            cpu,
+            ram,
+            disk,
+            networkRx,
+            networkTx
+        } = req.body;
+
+        await Metric.create({
+            machineId,
+            cpu,
+            ram,
+            disk,
+            networkRx,
+            networkTx
+        });
+
+        res.json({
+            success: true
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/agent/heartbeat', async (req, res) => {
+    try {
+        const machine = await Machine.findByPk(
+            req.body.machineId
+        );
+
+        if (!machine) {
+            return res.status(404).send();
+        }
+
+        await machine.update({
+            lastSeen: new Date(),
+            status: 'ONLINE'
+        });
+
+        res.sendStatus(200);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/machines', isApiAuthenticated, async (req, res) => {
+    try {
+        const machines = await Machine.findAll({
+            where: { userId: req.session.user.id }
+        });
+        res.json(machines);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/machine/token', isApiAuthenticated, async (req, res) => {
+    try {
+        let machineToken = await MachineToken.findOne({
+            where: { userId: req.session.user.id }
+        });
+        if (!machineToken) {
+            const token = `promts_${crypto.randomUUID()}`;
+            machineToken = await MachineToken.create({
+                userId: req.session.user.id,
+                token
+            });
+        }
+        res.json(machineToken);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/machine/token', isApiAuthenticated, async (req, res) => {
+    try {
+        const token = `promts_${crypto.randomUUID()}`;
+        const machineToken = await MachineToken.create({
+            userId: req.session.user.id,
+            token
+        });
+        res.json(machineToken);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 
 app.get('/teste-email', async (req, res) => {
@@ -849,9 +1085,99 @@ app.post('/api/metrics/infer', isApiAuthenticated, async (req, res) => {
 
 app.post('/api/query', isApiAuthenticated, async (req, res) => {
   try {
-    const { query: rawQuery, range: rangeInput = 300, start, end: endInput } = req.body;
+    const { query: rawQuery, range: rangeInput = 300, start, end: endInput, machineId } = req.body;
     const query = normalizeSystemQuery(rawQuery);
     const { range, end, displayStart, alignedStart, step } = buildQueryRangeParams(rangeInput, start, endInput);
+
+    const dbColumn = detectDbMetricType(query);
+    let targetMachineId = machineId;
+
+    if (dbColumn && req.session.user) {
+      if (!targetMachineId) {
+        // Fallback: get the first machine belonging to this user
+        const defaultMachine = await Machine.findOne({
+          where: { userId: req.session.user.id }
+        });
+        if (defaultMachine) {
+          targetMachineId = defaultMachine.id;
+        }
+      }
+
+      if (targetMachineId) {
+        const machine = await Machine.findOne({
+          where: { id: targetMachineId, userId: req.session.user.id }
+        });
+
+        if (machine) {
+          const { Op } = db.Sequelize;
+          const startDate = new Date(displayStart * 1000);
+          const endDate = new Date(end * 1000);
+
+          const metrics = await Metric.findAll({
+            where: {
+              machineId: targetMachineId,
+              createdAt: {
+                [Op.between]: [startDate, endDate]
+              }
+            },
+            order: [['createdAt', 'ASC']]
+          });
+
+          const values = metrics.map(m => {
+            const t = Math.floor(new Date(m.createdAt).getTime() / 1000);
+            return [t, String(m[dbColumn])];
+          });
+
+          const series = [{
+            metric: {
+              instance: machine.hostname,
+              job: 'agent'
+            },
+            values
+          }];
+
+          let comparisonSeries = [];
+          if (req.body.comparePrevious) {
+            const previousEnd = displayStart;
+            const previousStart = Math.max(displayStart - range, 0);
+            const prevStartDate = new Date(previousStart * 1000);
+            const prevEndDate = new Date(previousEnd * 1000);
+
+            const prevMetrics = await Metric.findAll({
+              where: {
+                machineId: targetMachineId,
+                createdAt: {
+                  [Op.between]: [prevStartDate, prevEndDate]
+                }
+              },
+              order: [['createdAt', 'ASC']]
+            });
+
+            const prevValues = prevMetrics.map(m => {
+              const t = Math.floor(new Date(m.createdAt).getTime() / 1000);
+              return [t, String(m[dbColumn])];
+            });
+
+            comparisonSeries = [{
+              metric: {
+                instance: machine.hostname,
+                job: 'agent'
+              },
+              values: prevValues
+            }];
+          }
+
+          return res.json({
+            series,
+            comparisonSeries,
+            start: displayStart,
+            end,
+            step,
+            range
+          });
+        }
+      }
+    }
 
     const url =
       `http://prometheus:9090/api/v1/query_range` +

@@ -901,6 +901,38 @@
             </div>
           </div>
 
+          <!-- Painel de Máquinas e Token -->
+          <div class="panel" style="margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+              <div>
+                <h3 style="margin: 0; font-size: 16px;">Computador Ativo</h3>
+                <div class="muted" style="font-size: 11px; margin-top: 2px;">Selecione o computador de onde deseja visualizar as métricas.</div>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <select id="machineSelect" onchange="selectMachine(this.value)" style="min-height: 36px; padding: 0 12px; background: var(--btn-bg); border: 1px solid var(--line); border-radius: 6px; color: var(--text); font-size: 13px; font-weight: 500; outline: none; cursor: pointer;">
+                  <option value="">Carregando computadores...</option>
+                </select>
+                <button class="primary-btn" onclick="toggleTokenPanel()" style="min-height: 36px; padding: 0 14px; font-size: 12px;">Token do Agente</button>
+              </div>
+            </div>
+            
+            <div id="tokenPanel" style="display: none; margin-top: 16px; padding: 16px; background: rgba(96, 165, 250, 0.06); border: 1px dashed rgba(96, 165, 250, 0.3); border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <span style="font-weight: 600; font-size: 13px;">Seu Token de Registro:</span>
+                  <code id="agentTokenCode" style="margin-left: 8px; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--blue);">promts_...</code>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="ghost-btn" onclick="copyAgentToken()" style="min-height: 28px; padding: 0 10px; font-size: 11px;">Copiar</button>
+                  <button class="ghost-btn" onclick="generateNewToken()" style="min-height: 28px; padding: 0 10px; font-size: 11px; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">Regerar</button>
+                </div>
+              </div>
+              <div class="muted" style="font-size: 11px; margin-top: 10px; line-height: 1.4;">
+                <strong>Como usar:</strong> Configure o seu agente local utilizando este token. O agente coletará CPU, RAM, Disco e Rede e os enviará diretamente para esta plataforma.
+              </div>
+            </div>
+          </div>
+
           <div class="builder panel">
             <div class="builder-bar">
               <div>
@@ -1419,7 +1451,8 @@
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              query: dashboard.query
+              query: dashboard.query,
+              machineId: window.selectedMachineId
             })
           });
 
@@ -1721,7 +1754,8 @@
               range: (!startISO && !endISO) ? range : undefined,
               start: startISO || undefined,
               end: endISO || undefined,
-              comparePrevious: false
+              comparePrevious: false,
+              machineId: window.selectedMachineId
             })
           });
 
@@ -2062,7 +2096,8 @@
               body: JSON.stringify({
                 query: card.dataset.query,
                 range: 300,
-                comparePrevious: false
+                comparePrevious: false,
+                machineId: window.selectedMachineId
               })
             });
           } catch (err) {
@@ -2284,7 +2319,11 @@
             const res = await fetch("/api/query", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ query, range: 3600 })
+              body: JSON.stringify({
+                query,
+                range: 3600,
+                machineId: window.selectedMachineId
+              })
             });
             const payload = await res.json();
             const series = payload.series || [];
@@ -2418,6 +2457,99 @@
         alert(res.ok ? "Email de teste solicitado." : "Nao foi possivel solicitar o email de teste.");
       }
 
+      // Machine and Agent Token Management
+      window.selectedMachineId = localStorage.getItem("temporal-series-machine") || "";
+
+      function toggleTokenPanel() {
+        const panel = document.getElementById("tokenPanel");
+        panel.style.display = panel.style.display === "none" ? "block" : "none";
+        if (panel.style.display === "block") {
+          loadAgentToken();
+        }
+      }
+
+      async function loadAgentToken() {
+        try {
+          const res = await fetch("/api/machine/token");
+          if (res.ok) {
+            const data = await res.json();
+            document.getElementById("agentTokenCode").textContent = data.token;
+          }
+        } catch (err) {
+          console.error("Erro ao carregar token:", err);
+        }
+      }
+
+      async function generateNewToken() {
+        if (!confirm("Tem certeza que deseja regerar o token? O token anterior parará de funcionar para novos registros.")) {
+          return;
+        }
+        try {
+          const res = await fetch("/api/machine/token", { method: "POST" });
+          if (res.ok) {
+            const data = await res.json();
+            document.getElementById("agentTokenCode").textContent = data.token;
+            alert("Novo token gerado com sucesso!");
+          }
+        } catch (err) {
+          console.error("Erro ao gerar novo token:", err);
+        }
+      }
+
+      function copyAgentToken() {
+        const tokenText = document.getElementById("agentTokenCode").textContent;
+        navigator.clipboard.writeText(tokenText).then(() => {
+          alert("Token copiado com sucesso!");
+        }).catch(err => {
+          console.error("Erro ao copiar token:", err);
+        });
+      }
+
+      async function loadUserMachines() {
+        try {
+          const res = await fetch("/api/machines");
+          if (!res.ok) return;
+          const machines = await res.json();
+          const select = document.getElementById("machineSelect");
+          select.innerHTML = "";
+
+          if (!machines || !machines.length) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "Nenhum computador registrado";
+            select.appendChild(opt);
+            window.selectedMachineId = "";
+            localStorage.removeItem("temporal-series-machine");
+            return;
+          }
+
+          // Check if previously selected machine still exists in the list
+          let selectedExists = machines.some(m => m.id === window.selectedMachineId);
+          if (!selectedExists) {
+            window.selectedMachineId = machines[0].id;
+            localStorage.setItem("temporal-series-machine", window.selectedMachineId);
+          }
+
+          machines.forEach(machine => {
+            const opt = document.createElement("option");
+            opt.value = machine.id;
+            opt.textContent = `${machine.hostname} (${machine.os} - ${machine.status})`;
+            if (machine.id === window.selectedMachineId) {
+              opt.selected = true;
+            }
+            select.appendChild(opt);
+          });
+        } catch (err) {
+          console.error("Erro ao buscar computadores:", err);
+        }
+      }
+
+      async function selectMachine(machineId) {
+        window.selectedMachineId = machineId;
+        localStorage.setItem("temporal-series-machine", machineId);
+        await refreshCharts();
+      }
+
       const savedTheme = localStorage.getItem("temporal-series-theme");
 
       if (savedTheme) {
@@ -2440,10 +2572,14 @@
       updateRefreshInterval();
 
       loadMetricCatalog();
-      loadDashboards();
-      loadThresholds();
-      loadAlertFeed();
-      loadAlertLogs();
+
+      // Load machines and then load dashboards
+      loadUserMachines().then(() => {
+        loadDashboards();
+        loadThresholds();
+        loadAlertFeed();
+        loadAlertLogs();
+      });
     </script>
     <script src="/js/page-transition.js"></script>
   </body>
