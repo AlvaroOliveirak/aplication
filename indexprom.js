@@ -11,6 +11,7 @@ import session from 'express-session';
 import { Server } from 'socket.io';
 import nodemailer from 'nodemailer';
 import db from "./models/db.js";
+import AdmZip from 'adm-zip';
 import Post from './models/post.js';
 import Dashboard from './models/dashboard.js';
 import Alert from './models/alert.js';
@@ -750,6 +751,78 @@ app.post('/api/machine/token', isApiAuthenticated, async (req, res) => {
             token
         });
         res.json(machineToken);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/machine/agent/download', isApiAuthenticated, async (req, res) => {
+    try {
+        let machineToken = await MachineToken.findOne({
+            where: { userId: req.session.user.id }
+        });
+        if (!machineToken) {
+            const token = `promts_${crypto.randomUUID()}`;
+            machineToken = await MachineToken.create({
+                userId: req.session.user.id,
+                token
+            });
+        }
+
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const host = req.headers.host;
+        const serverUrl = `${protocol}://${host}`;
+
+        const configJson = {
+            server_url: serverUrl,
+            token: machineToken.token
+        };
+
+        const zip = new AdmZip();
+        
+        // Add files to zip from local project paths
+        const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+        
+        const exePath = path.join(projectRoot, 'dist', 'agent.exe');
+        const pyPath = path.join(projectRoot, 'agent.py');
+        const installPsPath = path.join(projectRoot, 'install_agent.ps1');
+        const uninstallPsPath = path.join(projectRoot, 'uninstall_agent.ps1');
+        const installShPath = path.join(projectRoot, 'install_agent.sh');
+        const uninstallShPath = path.join(projectRoot, 'uninstall_agent.sh');
+
+        // Dynamically generated config
+        zip.addFile('agent_config.json', Buffer.from(JSON.stringify(configJson, null, 4), 'utf-8'));
+        
+        // Add other files if they exist on the server
+        const fs = await import('fs');
+        if (fs.existsSync(exePath)) {
+            zip.addLocalFile(exePath);
+        }
+        if (fs.existsSync(pyPath)) {
+            zip.addLocalFile(pyPath);
+        }
+        if (fs.existsSync(installPsPath)) {
+            zip.addLocalFile(installPsPath);
+        }
+        if (fs.existsSync(uninstallPsPath)) {
+            zip.addLocalFile(uninstallPsPath);
+        }
+        if (fs.existsSync(installShPath)) {
+            zip.addLocalFile(installShPath);
+        }
+        if (fs.existsSync(uninstallShPath)) {
+            zip.addLocalFile(uninstallShPath);
+        }
+
+        const zipBuffer = zip.toBuffer();
+
+        res.set({
+            'Content-Type': 'application/zip',
+            'Content-Disposition': 'attachment; filename="promts_agent.zip"',
+            'Content-Length': zipBuffer.length
+        });
+
+        res.send(zipBuffer);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
