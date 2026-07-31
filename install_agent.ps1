@@ -32,8 +32,12 @@ if (Test-Path $ExeSource) {
     Exit
 }
 
-# 3. Cria arquivo de configuração padrão se não existir
-if (-not (Test-Path $ConfigDest)) {
+# 3. Copia ou cria o arquivo de configuração
+$ConfigSource = Join-Path $PSScriptRoot "agent_config.json"
+if (Test-Path $ConfigSource) {
+    Copy-Item -Path $ConfigSource -Destination $ConfigDest -Force
+    Write-Host "[OK] Configuração personalizada do agente copiada para: $ConfigDest" -ForegroundColor Green
+} elseif (-not (Test-Path $ConfigDest)) {
     $DefaultConfig = @{
         server_url = "http://localhost:3000"
         token = "promts_INSIRA_SEU_TOKEN_AQUI"
