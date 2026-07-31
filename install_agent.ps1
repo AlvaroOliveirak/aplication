@@ -9,7 +9,10 @@ if (-not $isAdmin) {
 }
 
 $InstallDir = "C:\Program Files\PromTSAgent"
-$ExeSource = Join-Path $PSScriptRoot "dist\agent.exe"
+$ExeSource = Join-Path $PSScriptRoot "agent.exe"
+if (-not (Test-Path $ExeSource)) {
+    $ExeSource = Join-Path $PSScriptRoot "dist\agent.exe"
+}
 $ExeDest = Join-Path $InstallDir "agent.exe"
 $ConfigDest = Join-Path $InstallDir "agent_config.json"
 
@@ -25,7 +28,7 @@ if (Test-Path $ExeSource) {
     Copy-Item -Path $ExeSource -Destination $ExeDest -Force
     Write-Host "[OK] Executável copiado para: $ExeDest" -ForegroundColor Green
 } else {
-    Write-Error "Não foi possível encontrar a pasta dist\agent.exe. Certifique-se de compilar o agente primeiro."
+    Write-Error "Não foi possível encontrar o arquivo agent.exe. Certifique-se de extrair todos os arquivos do zip."
     Exit
 }
 
