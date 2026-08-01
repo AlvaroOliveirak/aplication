@@ -52,18 +52,22 @@ $TaskName = "PromTSAgent"
 $Action = New-ScheduledTaskAction -Execute $ExeDest -WorkingDirectory $InstallDir
 $Trigger = New-ScheduledTaskTrigger -AtStartup
 $Principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount
+$Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
 
 # Remove tarefa anterior se existir
 if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
-    Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
+    Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue | Out-Null
+    Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false | Out-Null
 }
 
 # Registra a nova tarefa
-Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Principal $Principal -Description "Agente de monitoramento em segundo plano do Prom_TS" | Out-Null
+Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Principal $Principal -Settings $Settings -Description "Agente de monitoramento em segundo plano do Prom_TS" | Out-Null
 
-Write-Host "[OK] Tarefa agendada do Windows registrada com sucesso!" -ForegroundColor Green
+# Inicia a tarefa imediatamente
+Start-ScheduledTask -TaskName $TaskName | Out-Null
+
+Write-Host "[OK] Tarefa agendada do Windows registrada e iniciada automaticamente!" -ForegroundColor Green
 Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
 Write-Host "Instalação concluída com sucesso!" -ForegroundColor Green
-Write-Host "Para iniciar o agente manualmente agora:" -ForegroundColor Cyan
-Write-Host "  Start-ScheduledTask -TaskName `"$TaskName`"" -ForegroundColor White
+Write-Host "O agente já está rodando em segundo plano e iniciará automaticamente a cada boot." -ForegroundColor Green
 Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
